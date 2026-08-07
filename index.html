@@ -2,7 +2,9 @@
 <html lang="ja">
 
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Character Game</title>
@@ -14,16 +16,21 @@
 }
 
 body {
+
     margin: 0;
-    background: white;
 
     min-height: 100vh;
 
+    background: white;
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 
     font-family: sans-serif;
+
 }
 
 
@@ -34,6 +41,7 @@ body {
 #game {
 
     width: 900px;
+
     height: 506px;
 
     position: relative;
@@ -42,9 +50,10 @@ body {
 
     background: white;
 
-    border: 2px solid #ccc;
+    border: 2px solid #999;
 
     cursor: pointer;
+
 }
 
 
@@ -63,6 +72,7 @@ body {
     pointer-events: none;
 
     object-fit: contain;
+
 }
 
 
@@ -84,7 +94,8 @@ body {
 
     border-radius: 24px;
 
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.15);
 
     font-size: 20px;
 
@@ -94,40 +105,51 @@ body {
 
     z-index: 1000;
 
-    animation: pop 0.2s ease-out;
 }
 
 
 @keyframes pop {
 
     from {
+
         opacity: 0;
-        transform: translateY(10px) scale(0.95);
+
+        transform:
+            translateY(10px)
+            scale(0.95);
+
     }
 
     to {
+
         opacity: 1;
-        transform: translateY(0) scale(1);
+
+        transform:
+            translateY(0)
+            scale(1);
+
     }
 
 }
 
 
 /* =========================
-   エリア表示
+   デバッグ用エリア
 ========================= */
 
 .debug-area {
 
     position: absolute;
 
-    border: 2px dashed rgba(255, 0, 0, 0.8);
+    border: 2px dashed rgba(255,0,0,0.8);
 
-    background: rgba(255, 0, 0, 0.12);
+    background:
+        rgba(255,0,0,0.12);
 
     pointer-events: none;
 
     z-index: 500;
+
 }
 
 
@@ -135,12 +157,14 @@ body {
 
     position: absolute;
 
-    top: -24px;
     left: -2px;
+
+    top: -24px;
 
     padding: 2px 7px;
 
-    background: rgba(255, 0, 0, 0.8);
+    background:
+        rgba(255,0,0,0.8);
 
     color: white;
 
@@ -149,11 +173,12 @@ body {
     white-space: nowrap;
 
     border-radius: 4px;
+
 }
 
 
 /* =========================
-   読み込み表示
+   ステータス
 ========================= */
 
 #status {
@@ -161,11 +186,13 @@ body {
     position: absolute;
 
     left: 10px;
+
     bottom: 10px;
 
     padding: 5px 10px;
 
-    background: rgba(0,0,0,0.7);
+    background:
+        rgba(0,0,0,0.7);
 
     color: white;
 
@@ -174,6 +201,7 @@ body {
     border-radius: 5px;
 
     z-index: 2000;
+
 }
 
 </style>
@@ -200,18 +228,21 @@ body {
 <script>
 
 
-/* =========================
-   基本設定
-========================= */
+/* ==================================================
+   基本
+================================================== */
 
 const game =
     document.getElementById("game");
 
+
 const character =
     document.getElementById("character");
 
+
 const message =
     document.getElementById("message");
+
 
 const status =
     document.getElementById("status");
@@ -220,25 +251,47 @@ const status =
 let data = null;
 
 
-/* 台詞の現在位置 */
+/*
+   台詞の再生位置
+
+   normal
+   rapid
+   area_エリア名
+   rapid_エリア名
+
+   のように管理する
+*/
 
 const count = {};
 
 
-/* 最後のクリック時刻 */
+/*
+   前回クリックした時刻
+*/
 
 let lastClick = 0;
 
 
-/* 台詞表示タイマー */
+/*
+   台詞を消すタイマー
+*/
 
 let messageTimer = null;
 
 
+/*
+   連打判定時間
 
-/* =========================
-   キャラクターデータ読み込み
-========================= */
+   400ms以内なら連打
+*/
+
+const RAPID_TIME = 400;
+
+
+
+/* ==================================================
+   JSON読み込み
+================================================== */
 
 fetch("characters/143.json")
 
@@ -272,43 +325,44 @@ fetch("characters/143.json")
 
 })
 
-
 .catch(error => {
 
     console.error(error);
 
     status.innerText =
-        "読み込みエラー: " + error.message;
+        "読み込みエラー: " +
+        error.message;
 
 });
 
 
 
-/* =========================
+/* ==================================================
    キャラクター表示
-========================= */
+================================================== */
 
 function loadCharacter() {
 
+    if (!data.image) {
 
-    const position =
-        data.position;
+        status.innerText =
+            "画像ファイルが指定されていません。";
+
+        return;
+
+    }
 
 
     character.src =
         "images/" + data.image;
 
 
-    character.style.left =
-        position.x + "px";
+    character.onload = function() {
 
+        status.innerText =
+            data.name + " 読み込み完了";
 
-    character.style.top =
-        position.y + "px";
-
-
-    character.style.width =
-        position.scale + "px";
+    };
 
 
     character.onerror = function() {
@@ -319,116 +373,149 @@ function loadCharacter() {
 
     };
 
+
+    const position =
+        data.position || {};
+
+
+    character.style.left =
+        (position.x || 0) + "px";
+
+
+    character.style.top =
+        (position.y || 0) + "px";
+
+
+    character.style.width =
+        (position.scale || 250) + "px";
+
 }
 
 
 
-/* =========================
+/* ==================================================
    エリア表示
-========================= */
+================================================== */
 
 function drawAreas() {
 
-
-    /* 古いエリアを削除 */
+    /*
+       古いエリアを削除
+    */
 
     document
         .querySelectorAll(".debug-area")
         .forEach(element => {
+
             element.remove();
+
         });
 
 
-    if (!data.areas) {
+    if (
+        !data ||
+        !Array.isArray(data.areas)
+    ) {
+
         return;
+
     }
 
 
-    data.areas.forEach((area, index) => {
+    data.areas.forEach(
+        (area, index) => {
+
+            const box =
+                document.createElement("div");
 
 
-        const box =
-            document.createElement("div");
+            box.className =
+                "debug-area";
 
 
-        box.className =
-            "debug-area";
+            box.style.left =
+                area.x + "px";
 
 
-        box.style.left =
-            area.x + "px";
+            box.style.top =
+                area.y + "px";
 
 
-        box.style.top =
-            area.y + "px";
+            box.style.width =
+                area.width + "px";
 
 
-        box.style.width =
-            area.width + "px";
+            box.style.height =
+                area.height + "px";
 
 
-        box.style.height =
-            area.height + "px";
+            const name =
+                document.createElement("div");
 
 
-        const name =
-            document.createElement("div");
+            name.className =
+                "debug-area-name";
 
 
-        name.className =
-            "debug-area-name";
+            name.innerText =
+                area.name ||
+                "エリア" + (index + 1);
 
 
-        name.innerText =
-            area.name ||
-            "エリア" + (index + 1);
+            box.appendChild(name);
 
 
-        box.appendChild(name);
+            game.appendChild(box);
 
-
-        game.appendChild(box);
-
-    });
+        }
+    );
 
 }
 
 
 
-/* =========================
+/* ==================================================
    起動時台詞
-========================= */
+================================================== */
 
 function showGreeting() {
 
-
     if (
-        data.talk &&
-        data.talk.greeting &&
-        data.talk.greeting.length > 0
+        !data.talk ||
+        !Array.isArray(data.talk.greeting) ||
+        data.talk.greeting.length === 0
     ) {
 
-        const talk =
-            data.talk.greeting[0];
-
-
-        showTalk(
-            talk.text,
-            450,
-            100
-        );
+        return;
 
     }
+
+
+    const talk =
+        data.talk.greeting[0];
+
+
+    showTalk(
+        talk.text,
+        game.clientWidth / 2,
+        100
+    );
 
 }
 
 
 
-/* =========================
+/* ==================================================
    台詞表示
-========================= */
+================================================== */
 
 function showTalk(text, x, y) {
+
+    if (!text) {
+
+        return;
+
+    }
 
 
     message.innerText =
@@ -436,23 +523,46 @@ function showTalk(text, x, y) {
 
 
     /*
-       画面外に出ないように
-       少し補正
+       クリック位置の少し右上
     */
 
     let messageX =
         x + 15;
 
+
     let messageY =
         y - 20;
 
 
-    if (messageX > 650) {
+    /*
+       右端からはみ出さない
+    */
 
-        messageX = 450;
+    if (
+        messageX + 420 >
+        game.clientWidth
+    ) {
+
+        messageX =
+            game.clientWidth - 440;
 
     }
 
+
+    /*
+       左端
+    */
+
+    if (messageX < 10) {
+
+        messageX = 10;
+
+    }
+
+
+    /*
+       上端
+    */
 
     if (messageY < 20) {
 
@@ -474,20 +584,23 @@ function showTalk(text, x, y) {
 
 
     /*
-       アニメーションを再実行
+       アニメーションを
+       毎回再実行
     */
 
     message.style.animation =
         "none";
 
+
     void message.offsetWidth;
+
 
     message.style.animation =
         "pop 0.2s ease-out";
 
 
     /*
-       前のタイマーを消す
+       前のタイマーを削除
     */
 
     if (messageTimer) {
@@ -496,6 +609,10 @@ function showTalk(text, x, y) {
 
     }
 
+
+    /*
+       2.5秒後に消す
+    */
 
     messageTimer =
         setTimeout(() => {
@@ -509,22 +626,23 @@ function showTalk(text, x, y) {
 
 
 
-/* =========================
-   エリア内判定
-========================= */
+/* ==================================================
+   座標がエリア内か
+================================================== */
 
 function inside(x, y, area) {
-
 
     return (
 
         x >= area.x &&
 
-        x <= area.x + area.width &&
+        x <=
+            area.x + area.width &&
 
         y >= area.y &&
 
-        y <= area.y + area.height
+        y <=
+            area.y + area.height
 
     );
 
@@ -532,14 +650,16 @@ function inside(x, y, area) {
 
 
 
-/* =========================
-   押されたエリアを取得
-========================= */
+/* ==================================================
+   エリア取得
+================================================== */
 
 function getArea(x, y) {
 
-
-    if (!data || !data.areas) {
+    if (
+        !data ||
+        !Array.isArray(data.areas)
+    ) {
 
         return null;
 
@@ -547,8 +667,7 @@ function getArea(x, y) {
 
 
     /*
-       複数重なった場合、
-       後から登録したエリアを優先
+       後に登録されたエリアを優先
     */
 
     for (
@@ -578,16 +697,15 @@ function getArea(x, y) {
 
 
 
-/* =========================
-   エリアごとの台詞取得
-========================= */
+/* ==================================================
+   通常エリア台詞
+================================================== */
 
 function getAreaTalk(area) {
 
-
     if (
         !area ||
-        !area.talk ||
+        !Array.isArray(area.talk) ||
         area.talk.length === 0
     ) {
 
@@ -609,41 +727,108 @@ function getAreaTalk(area) {
     }
 
 
-    let index =
+    const index =
         count[key];
 
 
+    const talk =
+        area.talk[
+            Math.min(
+                index,
+                area.talk.length - 1
+            )
+        ];
+
+
+    /*
+       最後の台詞まで行ったら
+       最後の台詞を繰り返す
+    */
+
     if (
-        index >= area.talk.length
+        count[key] <
+        area.talk.length - 1
     ) {
-
-        index =
-            area.talk.length - 1;
-
-    }
-    else {
 
         count[key]++;
 
     }
 
 
-    return area.talk[index];
+    return talk;
 
 }
 
 
 
-/* =========================
-   通常台詞取得
-========================= */
+/* ==================================================
+   エリア連打台詞
+================================================== */
 
-function getNormalTalk() {
+function getAreaRapidTalk(area) {
+
+    if (
+        !area ||
+        !Array.isArray(area.rapid) ||
+        area.rapid.length === 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const key =
+        "rapid_" + area.name;
 
 
     if (
+        count[key] === undefined
+    ) {
+
+        count[key] = 0;
+
+    }
+
+
+    const index =
+        count[key];
+
+
+    const talk =
+        area.rapid[
+            Math.min(
+                index,
+                area.rapid.length - 1
+            )
+        ];
+
+
+    if (
+        count[key] <
+        area.rapid.length - 1
+    ) {
+
+        count[key]++;
+
+    }
+
+
+    return talk;
+
+}
+
+
+
+/* ==================================================
+   キャラ通常台詞
+================================================== */
+
+function getNormalTalk() {
+
+    if (
         !data.talk ||
-        !data.talk.normal ||
+        !Array.isArray(data.talk.normal) ||
         data.talk.normal.length === 0
     ) {
 
@@ -665,41 +850,44 @@ function getNormalTalk() {
     }
 
 
-    let index =
+    const index =
         count[key];
 
 
+    const talk =
+        data.talk.normal[
+            Math.min(
+                index,
+                data.talk.normal.length - 1
+            )
+        ];
+
+
     if (
-        index >= data.talk.normal.length
+        count[key] <
+        data.talk.normal.length - 1
     ) {
-
-        index =
-            data.talk.normal.length - 1;
-
-    }
-    else {
 
         count[key]++;
 
     }
 
 
-    return data.talk.normal[index];
+    return talk;
 
 }
 
 
 
-/* =========================
-   連打台詞取得
-========================= */
+/* ==================================================
+   キャラ連打台詞
+================================================== */
 
 function getRapidTalk() {
 
-
     if (
         !data.talk ||
-        !data.talk.rapid ||
+        !Array.isArray(data.talk.rapid) ||
         data.talk.rapid.length === 0
     ) {
 
@@ -721,42 +909,45 @@ function getRapidTalk() {
     }
 
 
-    let index =
+    const index =
         count[key];
 
 
+    const talk =
+        data.talk.rapid[
+            Math.min(
+                index,
+                data.talk.rapid.length - 1
+            )
+        ];
+
+
     if (
-        index >= data.talk.rapid.length
+        count[key] <
+        data.talk.rapid.length - 1
     ) {
-
-        index =
-            data.talk.rapid.length - 1;
-
-    }
-    else {
 
         count[key]++;
 
     }
 
 
-    return data.talk.rapid[index];
+    return talk;
 
 }
 
 
 
-/* =========================
-   クリック
-========================= */
+/* ==================================================
+   クリック処理
+================================================== */
 
 game.addEventListener(
     "click",
     function(e) {
 
-
         /*
-           JSONがまだ読めていない場合
+           JSON読み込み前
         */
 
         if (!data) {
@@ -765,6 +956,10 @@ game.addEventListener(
 
         }
 
+
+        /*
+           ゲーム画面内の座標に変換
+        */
 
         const rect =
             game.getBoundingClientRect();
@@ -778,12 +973,17 @@ game.addEventListener(
             e.clientY - rect.top;
 
 
+        /*
+           連打判定
+        */
+
         const now =
             Date.now();
 
 
         const rapid =
-            now - lastClick < 400;
+            now - lastClick <
+            RAPID_TIME;
 
 
         lastClick =
@@ -791,12 +991,9 @@ game.addEventListener(
 
 
 
-        /*
-           まずエリアを判定
-           
-           エリアは「いかなる時も」
-           専用台詞を優先
-        */
+        /* ==========================================
+           エリア判定
+        ========================================== */
 
         const area =
             getArea(x, y);
@@ -804,6 +1001,42 @@ game.addEventListener(
 
         if (area) {
 
+            /*
+               エリア内で連打
+               ↓
+               エリア専用rapid
+            */
+
+            if (
+                rapid &&
+                Array.isArray(area.rapid) &&
+                area.rapid.length > 0
+            ) {
+
+                const talk =
+                    getAreaRapidTalk(area);
+
+
+                if (talk) {
+
+                    showTalk(
+                        talk.text,
+                        x,
+                        y
+                    );
+
+                    return;
+
+                }
+
+            }
+
+
+            /*
+               エリア内で通常クリック
+               ↓
+               エリア専用talk
+            */
 
             const talk =
                 getAreaTalk(area);
@@ -821,16 +1054,21 @@ game.addEventListener(
 
             }
 
+
+            /*
+               エリアにtalkがない場合は
+               通常台詞へ
+            */
+
         }
 
 
 
-        /*
-           エリア外なら連打判定
-        */
+        /* ==========================================
+           エリア外の連打
+        ========================================== */
 
         if (rapid) {
-
 
             const talk =
                 getRapidTalk();
@@ -852,9 +1090,9 @@ game.addEventListener(
 
 
 
-        /*
-           それ以外は通常台詞
-        */
+        /* ==========================================
+           通常クリック
+        ========================================== */
 
         const talk =
             getNormalTalk();
@@ -869,7 +1107,6 @@ game.addEventListener(
             );
 
         }
-
 
     }
 );

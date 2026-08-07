@@ -4,7 +4,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Character Game</title>
@@ -16,32 +15,21 @@
 }
 
 body {
-
     margin: 0;
-
     min-height: 100vh;
 
     background: white;
 
     display: flex;
-
     justify-content: center;
-
     align-items: center;
 
     font-family: sans-serif;
-
 }
-
-
-/* =========================
-   ゲーム画面
-========================= */
 
 #game {
 
     width: 900px;
-
     height: 506px;
 
     position: relative;
@@ -53,13 +41,7 @@ body {
     border: 2px solid #999;
 
     cursor: pointer;
-
 }
-
-
-/* =========================
-   キャラクター
-========================= */
 
 #character {
 
@@ -72,13 +54,7 @@ body {
     pointer-events: none;
 
     object-fit: contain;
-
 }
-
-
-/* =========================
-   台詞
-========================= */
 
 #message {
 
@@ -104,9 +80,7 @@ body {
     pointer-events: none;
 
     z-index: 1000;
-
 }
-
 
 @keyframes pop {
 
@@ -129,18 +103,10 @@ body {
             scale(1);
 
     }
-
 }
 
-
-/* =========================
-   ステータス
-========================= */
-
 #status {
-
     display: none;
-
 }
 
 </style>
@@ -200,7 +166,7 @@ let lastClick = 0;
 
 
 /*
-   連打とみなす時間
+   連打判定
 */
 
 const RAPID_TIME = 400;
@@ -282,7 +248,7 @@ function loadCharacter() {
 
 
 /* ==================================================
-   起動時台詞
+   挨拶
 ================================================== */
 
 function showGreeting() {
@@ -347,12 +313,16 @@ function showTalk(text, x, y) {
 
 
     if (messageX < 10) {
+
         messageX = 10;
+
     }
 
 
     if (messageY < 20) {
+
         messageY = 20;
+
     }
 
 
@@ -399,13 +369,14 @@ function showTalk(text, x, y) {
 
 
 /* ==================================================
-   日付
+   今日の日付
 ================================================== */
 
 function getToday() {
 
     const now =
         new Date();
+
 
     return {
 
@@ -422,7 +393,7 @@ function getToday() {
 
 
 /* ==================================================
-   MM-DD → 数値
+   日付 → MMDD
 ================================================== */
 
 function dateNumber(value) {
@@ -441,7 +412,7 @@ function dateNumber(value) {
 
 
 /* ==================================================
-   今日が期間内か
+   期間判定
    年またぎ対応
 ================================================== */
 
@@ -466,8 +437,6 @@ function isInPeriod(start, end) {
 
     /*
        普通の期間
-
-       07-01 ～ 08-31
     */
 
     if (
@@ -484,8 +453,6 @@ function isInPeriod(start, end) {
 
     /*
        年またぎ
-
-       12-20 ～ 01-10
     */
 
     return (
@@ -498,239 +465,286 @@ function isInPeriod(start, end) {
 
 
 /* ==================================================
-   特定日台詞
+   特別台詞を全部集める
 ================================================== */
 
-function getDateTalk() {
+function getSpecialTalks() {
 
-    if (
-        !data.special ||
-        !Array.isArray(data.special.dates)
-    ) {
-
-        return null;
-
-    }
+    const talks = [];
 
 
     const today =
         getToday();
 
 
-    for (
-        const item of data.special.dates
+
+    /* ==========================================
+       誕生日
+    ========================================== */
+
+    if (
+        data.birthday &&
+        data.birthday.month === today.month &&
+        data.birthday.day === today.day &&
+        Array.isArray(data.birthday.talk)
     ) {
 
-        if (
-            item.month === today.month &&
-            item.day === today.day
-        ) {
+        talks.push(
+            ...data.birthday.talk
+        );
 
-            if (
-                Array.isArray(item.talk) &&
-                item.talk.length > 0
-            ) {
+    }
 
-                return getSequentialTalk(
-                    item.talk,
-                    "date_" +
-                    today.month +
-                    "_" +
-                    today.day
-                );
+
+
+    /* ==========================================
+       特定日
+    ========================================== */
+
+    if (
+        data.special &&
+        Array.isArray(data.special.dates)
+    ) {
+
+        data.special.dates.forEach(
+            item => {
+
+                if (
+                    item.month === today.month &&
+                    item.day === today.day &&
+                    Array.isArray(item.talk)
+                ) {
+
+                    talks.push(
+                        ...item.talk
+                    );
+
+                }
 
             }
+        );
+
+    }
+
+
+
+    /* ==========================================
+       期間
+    ========================================== */
+
+    if (
+        data.special &&
+        Array.isArray(data.special.periods)
+    ) {
+
+        data.special.periods.forEach(
+            period => {
+
+                if (
+                    isInPeriod(
+                        period.start,
+                        period.end
+                    )
+                ) {
+
+                    if (
+                        Array.isArray(
+                            period.talk
+                        )
+                    ) {
+
+                        talks.push(
+                            ...period.talk
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    /* ==========================================
+       月
+    ========================================== */
+
+    if (
+        data.special &&
+        data.special.months
+    ) {
+
+        const monthTalk =
+            data.special.months[
+                String(today.month)
+            ];
+
+
+        if (
+            Array.isArray(monthTalk)
+        ) {
+
+            talks.push(
+                ...monthTalk
+            );
 
         }
 
     }
 
 
-    return null;
+    return talks;
 
 }
 
 
 
 /* ==================================================
-   誕生日
+   通常＋特別台詞
 ================================================== */
 
-function getBirthdayTalk() {
+function getNormalPool() {
+
+    const pool = [];
+
+
+    /*
+       通常台詞
+    */
 
     if (
-        !data.birthday
-    ) {
-
-        return null;
-
-    }
-
-
-    const today =
-        getToday();
-
-
-    if (
-        data.birthday.month !==
-        today.month ||
-
-        data.birthday.day !==
-        today.day
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        !Array.isArray(
-            data.birthday.talk
-        ) ||
-
-        data.birthday.talk.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return getSequentialTalk(
-        data.birthday.talk,
-        "birthday"
-    );
-
-}
-
-
-
-/* ==================================================
-   月台詞
-================================================== */
-
-function getMonthTalk() {
-
-    if (
-        !data.special ||
-        !data.special.months
-    ) {
-
-        return null;
-
-    }
-
-
-    const today =
-        getToday();
-
-
-    const talks =
-        data.special.months[
-            String(today.month)
-        ];
-
-
-    if (
-        !Array.isArray(talks) ||
-        talks.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return getSequentialTalk(
-        talks,
-        "month_" + today.month
-    );
-
-}
-
-
-
-/* ==================================================
-   期間台詞
-================================================== */
-
-function getPeriodTalk() {
-
-    if (
-        !data.special ||
-        !Array.isArray(
-            data.special.periods
+        data.talk &&
+        Array.isArray(
+            data.talk.normal
         )
     ) {
 
-        return null;
+        pool.push(
+            ...data.talk.normal
+        );
 
     }
 
 
-    for (
-        const period of
-        data.special.periods
-    ) {
+    /*
+       特別台詞を追加
+    */
 
-        if (
-            isInPeriod(
-                period.start,
-                period.end
-            )
-        ) {
-
-            if (
-                Array.isArray(
-                    period.talk
-                ) &&
-                period.talk.length > 0
-            ) {
-
-                return getSequentialTalk(
-                    period.talk,
-                    "period_" +
-                    period.start +
-                    "_" +
-                    period.end
-                );
-
-            }
-
-        }
-
-    }
+    pool.push(
+        ...getSpecialTalks()
+    );
 
 
-    return null;
+    return pool;
 
 }
 
 
 
 /* ==================================================
-   特別台詞を取得
-
-   優先順位：
-
-   誕生日
-   ↓
-   特定日
-   ↓
-   期間
-   ↓
-   月
+   通常＋特別台詞を取得
 ================================================== */
 
-function getSpecialTalk() {
+function getNormalTalk() {
 
-    return (
-        getBirthdayTalk() ||
-        getDateTalk() ||
-        getPeriodTalk() ||
-        getMonthTalk()
-    );
+    const pool =
+        getNormalPool();
+
+
+    if (
+        pool.length === 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const key =
+        "normal_pool";
+
+
+    if (
+        count[key] === undefined
+    ) {
+
+        count[key] = 0;
+
+    }
+
+
+    const index =
+        count[key];
+
+
+    const talk =
+        pool[
+            index %
+            pool.length
+        ];
+
+
+    count[key] =
+        index + 1;
+
+
+    return talk;
+
+}
+
+
+
+/* ==================================================
+   キャラ連打
+================================================== */
+
+function getRapidTalk() {
+
+    if (
+        !data.talk ||
+        !Array.isArray(
+            data.talk.rapid
+        ) ||
+        data.talk.rapid.length === 0
+    ) {
+
+        return null;
+
+    }
+
+
+    const key =
+        "rapid";
+
+
+    if (
+        count[key] === undefined
+    ) {
+
+        count[key] = 0;
+
+    }
+
+
+    const index =
+        count[key];
+
+
+    const talk =
+        data.talk.rapid[
+            index %
+            data.talk.rapid.length
+        ];
+
+
+    count[key] =
+        index + 1;
+
+
+    return talk;
 
 }
 
@@ -820,17 +834,42 @@ function getAreaTalk(area) {
     }
 
 
-    return getSequentialTalk(
-        area.talk,
-        "area_" + area.name
-    );
+    const key =
+        "area_" + area.name;
+
+
+    if (
+        count[key] === undefined
+    ) {
+
+        count[key] = 0;
+
+    }
+
+
+    const index =
+        count[key];
+
+
+    const talk =
+        area.talk[
+            index %
+            area.talk.length
+        ];
+
+
+    count[key] =
+        index + 1;
+
+
+    return talk;
 
 }
 
 
 
 /* ==================================================
-   エリア連打台詞
+   エリア連打
 ================================================== */
 
 function getAreaRapidTalk(area) {
@@ -846,89 +885,9 @@ function getAreaRapidTalk(area) {
     }
 
 
-    return getSequentialTalk(
-        area.rapid,
+    const key =
         "rapid_area_" +
-        area.name
-    );
-
-}
-
-
-
-/* ==================================================
-   キャラ通常台詞
-================================================== */
-
-function getNormalTalk() {
-
-    if (
-        !data.talk ||
-        !Array.isArray(
-            data.talk.normal
-        ) ||
-        data.talk.normal.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return getSequentialTalk(
-        data.talk.normal,
-        "normal"
-    );
-
-}
-
-
-
-/* ==================================================
-   キャラ連打台詞
-================================================== */
-
-function getRapidTalk() {
-
-    if (
-        !data.talk ||
-        !Array.isArray(
-            data.talk.rapid
-        ) ||
-        data.talk.rapid.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return getSequentialTalk(
-        data.talk.rapid,
-        "rapid"
-    );
-
-}
-
-
-
-/* ==================================================
-   台詞を順番に取得
-================================================== */
-
-function getSequentialTalk(
-    talks,
-    key
-) {
-
-    if (
-        !Array.isArray(talks) ||
-        talks.length === 0
-    ) {
-
-        return null;
-
-    }
+        area.name;
 
 
     if (
@@ -941,24 +900,18 @@ function getSequentialTalk(
 
 
     const index =
-        Math.min(
-            count[key],
-            talks.length - 1
-        );
+        count[key];
 
 
     const talk =
-        talks[index];
+        area.rapid[
+            index %
+            area.rapid.length
+        ];
 
 
-    if (
-        count[key] <
-        talks.length - 1
-    ) {
-
-        count[key]++;
-
-    }
+    count[key] =
+        index + 1;
 
 
     return talk;
@@ -1072,39 +1025,7 @@ game.addEventListener(
 
 
         /* ==========================================
-           特別台詞
-        ========================================== */
-
-        /*
-           特別台詞は通常クリック時のみ。
-
-           連打中はrapidを優先。
-        */
-
-        if (!rapid) {
-
-            const specialTalk =
-                getSpecialTalk();
-
-
-            if (specialTalk) {
-
-                showTalk(
-                    specialTalk.text,
-                    x,
-                    y
-                );
-
-                return;
-
-            }
-
-        }
-
-
-
-        /* ==========================================
-           キャラ連打
+           エリア外連打
         ========================================== */
 
         if (rapid) {
@@ -1130,7 +1051,7 @@ game.addEventListener(
 
 
         /* ==========================================
-           通常
+           通常＋特別
         ========================================== */
 
         const normalTalk =

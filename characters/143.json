@@ -22,9 +22,15 @@
   "birthday": {
     "month": 8,
     "day": 8,
+
     "talk": [
       {
-        "text": "今日は私の誕生日か。"
+        "text": "今日は私の誕生日か。",
+        "expression": "笑顔"
+      },
+      {
+        "text": "祝ってくれるのかね？",
+        "expression": "笑顔"
       }
     ]
   },
@@ -33,34 +39,47 @@
 
     "dates": [
       {
-        "month": 1,
-        "day": 1,
+        "month": 8,
+        "day": 8,
+
         "talk": [
           {
-            "text": "あけましておめでとう。"
+            "text": "俺は御多福来迎。今日は覚えておいてくれたまえ。",
+            "expression": "笑顔"
           }
         ]
       }
     ],
 
     "months": {
+
       "8": [
         {
-          "text": "暑いな。"
+          "text": "暑いな。",
+          "expression": "呆れ"
         },
         {
-          "text": "夏か。"
+          "text": "夏か。",
+          "expression": "通常"
         }
       ]
+
     },
 
     "periods": [
+
       {
         "start": "07-01",
         "end": "08-31",
+
         "talk": [
           {
-            "text": "この時期は暑いな。"
+            "text": "この時期は暑いな。",
+            "expression": "呆れ"
+          },
+          {
+            "text": "暑さには気をつけたまえよ。",
+            "expression": "通常"
           }
         ]
       },
@@ -68,19 +87,29 @@
       {
         "start": "12-20",
         "end": "01-10",
+
         "talk": [
           {
-            "text": "年末年始か。"
+            "text": "年末年始か。",
+            "expression": "通常"
+          },
+          {
+            "text": "寒いな。風邪を引かないようにしたまえ。",
+            "expression": "通常"
           }
         ]
       }
+
     ]
+
   },
 
   "costumes": [
+
     {
       "id": "default",
       "name": "通常",
+
       "image": "143.png",
 
       "position": {
@@ -89,8 +118,46 @@
         "scale": 250
       },
 
-      "expressions": {}
+      "expressions": {
+
+        "通常": "143.png",
+
+        "笑顔": "143_smile.png",
+
+        "怒り": "143_angry.png",
+
+        "呆れ": "143_akire.png",
+
+        "困惑": "143_confused.png"
+
+      }
+
+    },
+
+    {
+      "id": "test",
+      "name": "テスト衣装",
+
+      "image": "143_test.png",
+
+      "position": {
+        "x": 350,
+        "y": 0,
+        "scale": 250
+      },
+
+      "expressions": {
+
+        "通常": "143_test.png",
+
+        "笑顔": "143_test_smile.png",
+
+        "怒り": "143_test_angry.png"
+
+      }
+
     }
+
   ],
 
   "areas": [
@@ -100,21 +167,29 @@
 
       "x": 350,
       "y": 50,
+
       "width": 100,
       "height": 100,
 
       "talk": [
         {
-          "text": "顔エリアです"
+          "text": "顔を触るのかね？",
+          "expression": "通常"
+        },
+        {
+          "text": "弥十郎くん、大丈夫。",
+          "expression": "笑顔"
         }
       ],
 
       "rapid": [
         {
-          "text": "そんなに押すな。"
+          "text": "待たないか！",
+          "expression": "怒り"
         },
         {
-          "text": "顔を連打するな。"
+          "text": "強く人を殴るとそれだけで警察に連れていかれるぞ！",
+          "expression": "怒り"
         }
       ]
     },
@@ -124,21 +199,29 @@
 
       "x": 350,
       "y": 250,
+
       "width": 150,
       "height": 150,
 
       "talk": [
         {
-          "text": "胴エリアです"
+          "text": "俺は頭が悪いから助かるよ。",
+          "expression": "笑顔"
+        },
+        {
+          "text": "お互い補いあって仕事を全うしようじゃないか！",
+          "expression": "笑顔"
         }
       ],
 
       "rapid": [
         {
-          "text": "そこを連打するのか。"
+          "text": "肩を組もうじゃないか。",
+          "expression": "笑顔"
         },
         {
-          "text": "落ち着け。"
+          "text": "どうした、怖いのかね？",
+          "expression": "通常"
         }
       ]
     },
@@ -148,18 +231,25 @@
 
       "x": 180,
       "y": 300,
+
       "width": 80,
       "height": 80,
 
       "talk": [
         {
-          "text": "そこにも反応するのか"
+          "text": "そこにも反応するのか。",
+          "expression": "困惑"
+        },
+        {
+          "text": "怖くても俺がついてるから安心してくれたまえよ。",
+          "expression": "笑顔"
         }
       ],
 
       "rapid": [
         {
-          "text": "そこを連打する意味はあるのか？"
+          "text": "落ち着きたまえ。",
+          "expression": "通常"
         }
       ]
     }
@@ -170,30 +260,41 @@
 
     "greeting": [
       {
-        "text": "来たか。"
+        "text": "俺は御多福来迎。",
+        "expression": "通常"
       }
     ],
 
     "normal": [
       {
-        "text": "どうした？"
+        "text": "俺は頭が悪いから助かるよ。",
+        "expression": "笑顔"
       },
       {
-        "text": "何か用か？"
+        "text": "お互い補いあって仕事を全うしようじゃないか！",
+        "expression": "笑顔"
       },
       {
-        "text": "暇なのか？"
+        "text": "弥十郎くん、大丈夫。",
+        "expression": "笑顔"
+      },
+      {
+        "text": "怖くても俺がついてるから安心してくれたまえよ。",
+        "expression": "笑顔"
       }
     ],
 
     "rapid": [
       {
-        "text": "急だな。"
+        "text": "待たないか！",
+        "expression": "怒り"
       },
       {
-        "text": "落ち着け。"
+        "text": "強く人を殴るとそれだけで警察に連れていかれるぞ！",
+        "expression": "怒り"
       }
     ]
 
   }
+
 }

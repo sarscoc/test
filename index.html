@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Character Game</title>
@@ -15,21 +16,32 @@
 }
 
 body {
+
     margin: 0;
+
     min-height: 100vh;
 
     background: white;
 
     display: flex;
+
     justify-content: center;
+
     align-items: center;
 
     font-family: sans-serif;
+
 }
+
+
+/* =========================
+   ゲーム画面
+========================= */
 
 #game {
 
     width: 900px;
+
     height: 506px;
 
     position: relative;
@@ -41,7 +53,13 @@ body {
     border: 2px solid #999;
 
     cursor: pointer;
+
 }
+
+
+/* =========================
+   キャラクター
+========================= */
 
 #character {
 
@@ -54,7 +72,13 @@ body {
     pointer-events: none;
 
     object-fit: contain;
+
 }
+
+
+/* =========================
+   台詞
+========================= */
 
 #message {
 
@@ -80,7 +104,9 @@ body {
     pointer-events: none;
 
     z-index: 1000;
+
 }
+
 
 @keyframes pop {
 
@@ -103,10 +129,14 @@ body {
             scale(1);
 
     }
+
 }
 
+
 #status {
+
     display: none;
+
 }
 
 </style>
@@ -144,30 +174,29 @@ const character =
 const message =
     document.getElementById("message");
 
-const status =
-    document.getElementById("status");
-
 
 let data = null;
 
 
 /*
-   台詞の現在位置
+   現在の衣装
+*/
+
+let currentCostume = null;
+
+
+/*
+   台詞カウンター
 */
 
 const count = {};
 
 
 /*
-   前回クリック時刻
+   連打判定
 */
 
 let lastClick = 0;
-
-
-/*
-   連打判定
-*/
 
 const RAPID_TIME = 400;
 
@@ -204,7 +233,7 @@ fetch("characters/143.json")
 
     data = json;
 
-    loadCharacter();
+    setupCharacter();
 
     showGreeting();
 
@@ -219,60 +248,126 @@ fetch("characters/143.json")
 
 
 /* ==================================================
-   キャラクター表示
+   キャラクター初期設定
 ================================================== */
 
-function loadCharacter() {
+function setupCharacter() {
 
-    const position =
-        data.position || {};
+    /*
+       costumes がある場合は
+       最初の衣装を使用
+    */
+
+    if (
+        Array.isArray(data.costumes) &&
+        data.costumes.length > 0
+    ) {
+
+        currentCostume =
+            data.costumes[0];
+
+    }
+
+    else {
+
+        currentCostume = {
+            id: "default",
+            name: "通常",
+            image: data.image,
+            position: data.position || {},
+            expressions: {}
+        };
+
+    }
 
 
-    character.src =
-        "images/" + data.image;
-
-
-    character.style.left =
-        (position.x || 0) + "px";
-
-
-    character.style.top =
-        (position.y || 0) + "px";
-
-
-    character.style.width =
-        (position.scale || 250) + "px";
+    loadCostume();
 
 }
 
 
 
 /* ==================================================
-   挨拶
+   衣装読み込み
 ================================================== */
 
-function showGreeting() {
+function loadCostume() {
 
-    if (
-        !data.talk ||
-        !Array.isArray(data.talk.greeting) ||
-        data.talk.greeting.length === 0
-    ) {
+    const position =
+        currentCostume.position ||
+        data.position ||
+        {};
+
+
+    character.src =
+        "images/" +
+        currentCostume.image;
+
+
+    character.style.left =
+        (position.x || 0) +
+        "px";
+
+
+    character.style.top =
+        (position.y || 0) +
+        "px";
+
+
+    character.style.width =
+        (position.scale || 250) +
+        "px";
+
+}
+
+
+
+/* ==================================================
+   表情変更
+================================================== */
+
+function setExpression(expression) {
+
+    /*
+       表情指定がなければ変更しない
+    */
+
+    if (!expression) {
 
         return;
 
     }
 
 
-    const talk =
-        data.talk.greeting[0];
+    const expressions =
+        currentCostume.expressions ||
+        {};
 
 
-    showTalk(
-        talk.text,
-        game.clientWidth / 2,
-        100
-    );
+    /*
+       指定された表情がある場合
+    */
+
+    if (
+        expressions[expression]
+    ) {
+
+        character.src =
+            "images/" +
+            expressions[expression];
+
+        return;
+
+    }
+
+
+    /*
+       表情画像がない場合は通常衣装画像
+    */
+
+    character.src =
+        "images/" +
+        currentCostume.image;
 
 }
 
@@ -285,7 +380,9 @@ function showGreeting() {
 function showTalk(text, x, y) {
 
     if (!text) {
+
         return;
+
     }
 
 
@@ -312,14 +409,18 @@ function showTalk(text, x, y) {
     }
 
 
-    if (messageX < 10) {
+    if (
+        messageX < 10
+    ) {
 
         messageX = 10;
 
     }
 
 
-    if (messageY < 20) {
+    if (
+        messageY < 20
+    ) {
 
         messageY = 20;
 
@@ -369,6 +470,71 @@ function showTalk(text, x, y) {
 
 
 /* ==================================================
+   台詞を表示する
+================================================== */
+
+function speak(talk, x, y) {
+
+    if (!talk) {
+
+        return;
+
+    }
+
+
+    /*
+       台詞に表情指定があれば変更
+    */
+
+    if (talk.expression) {
+
+        setExpression(
+            talk.expression
+        );
+
+    }
+
+
+    showTalk(
+        talk.text,
+        x,
+        y
+    );
+
+}
+
+
+
+/* ==================================================
+   挨拶
+================================================== */
+
+function showGreeting() {
+
+    if (
+        !data.talk ||
+        !Array.isArray(
+            data.talk.greeting
+        ) ||
+        data.talk.greeting.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    speak(
+        data.talk.greeting[0],
+        game.clientWidth / 2,
+        100
+    );
+
+}
+
+
+
+/* ==================================================
    今日の日付
 ================================================== */
 
@@ -393,7 +559,7 @@ function getToday() {
 
 
 /* ==================================================
-   日付 → MMDD
+   MM-DD → 数値
 ================================================== */
 
 function dateNumber(value) {
@@ -436,7 +602,7 @@ function isInPeriod(start, end) {
 
 
     /*
-       普通の期間
+       通常期間
     */
 
     if (
@@ -465,13 +631,12 @@ function isInPeriod(start, end) {
 
 
 /* ==================================================
-   特別台詞を全部集める
+   特別台詞を全部取得
 ================================================== */
 
 function getSpecialTalks() {
 
     const talks = [];
-
 
     const today =
         getToday();
@@ -484,9 +649,16 @@ function getSpecialTalks() {
 
     if (
         data.birthday &&
-        data.birthday.month === today.month &&
-        data.birthday.day === today.day &&
-        Array.isArray(data.birthday.talk)
+
+        data.birthday.month ===
+            today.month &&
+
+        data.birthday.day ===
+            today.day &&
+
+        Array.isArray(
+            data.birthday.talk
+        )
     ) {
 
         talks.push(
@@ -503,16 +675,25 @@ function getSpecialTalks() {
 
     if (
         data.special &&
-        Array.isArray(data.special.dates)
+
+        Array.isArray(
+            data.special.dates
+        )
     ) {
 
         data.special.dates.forEach(
             item => {
 
                 if (
-                    item.month === today.month &&
-                    item.day === today.day &&
-                    Array.isArray(item.talk)
+                    item.month ===
+                        today.month &&
+
+                    item.day ===
+                        today.day &&
+
+                    Array.isArray(
+                        item.talk
+                    )
                 ) {
 
                     talks.push(
@@ -534,7 +715,10 @@ function getSpecialTalks() {
 
     if (
         data.special &&
-        Array.isArray(data.special.periods)
+
+        Array.isArray(
+            data.special.periods
+        )
     ) {
 
         data.special.periods.forEach(
@@ -574,6 +758,7 @@ function getSpecialTalks() {
 
     if (
         data.special &&
+
         data.special.months
     ) {
 
@@ -584,7 +769,9 @@ function getSpecialTalks() {
 
 
         if (
-            Array.isArray(monthTalk)
+            Array.isArray(
+                monthTalk
+            )
         ) {
 
             talks.push(
@@ -617,6 +804,7 @@ function getNormalPool() {
 
     if (
         data.talk &&
+
         Array.isArray(
             data.talk.normal
         )
@@ -630,7 +818,7 @@ function getNormalPool() {
 
 
     /*
-       特別台詞を追加
+       特別台詞
     */
 
     pool.push(
@@ -645,7 +833,7 @@ function getNormalPool() {
 
 
 /* ==================================================
-   通常＋特別台詞を取得
+   通常台詞取得
 ================================================== */
 
 function getNormalTalk() {
@@ -698,16 +886,18 @@ function getNormalTalk() {
 
 
 /* ==================================================
-   キャラ連打
+   キャラ連打台詞
 ================================================== */
 
 function getRapidTalk() {
 
     if (
         !data.talk ||
+
         !Array.isArray(
             data.talk.rapid
         ) ||
+
         data.talk.rapid.length === 0
     ) {
 
@@ -761,12 +951,14 @@ function inside(x, y, area) {
         x >= area.x &&
 
         x <=
-            area.x + area.width &&
+            area.x +
+            area.width &&
 
         y >= area.y &&
 
         y <=
-            area.y + area.height
+            area.y +
+            area.height
 
     );
 
@@ -782,7 +974,10 @@ function getArea(x, y) {
 
     if (
         !data ||
-        !Array.isArray(data.areas)
+
+        !Array.isArray(
+            data.areas
+        )
     ) {
 
         return null;
@@ -791,8 +986,11 @@ function getArea(x, y) {
 
 
     for (
-        let i = data.areas.length - 1;
+        let i =
+            data.areas.length - 1;
+
         i >= 0;
+
         i--
     ) {
 
@@ -801,7 +999,11 @@ function getArea(x, y) {
 
 
         if (
-            inside(x, y, area)
+            inside(
+                x,
+                y,
+                area
+            )
         ) {
 
             return area;
@@ -825,7 +1027,11 @@ function getAreaTalk(area) {
 
     if (
         !area ||
-        !Array.isArray(area.talk) ||
+
+        !Array.isArray(
+            area.talk
+        ) ||
+
         area.talk.length === 0
     ) {
 
@@ -835,7 +1041,8 @@ function getAreaTalk(area) {
 
 
     const key =
-        "area_" + area.name;
+        "area_" +
+        area.name;
 
 
     if (
@@ -869,14 +1076,18 @@ function getAreaTalk(area) {
 
 
 /* ==================================================
-   エリア連打
+   エリア連打台詞
 ================================================== */
 
 function getAreaRapidTalk(area) {
 
     if (
         !area ||
-        !Array.isArray(area.rapid) ||
+
+        !Array.isArray(
+            area.rapid
+        ) ||
+
         area.rapid.length === 0
     ) {
 
@@ -930,7 +1141,9 @@ game.addEventListener(
 
 
         if (!data) {
+
             return;
+
         }
 
 
@@ -967,7 +1180,10 @@ game.addEventListener(
         ========================================== */
 
         const area =
-            getArea(x, y);
+            getArea(
+                x,
+                y
+            );
 
 
         if (area) {
@@ -987,8 +1203,8 @@ game.addEventListener(
 
                 if (rapidTalk) {
 
-                    showTalk(
-                        rapidTalk.text,
+                    speak(
+                        rapidTalk,
                         x,
                         y
                     );
@@ -1005,13 +1221,15 @@ game.addEventListener(
             */
 
             const areaTalk =
-                getAreaTalk(area);
+                getAreaTalk(
+                    area
+                );
 
 
             if (areaTalk) {
 
-                showTalk(
-                    areaTalk.text,
+                speak(
+                    areaTalk,
                     x,
                     y
                 );
@@ -1025,7 +1243,7 @@ game.addEventListener(
 
 
         /* ==========================================
-           エリア外連打
+           キャラ連打
         ========================================== */
 
         if (rapid) {
@@ -1036,8 +1254,8 @@ game.addEventListener(
 
             if (rapidTalk) {
 
-                showTalk(
-                    rapidTalk.text,
+                speak(
+                    rapidTalk,
                     x,
                     y
                 );
@@ -1060,8 +1278,8 @@ game.addEventListener(
 
         if (normalTalk) {
 
-            showTalk(
-                normalTalk.text,
+            speak(
+                normalTalk,
                 x,
                 y
             );

@@ -36,14 +36,15 @@ body {
     position: absolute;
     z-index: 100;
     display: none;
-    max-width: 420px;
-    padding: 14px 22px;
+    width: 280px; /* 固定領域を確保して計算精度を向上 */
+    padding: 14px 20px;
     background: #fff;
     border-radius: 22px;
     box-shadow: 0 5px 20px rgba(0,0,0,.15);
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1.5;
     pointer-events: none;
+    word-break: break-word;
 }
 
 /* 個人ページ＆衣装選択パネルエリア（左上） */
@@ -124,7 +125,7 @@ body {
     overflow-y: auto;
     padding: 30px;
     background: rgba(255,255,255,.97);
-    cursor: pointer; /* 全体をクリック可能に */
+    cursor: pointer;
 }
 #menu h1, #menu h2 { margin-top: 0; }
 
@@ -203,7 +204,7 @@ body {
     <img id="character" alt="">
     <img id="frame" alt="">
     
-    <!-- 左側操作コントロール（個人ページURL + 直下に配置した衣装選択ボタン群） -->
+    <!-- 左側操作コントロール -->
     <div id="leftControls">
         <a id="personalPage" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">↗ 個人ページ</a>
         <section id="costumeSection" class="hidden">
@@ -444,21 +445,55 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
-function speak(talk, x, y) {
+/* ★ 吹き出し位置の自動調整関数（身体に被らず、画面外へ出ない位置） */
+function speak(talk, clickX, clickY) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
     message.innerText = talk.text;
+    message.style.display = "block";
 
-    let messageX = x + 15;
-    let messageY = y - 20;
+    const gameRect = game.getBoundingClientRect();
+    const charRect = character.getBoundingClientRect();
+    
+    // ゲーム枠内におけるキャラクターの左右端座標
+    const charLeft = charRect.left - gameRect.left;
+    const charRight = charRect.right - gameRect.left;
 
-    if (messageX + 420 > game.clientWidth) messageX = game.clientWidth - 440;
+    const msgWidth = message.offsetWidth || 280;
+    const msgHeight = message.offsetHeight || 80;
+    const padding = 15; // 離す距離
+
+    let messageX, messageY;
+
+    // キャラクターの右側に吹き出しが収まる場合
+    if (charRight + msgWidth + padding <= gameRect.width - 10) {
+        messageX = charRight + padding;
+    } 
+    // キャラの左側に吹き出しが収まる場合
+    else if (charLeft - msgWidth - padding >= 10) {
+        messageX = charLeft - msgWidth - padding;
+    } 
+    // どちらも厳しい場合はクリック位置の横へ退避
+    else {
+        if (clickX + msgWidth + padding <= gameRect.width - 10) {
+            messageX = clickX + padding;
+        } else {
+            messageX = clickX - msgWidth - padding;
+        }
+    }
+
+    // 高さの決定（クリック位置の高さを基準に調整）
+    messageY = clickY - (msgHeight / 2);
+
+    // 画面外（左右上下）へはみ出さないよう限界座標でガード
     if (messageX < 10) messageX = 10;
-    if (messageY < 20) messageY = 20;
+    if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
+
+    if (messageY < 10) messageY = 10;
+    if (messageY + msgHeight > gameRect.height - 10) messageY = gameRect.height - msgHeight - 10;
 
     message.style.left = messageX + "px";
     message.style.top = messageY + "px";
-    message.style.display = "block";
 
     if (messageTimer) clearTimeout(messageTimer);
     messageTimer = setTimeout(() => {
@@ -469,7 +504,7 @@ function speak(talk, x, y) {
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
-    speak(data.talk.greeting[0], game.clientWidth / 2, 100);
+    speak(data.talk.greeting[0], game.clientWidth / 2, 120);
 }
 
 function dateToNumber(value) {
@@ -646,7 +681,6 @@ function setupBackgroundMenu() {
     });
 }
 
-/* 左上（個人ページ下）の衣装選択ボタン生成 */
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
     if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
@@ -682,7 +716,6 @@ function setupCharacterMenu() {
     });
 }
 
-/* menu.faceによる切り抜き計算 */
 function applyFaceCrop(imgElement, position, face) {
     if (!face) {
         imgElement.style.objectFit = "cover";
@@ -746,16 +779,11 @@ function showBirthdayChoice(birthdayCharacters) {
     });
 }
 
-/* メニューの何もない場所（背景エリア）をクリックした時にふれあい本体画面へ復帰 */
 menu.addEventListener("click", (event) => {
-    // カード、ボタン、アイテムなどをクリックした場合は背景処理をスキップ
     if (event.target.closest(".card, .birthday-item, .menu-button, .costume-btn")) return;
-    
-    // メニューを閉じて元のふれあい本体画面へ
     closeMenu();
 });
 
-/* 下部メニュー切り替えボタン */
 document.getElementById("characterMenuButton").onclick = (e) => {
     e.stopPropagation();
     birthdayArea.classList.add("hidden");
@@ -772,7 +800,6 @@ document.getElementById("backgroundMenuButton").onclick = (e) => {
 };
 
 function openMenu() {
-    // ☰ ボタンを押した際はダイレクトにキャラ一覧を表示
     birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
     characterSection.classList.remove("hidden");

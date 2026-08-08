@@ -1,7 +1,7 @@
 {
     "id": 143,
     "name": "御多福来迎",
-    "image": "images/143.png",
+    "image": "characters/143/143.png",
     "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
     "menu": {
         "face": {
@@ -68,33 +68,33 @@
         {
             "id": "default",
             "name": "通常",
-            "image": "images/143.png",
+            "image": "characters/143/143.png",
             "position": {
                 "x": 350,
                 "y": 0,
                 "scale": 250
             },
             "expressions": {
-                "通常": "143.png",
-                "笑顔": "143_smile.png",
-                "怒り": "143_angry.png",
-                "呆れ": "143_akire.png",
-                "困惑": "143_confused.png"
+                "通常": "characters/143/143_通常.png",
+                "笑顔": "characters/143/143_笑顔.png",
+                "怒り": "characters/143/143_怒り.png",
+                "呆れ": "characters/143/143_呆れ.png",
+                "困惑": "characters/143/143_困惑.png"
             }
         },
         {
             "id": "test",
             "name": "テスト衣装",
-            "image": "143_test.png",
+            "image": "characters/143/143A.png",
             "position": {
                 "x": 350,
                 "y": 0,
                 "scale": 250
             },
             "expressions": {
-                "通常": "143_test.png",
-                "笑顔": "143_test_smile.png",
-                "怒り": "143_test_angry.png"
+                "通常": "characters/143/143A_通常.png",
+                "笑顔": "characters/143/143A_笑顔.png",
+                "怒り": "characters/143/143A_怒り.png"
             }
         }
     ],

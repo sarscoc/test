@@ -515,7 +515,7 @@ function startClock() {
     setInterval(updateClock, 1000);
 }
 
-/* キャラクターJSON読み込み（サブフォルダ構造に対応） */
+/* キャラクターJSON読み込み（サブフォルダ構造対応） */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
     if (!response.ok) {
@@ -534,7 +534,6 @@ async function loadCharacters() {
 
     characters = [];
     for (const file of files) {
-        // 例: file が "143/143.json" または "143.json" の場合に対応
         const targetPath = file.startsWith("characters/") ? file : "characters/" + file;
         const res = await fetch(targetPath);
         if (!res.ok) {
@@ -552,7 +551,7 @@ async function loadCharacters() {
 
         try {
             const json = JSON.parse(charText);
-            // サブフォルダ構造の場合に備えてベースパスを保持させる
+            // フォルダパスを保持（例: "143/"）
             json._baseDir = file.includes('/') ? file.substring(0, file.lastIndexOf('/') + 1) : '';
             characters.push(json);
         } catch (e) {
@@ -648,9 +647,12 @@ function setupPersonalPage() {
 
 function getImagePath(imageName) {
     if (!imageName) return "";
-    // すでにパスが含まれている場合や外部URLならそのまま
     if (imageName.startsWith("http") || imageName.startsWith("/")) return imageName;
     const baseDir = data && data._baseDir ? data._baseDir : '';
+    // すでに "characters/" から始まっている場合の重複を防ぐ
+    if (baseDir && imageName.startsWith(baseDir)) {
+        return "characters/" + imageName;
+    }
     return "characters/" + baseDir + imageName;
 }
 
@@ -659,7 +661,6 @@ function loadCostume() {
     const imgPath = getImagePath(currentCostume.image);
     
     character.onerror = () => {
-        character.onerror = null;
         console.error("画像読み込み失敗:", imgPath);
     };
     character.src = imgPath;
@@ -670,7 +671,8 @@ function loadCostume() {
 
 function loadFrame() {
     if (data.frame) {
-        const framePath = (data._baseDir ? "characters/" + data._baseDir : "frames/") + data.frame;
+        const baseDir = data._baseDir ? data._baseDir : '';
+        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") ? data.frame : "characters/" + baseDir + data.frame;
         frame.src = framePath;
         frame.style.display = "block";
     } else {
@@ -995,7 +997,6 @@ function createCharacterCard(char) {
     const img = document.createElement("img");
     img.className = "card-character-image";
     
-    // キャラクターごとのベースディレクトリを考慮した画像パスを取得
     const baseDir = char._baseDir ? char._baseDir : '';
     img.src = "characters/" + baseDir + char.image;
     

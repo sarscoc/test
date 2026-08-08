@@ -647,6 +647,39 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     }
 }
 
+
+/* 連打ボイス専用：大きく広がる衝撃リング */
+.rapid-impact {
+    position: absolute;
+    z-index: 195;
+    width: 54px;
+    height: 54px;
+    border: 3px solid rgba(255,255,255,0.98);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.18),
+        0 0 18px rgba(255,255,255,0.55);
+    transform: translate(-50%, -50%) scale(0.50);
+    pointer-events: none;
+    animation: rapidImpact 240ms cubic-bezier(.10,.70,.20,1) forwards;
+}
+
+@keyframes rapidImpact {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.50);
+    }
+    45% {
+        opacity: 0.88;
+        transform: translate(-50%, -50%) scale(1.35);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2.75);
+    }
+}
+
 </style>
 </head>
 <body>
@@ -1476,6 +1509,42 @@ function getAreaRapidTalk(area) {
     return takeBalancedTalk(area.rapid, "rapid_area_" + area.name);
 }
 
+
+function showRapidImpact(x, y) {
+    const impact = document.createElement("div");
+    impact.className = "rapid-impact";
+    impact.style.left = x + "px";
+    impact.style.top = y + "px";
+    game.appendChild(impact);
+    setTimeout(() => impact.remove(), 280);
+}
+
+function shakeCharacter() {
+    if (!character || typeof character.animate !== "function") return;
+
+    // 連打時は左右だけに小さく振動。上下には動かさない。
+    character.animate(
+        [
+            { transform: "translateX(0px)" },
+            { transform: "translateX(-4px)" },
+            { transform: "translateX(4px)" },
+            { transform: "translateX(-3px)" },
+            { transform: "translateX(3px)" },
+            { transform: "translateX(-2px)" },
+            { transform: "translateX(0px)" }
+        ],
+        {
+            duration: 170,
+            easing: "ease-out"
+        }
+    );
+}
+
+function playRapidImpact(x, y) {
+    showRapidImpact(x, y);
+    shakeCharacter();
+}
+
 function showTapFlash(x, y) {
     const effect = document.createElement("div");
     effect.className = "tap-flash";
@@ -1517,6 +1586,7 @@ game.addEventListener("click", function(event) {
         if (rapid) {
             const areaRapidTalk = getAreaRapidTalk(area);
             if (areaRapidTalk) {
+                playRapidImpact(x, y);
                 speak(areaRapidTalk, x, y);
                 return;
             }
@@ -1554,6 +1624,7 @@ game.addEventListener("click", function(event) {
     if (rapid) {
         const rapidTalk = getRapidTalk();
         if (rapidTalk) {
+            playRapidImpact(x, y);
             speak(rapidTalk, x, y);
             return;
         }

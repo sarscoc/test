@@ -233,7 +233,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 /* 右上メニューボタン */
 #openMenu {
     position: absolute;
-    top: 30px;
+    bottom: 30px;
     right: 30px;
     z-index: 260;
     width: 70px;
@@ -344,14 +344,14 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 .card-birthday-cake {
     position: absolute;
-    right: 5px;
-    bottom: 5px;
-    width: 22px;
-    height: 22px;
+    right: 4px;
+    bottom: 4px;
+    width: 38px;
+    height: 38px;
     object-fit: contain;
-    z-index: 5;
+    z-index: 6;
     pointer-events: none;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.55));
 }
 
 /* 背景選択セクション */
@@ -469,7 +469,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     }
     #openMenu {
         right: var(--mobile-right, 30px);
-        top: 28px;
+        bottom: 18px;
         width: 82px;
         height: 82px;
         font-size: 38px;
@@ -1528,7 +1528,34 @@ function setupBackgroundMenu() {
 
 function setupCharacterMenu() {
     characterList.innerHTML = "";
-    characters.forEach(char => {
+
+    const today = getToday();
+
+    const sortedCharacters = [...characters].sort((a, b) => {
+        const aBirthday = Boolean(
+            a &&
+            a.birthday &&
+            Number(a.birthday.month) === today.month &&
+            Number(a.birthday.day) === today.day
+        );
+
+        const bBirthday = Boolean(
+            b &&
+            b.birthday &&
+            Number(b.birthday.month) === today.month &&
+            Number(b.birthday.day) === today.day
+        );
+
+        // 今日が誕生日のキャラを最優先
+        if (aBirthday !== bBirthday) {
+            return aBirthday ? -1 : 1;
+        }
+
+        // 基本はIDの数字降順
+        return Number(b.id || 0) - Number(a.id || 0);
+    });
+
+    sortedCharacters.forEach(char => {
         characterList.appendChild(createCharacterCard(char));
     });
 }

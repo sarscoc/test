@@ -40,14 +40,19 @@ body {
     display: none;
     width: 280px;
     padding: 14px 20px;
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 5px 20px rgba(0,0,0,.15);
-    font-size: 17px;
+    background: rgba(0, 0, 0, 0.7); /* 半透明の黒 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25); /* 上品な白枠 */
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    color: #ffffff; /* 白文字 */
+    font-size: 16px;
     line-height: 1.5;
     pointer-events: none;
     word-break: break-word;
     font-weight: 400;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* 左上操作エリア（SATボタン風・統一デザイン） */

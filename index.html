@@ -33,7 +33,7 @@ body {
 #character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
-/* 台詞吹出し（ソシャゲ風シャープデザイン） */
+/* 台詞吹出し（モノクロ・美グラデーション＆シャープデザイン） */
 #message {
     position: absolute;
     z-index: 100;
@@ -41,13 +41,13 @@ body {
     width: 300px;
     padding: 16px 22px;
 
-    /* 背景：濃いグラデーション＋すりガラス */
-    background: linear-gradient(135deg, rgba(15, 18, 28, 0.9) 0%, rgba(5, 7, 12, 0.95) 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    /* 背景：黒〜チャコールグレーの上質なグラデーション＋すりガラス */
+    background: linear-gradient(135deg, rgba(30, 30, 32, 0.88) 0%, rgba(10, 10, 12, 0.94) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 
     /* 文字装飾 */
-    color: #f0f4f8;
+    color: #f2f2f2;
     font-size: 15px;
     line-height: 1.6;
     letter-spacing: 0.05em;
@@ -62,21 +62,21 @@ body {
         0 calc(100% - 8px), 0 8px
     );
 
-    /* 枠線と光の表現 */
-    border-left: 3px solid #3a86ff; /* 左端のアクセントライン */
+    /* モノトーンの繊細な枠線と重厚な影 */
+    border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-/* 四隅のフレーム装飾（ソシャゲ風の金飾り） */
+/* モノトーンの角アクセント（青や金を廃止し白のグラデーションボーダーに） */
 #message::before {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 24px;
-    height: 24px;
-    border-top: 2px solid #d4af37; /* ゴールド */
-    border-right: 2px solid #d4af37;
+    width: 20px;
+    height: 20px;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+    border-right: 1.5px solid rgba(255, 255, 255, 0.6);
     pointer-events: none;
 }
 
@@ -85,10 +85,10 @@ body {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 24px;
-    height: 24px;
-    border-bottom: 2px solid #d4af37; /* ゴールド */
-    border-left: 2px solid #d4af37;
+    width: 20px;
+    height: 20px;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.6);
+    border-left: 1.5px solid rgba(255, 255, 255, 0.6);
     pointer-events: none;
 }
 
@@ -225,7 +225,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* メニュー画面（やや濃いめのすりガラス背景・白文字） */
+/* メニュー画面（モノクログラデーションすりガラス） */
 #menu {
     position: absolute;
     inset: 0;
@@ -233,7 +233,7 @@ body {
     display: none;
     overflow-y: auto;
     padding: 30px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(15, 15, 18, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     color: #ffffff;
@@ -305,7 +305,7 @@ body {
     display: block;
 }
 
-/* 背景選択セクション（縦画面全体を覆う縦割り・短冊・横スクロール） */
+/* 背景選択セクション（短冊・横スクロール） */
 #backgroundSection {
     position: absolute;
     inset: 0;
@@ -322,13 +322,12 @@ body {
     height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    gap: 4px; /* 短冊同士のスリット幅 */
+    gap: 4px;
     padding: 0;
     margin: 0;
     scroll-behavior: smooth;
 }
 
-/* スクロールバーのスタイル調整（横スクロールバー） */
 #backgroundList::-webkit-scrollbar {
     height: 6px;
 }
@@ -340,15 +339,14 @@ body {
     border-radius: 3px;
 }
 
-/* 背景短冊カード（角丸なし・角アイコン・直角スタイル） */
 .bg-card {
-    flex: 0 0 120px; /* 短冊1本の幅 */
+    flex: 0 0 120px;
     height: 100%;
     cursor: pointer;
     position: relative;
     overflow: hidden;
     border: none;
-    border-radius: 0; /* 直角（角アイコン） */
+    border-radius: 0;
     box-shadow: 2px 0 8px rgba(0,0,0,0.3);
     transition: flex-basis 0.25s ease, filter 0.2s ease;
 }
@@ -362,7 +360,7 @@ body {
 }
 
 .bg-card:hover {
-    flex-basis: 160px; /* ホバーで少し幅が広がる演出 */
+    flex-basis: 160px;
     filter: brightness(1.15);
 }
 
@@ -395,7 +393,7 @@ body {
     <img id="character" alt="">
     <img id="frame" alt="">
     
-    <!-- 左側操作コントロール（PC Page & 衣装） -->
+    <!-- 左側操作コントロール -->
     <div id="leftControls">
         <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC Page</a>
         <div id="costumeSection" class="hidden">
@@ -435,7 +433,6 @@ body {
 </div>
 
 <script>
-/* DOM要素 */
 const game = document.getElementById("game");
 const background = document.getElementById("background");
 const character = document.getElementById("character");
@@ -457,7 +454,6 @@ const clockDate = document.getElementById("clockDate");
 const clockTime = document.getElementById("clockTime");
 const clockDay = document.getElementById("clockDay");
 
-/* 状態管理 */
 let characters = [];
 let backgrounds = [];
 let data = null;
@@ -468,7 +464,6 @@ let lastClick = 0;
 let messageTimer = null;
 const RAPID_TIME = 400;
 
-/* 初期化 */
 async function init() {
     startClock();
     try {
@@ -483,7 +478,6 @@ async function init() {
     }
 }
 
-/* 時計の更新関数 */
 function startClock() {
     const dayOfWeekStr = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     
@@ -506,12 +500,9 @@ function startClock() {
     setInterval(updateClock, 1000);
 }
 
-/* キャラクターJSON読み込み */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
-    if (!response.ok) {
-        throw new Error("characters/index.json が読み込めません。");
-    }
+    if (!response.ok) throw new Error("characters/index.json が読み込めません。");
 
     let text = await response.text();
     text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -526,10 +517,7 @@ async function loadCharacters() {
     characters = [];
     for (const file of files) {
         const res = await fetch("characters/" + file);
-        if (!res.ok) {
-            console.error("キャラクター読み込み失敗:", file);
-            continue;
-        }
+        if (!res.ok) continue;
         let charText = await res.text();
         
         charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -543,18 +531,14 @@ async function loadCharacters() {
             const json = JSON.parse(charText);
             characters.push(json);
         } catch (e) {
-            console.error(`構文エラーがあるファイル: characters/${file}`);
             throw e;
         }
     }
 }
 
-/* 背景JSON読み込み */
 async function loadBackgrounds() {
     const response = await fetch("backgrounds/backgrounds.json");
-    if (!response.ok) {
-        throw new Error("backgrounds/backgrounds.json が読み込めません。");
-    }
+    if (!response.ok) throw new Error("backgrounds/backgrounds.json が読み込めません。");
 
     let bgText = await response.text();
     bgText = bgText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -568,10 +552,7 @@ async function loadBackgrounds() {
 
 function getToday() {
     const now = new Date();
-    return {
-        month: now.getMonth() + 1,
-        day: now.getDate()
-    };
+    return { month: now.getMonth() + 1, day: now.getDate() };
 }
 
 function getBirthdayCharacters() {
@@ -655,7 +636,6 @@ function loadFrame() {
     }
 }
 
-/* 表情切り替え */
 function setExpression(expression) {
     const expressions = currentCostume.expressions || {};
     
@@ -678,7 +658,6 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
-/* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -690,7 +669,6 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const msgHeight = message.offsetHeight || 90;
     
     const offset = 20;
-
     let messageX, messageY;
 
     if (forcePosition) {
@@ -698,15 +676,12 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
         const isLeftHalf = clickX < (gameRect.width / 2);
-        messageX = isLeftHalf 
-            ? (clickX - msgWidth - offset) 
-            : (clickX + offset);
+        messageX = isLeftHalf ? (clickX - msgWidth - offset) : (clickX + offset);
         messageY = clickY - (msgHeight / 2);
     }
 
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
-
     if (messageY < 10) messageY = 10;
     if (messageY + msgHeight > gameRect.height - 10) messageY = gameRect.height - msgHeight - 10;
 
@@ -722,10 +697,8 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
-    
     const centerX = game.clientWidth / 2;
     const centerY = game.clientHeight * 0.45;
-
     speak(data.talk.greeting[0], centerX, centerY, { x: centerX, y: centerY });
 }
 
@@ -825,7 +798,6 @@ function getAreaRapidTalk(area) {
     return talk;
 }
 
-/* クリックイベント処理 */
 game.addEventListener("click", function(event) {
     if (event.target.closest("#menu, #openMenu, #leftControls")) return;
     if (!data) return;
@@ -862,9 +834,7 @@ game.addEventListener("click", function(event) {
     }
 
     const normalTalk = getNormalTalk();
-    if (normalTalk) {
-        speak(normalTalk, x, y);
-    }
+    if (normalTalk) speak(normalTalk, x, y);
 });
 
 function setBackground(bg) {
@@ -877,7 +847,6 @@ function setupBackground() {
     if (seasonal) setBackground(seasonal);
 }
 
-/* 背景短冊リスト生成（全高スリット・横スクロール） */
 function setupBackgroundMenu() {
     backgroundList.innerHTML = "";
     backgrounds.forEach(bg => {
@@ -901,21 +870,18 @@ function setupBackgroundMenu() {
 
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
-    
     if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
         costumeSection.classList.add("hidden");
         return;
     }
 
     const otherCostumes = data.costumes.filter(costume => costume !== currentCostume);
-
     if (otherCostumes.length === 0) {
         costumeSection.classList.add("hidden");
         return;
     }
 
     costumeSection.classList.remove("hidden");
-
     otherCostumes.forEach(costume => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -925,7 +891,6 @@ function setupCostumeMenu() {
         btn.onclick = (e) => {
             e.stopPropagation();
             currentCostume = costume;
-            
             loadCostume();
             setupCostumeMenu();
         };
@@ -940,7 +905,6 @@ function setupCharacterMenu() {
     });
 }
 
-/* キャラクターアイコン用切抜き処理（56x56pxベース） */
 function applyFaceCrop(imgElement, position, face) {
     if (!face) {
         imgElement.style.width = "100%";
@@ -1006,7 +970,6 @@ menu.addEventListener("click", (event) => {
     closeMenu();
 });
 
-/* タブ切り替え制御（選択中タブのボタンを非表示化） */
 function showCharacterTab() {
     birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
@@ -1051,7 +1014,6 @@ document.getElementById("openMenu").onclick = (event) => {
     openMenu();
 };
 
-/* 起動 */
 init();
 </script>
 </body>

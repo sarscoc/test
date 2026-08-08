@@ -520,10 +520,6 @@ function resizeGame() {
 }
 
 
-window.addEventListener("resize", resizeGame);
-resizeGame();
-
-
 /* DOM要素 */
 const game = document.getElementById("game");
 const background = document.getElementById("background");
@@ -1193,6 +1189,8 @@ document.getElementById("openMenu").onclick = (event) => {
 };
 
 /* 起動 */
+window.addEventListener("resize", resizeGame);
+resizeGame();
 init();
 </script>
 </body>

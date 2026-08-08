@@ -117,6 +117,17 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
+#characterName {
+    width: 100%;
+    color: #ffffff;
+    font-size: 24px;
+    line-height: 1.25;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+    word-break: break-word;
+}
+
 /* 左下時計エリア */
 #clockArea {
     position: absolute;
@@ -358,6 +369,49 @@ body {
 }
 .birthday-item:hover { background: rgba(255, 255, 255, 0.35); }
 
+@media (max-width: 768px), (max-aspect-ratio: 82/100) {
+    #leftControls {
+        left: var(--mobile-left, 30px);
+        top: 28px;
+        width: 220px;
+        gap: 10px;
+        overflow: visible;
+    }
+    .ctrl-btn {
+        font-size: 25px;
+        padding: 10px 8px;
+    }
+    #characterName {
+        font-size: 27px;
+    }
+    #openMenu {
+        right: var(--mobile-right, 30px);
+        top: 28px;
+        width: 82px;
+        height: 82px;
+        font-size: 38px;
+    }
+    #clockArea {
+        left: var(--mobile-left, 30px);
+        bottom: 28px;
+        width: 230px;
+    }
+    #clockTime { font-size: 78px; }
+    #clockDate { font-size: 28px; }
+    #clockDay { font-size: 26px; }
+    .menu-buttons {
+        right: var(--mobile-right, 30px);
+        bottom: 28px;
+    }
+    #menu {
+        padding: 34px var(--mobile-right, 30px) 110px var(--mobile-left, 30px);
+    }
+    .menu-button {
+        font-size: 25px;
+        padding: 12px 24px;
+    }
+}
+
 .hidden { display: none !important; }
 </style>
 </head>
@@ -371,7 +425,8 @@ body {
         
         <!-- 左側操作コントロール -->
         <div id="leftControls">
-            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC Page</a>
+            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PCPAGES</a>
+            <div id="characterName"></div>
         </div>
 
         <!-- 左下時計エリア -->
@@ -412,13 +467,58 @@ function resizeGame() {
     const container = document.getElementById("game-container");
     const baseWidth = 1920;
     const baseHeight = 1080;
-    const scaleX = window.innerWidth / baseWidth;
-    const scaleY = window.innerHeight / baseHeight;
-    const scale = Math.min(scaleX, scaleY);
+    const mobile = window.innerWidth <= 768 || window.innerWidth / window.innerHeight < 0.82;
 
-    container.style.transformOrigin = "center center";
-    container.style.transform = `scale(${scale})`;
+    if (mobile) {
+        // スマホは16:9全体表示ではなく、中央を縦長寄りに切り取る。
+        // 高さは横幅の約1.35倍までにし、完全な9:16にはしない。
+        const sceneHeight = Math.min(window.innerHeight, window.innerWidth * 1.35);
+        const scale = sceneHeight / baseHeight;
+        const visibleBaseWidth = Math.min(baseWidth, window.innerWidth / scale);
+        const leftBound = (baseWidth - visibleBaseWidth) / 2;
+        const rightBound = leftBound + visibleBaseWidth;
+
+        window.mobileLayout = {
+            active: true,
+            scale,
+            leftBound,
+            rightBound,
+            topBound: 0,
+            bottomBound: baseHeight,
+            characterScale: 0.84
+        };
+
+        document.documentElement.style.setProperty("--mobile-left", `${leftBound + 28}px`);
+        document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 28}px`);
+
+        container.style.transformOrigin = "center center";
+        container.style.transform = `scale(${scale})`;
+    } else {
+        const scaleX = window.innerWidth / baseWidth;
+        const scaleY = window.innerHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        window.mobileLayout = {
+            active: false,
+            scale,
+            leftBound: 0,
+            rightBound: baseWidth,
+            topBound: 0,
+            bottomBound: baseHeight,
+            characterScale: 1
+        };
+
+        document.documentElement.style.setProperty("--mobile-left", "30px");
+        document.documentElement.style.setProperty("--mobile-right", "30px");
+        container.style.transformOrigin = "center center";
+        container.style.transform = `scale(${scale})`;
+    }
+
+    if (data) {
+        loadCharacterImage();
+    }
 }
+
 
 window.addEventListener("resize", resizeGame);
 resizeGame();
@@ -432,6 +532,7 @@ const frame = document.getElementById("frame");
 const message = document.getElementById("message");
 const menu = document.getElementById("menu");
 const personalPage = document.getElementById("personalPage");
+const characterName = document.getElementById("characterName");
 const birthdayArea = document.getElementById("birthdayArea");
 const birthdayList = document.getElementById("birthdayList");
 const characterList = document.getElementById("characterList");
@@ -631,6 +732,9 @@ async function loadCharacter(char) {
 }
 
 function setupPersonalPage() {
+    characterName.textContent = data && data.name ? data.name : "";
+    characterName.style.display = characterName.textContent ? "block" : "none";
+
     if (data && data.page) {
         personalPage.href = data.page;
         personalPage.style.display = "flex";
@@ -649,18 +753,33 @@ function getImagePath(imageName, charData = data) {
 }
 
 function loadCharacterImage() {
-    // キャラクターPNGは1920x1080キャンバス基準。position.scale は表示幅(px)。
+    // キャラクターPNGは1920x1080基準。スマホ時だけ画像中央を基準に少し縮小する。
     const position = data.position || {};
     const imgPath = getImagePath(data.image);
+    const originalX = Number(position.x || 0);
+    const originalY = Number(position.y || 0);
+    const originalWidth = Number(position.scale || 1000);
+    const layout = window.mobileLayout || { active: false, characterScale: 1 };
+    const factor = layout.active ? layout.characterScale : 1;
+
+    // 1920x1080画像を想定し、画面中央(960,540)からの距離を保ったまま縮小。
+    const originalHeight = originalWidth * (1080 / 1920);
+    const centerX = 960;
+    const centerY = 540;
+    const x = centerX + (originalX - centerX) * factor;
+    const y = centerY + (originalY - centerY) * factor;
+    const width = originalWidth * factor;
 
     character.onerror = () => {
         console.error("画像読み込み失敗:", imgPath);
     };
     character.src = imgPath;
-    character.style.left = (position.x || 0) + "px";
-    character.style.top = (position.y || 0) + "px";
-    character.style.width = (position.scale || 1000) + "px";
+    character.style.left = x + "px";
+    character.style.top = y + "px";
+    character.style.width = width + "px";
+    character.style.height = "auto";
 }
+
 
 function loadFrame() {
     if (data.frame) {
@@ -678,33 +797,54 @@ function loadFrame() {
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
     message.innerText = talk.text;
-    message.style.display = "block";
 
-    const gameWidth = 1920;
-    const gameHeight = 1080;
+    const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
+    const leftBound = layout.leftBound ?? 0;
+    const rightBound = layout.rightBound ?? 1920;
+    const topBound = layout.topBound ?? 0;
+    const bottomBound = layout.bottomBound ?? 1080;
+    const visibleWidth = rightBound - leftBound;
+
+    if (layout.active) {
+        // 実画面で読みやすい大きさになるよう、基準座標上では少し大きめにする。
+        message.style.width = Math.min(700, visibleWidth - 52) + "px";
+        message.style.fontSize = "34px";
+        message.style.lineHeight = "1.5";
+        message.style.padding = "22px 26px";
+    } else {
+        message.style.width = "600px";
+        message.style.fontSize = "28px";
+        message.style.lineHeight = "1.6";
+        message.style.padding = "24px 32px";
+    }
+
+    message.style.display = "block";
     const msgWidth = message.offsetWidth || 600;
     const msgHeight = message.offsetHeight || 160;
-    
-    const offset = 40;
 
     let messageX, messageY;
-
-    if (forcePosition) {
+    if (layout.active) {
+        // スマホでは左右へ飛ばさず、常に見える中央付近へ。
+        messageX = (leftBound + rightBound - msgWidth) / 2;
+        if (forcePosition) {
+            messageY = forcePosition.y - (msgHeight / 2);
+        } else {
+            messageY = clickY - msgHeight - 44;
+            if (messageY < topBound + 24) messageY = clickY + 44;
+        }
+    } else if (forcePosition) {
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
-        const isLeftHalf = clickX < (gameWidth / 2);
-        messageX = isLeftHalf 
-            ? (clickX - msgWidth - offset) 
-            : (clickX + offset);
+        const offset = 40;
+        const isLeftHalf = clickX < 960;
+        messageX = isLeftHalf ? (clickX - msgWidth - offset) : (clickX + offset);
         messageY = clickY - (msgHeight / 2);
     }
 
-    if (messageX < 20) messageX = 20;
-    if (messageX + msgWidth > gameWidth - 20) messageX = gameWidth - msgWidth - 20;
-
-    if (messageY < 20) messageY = 20;
-    if (messageY + msgHeight > gameHeight - 20) messageY = gameHeight - msgHeight - 20;
+    const margin = layout.active ? 26 : 20;
+    messageX = Math.max(leftBound + margin, Math.min(messageX, rightBound - msgWidth - margin));
+    messageY = Math.max(topBound + margin, Math.min(messageY, bottomBound - msgHeight - margin));
 
     message.style.left = messageX + "px";
     message.style.top = messageY + "px";
@@ -714,6 +854,7 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         message.style.display = "none";
     }, 3000);
 }
+
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
@@ -796,11 +937,29 @@ function getRapidTalk() {
     return talk;
 }
 
+function getDisplayArea(area) {
+    const layout = window.mobileLayout || { active: false, characterScale: 1 };
+    if (!layout.active) return area;
+
+    // スマホでは人物を中央基準で縮小するため、タッチマーカーも同じ比率で中央へ寄せる。
+    const factor = layout.characterScale;
+    const centerX = 960;
+    const centerY = 540;
+    return {
+        ...area,
+        x: centerX + (area.x - centerX) * factor,
+        y: centerY + (area.y - centerY) * factor,
+        width: area.width * factor,
+        height: area.height * factor
+    };
+}
+
 function getArea(x, y) {
     if (!data || !Array.isArray(data.areas)) return null;
     for (let i = data.areas.length - 1; i >= 0; i--) {
         const area = data.areas[i];
-        if (x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height) {
+        const displayArea = getDisplayArea(area);
+        if (x >= displayArea.x && x <= displayArea.x + displayArea.width && y >= displayArea.y && y <= displayArea.y + displayArea.height) {
             return area;
         }
     }

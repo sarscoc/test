@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
 <link rel="shortcut icon" href="#">
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&family=Quicksand:wght@300;400&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 html, body { 
@@ -120,15 +120,23 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 #characterName {
     width: 100%;
+    min-width: 0;
     color: #ffffff;
+    font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
     font-size: 24px;
     line-height: 1.25;
-    font-weight: 700;
+    font-weight: 500;
     text-align: center;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
 /* 左下時計エリア */
@@ -435,7 +443,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         background: #ffffff;
     }
     #characterName {
-        font-size: 27px;
+        font-size: 26px;
     }
     #openMenu {
         right: var(--mobile-right, 30px);
@@ -523,16 +531,17 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
 }
 .character-name-cake {
-    width: 24px;
-    height: 24px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
     flex: 0 0 auto;
-    margin-right: 7px;
+    margin-right: 6px;
     vertical-align: middle;
 }
 #characterName.birthday-name {
     display: flex !important;
     align-items: center;
+    justify-content: center;
     white-space: nowrap;
 }
 
@@ -894,16 +903,18 @@ function setupPersonalPage() {
 
     if (data && data.name) {
         const today = getToday();
-        const isBirthday =
+        const isBirthday = Boolean(
             data.birthday &&
-            Number(data.birthday.month) === today.month &&
-            Number(data.birthday.day) === today.day;
+            Number(data.birthday.month) === Number(today.month) &&
+            Number(data.birthday.day) === Number(today.day)
+        );
 
         if (isBirthday) {
             const cake = document.createElement("img");
-            cake.src = "icon/cake.png";
+            cake.src = "./icon/cake.png";
             cake.alt = "";
             cake.className = "character-name-cake";
+            cake.onerror = () => console.error("ケーキアイコン読み込み失敗: ./icon/cake.png");
             characterName.appendChild(cake);
             characterName.classList.add("birthday-name");
         }
@@ -1056,9 +1067,12 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const msgHeight = message.offsetHeight || 160;
 
     let messageX, messageY;
-    if (layout.active) {
-        // スマホでは、画面上から約6割＝時計の少し上に固定。
-        // 文字サイズは変えず、横幅内で自然改行させる。
+    if (layout.active && forcePosition) {
+        // あいさつ等の明示位置は、スマホでもその位置を優先する
+        messageX = forcePosition.x - (msgWidth / 2);
+        messageY = forcePosition.y - (msgHeight / 2);
+    } else if (layout.active) {
+        // 通常台詞は時計の少し上あたりに固定
         const rect = game.getBoundingClientRect();
         const targetClientY = window.innerHeight * 0.60;
         const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
@@ -1091,11 +1105,21 @@ message.style.left = messageX + "px";
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
 
-    const centerX = 1920 / 2;
-    const centerY = 1080 * 0.45;
+    const charLeft = parseFloat(character.style.left) || 0;
+    const charTop = parseFloat(character.style.top) || 0;
+    const charWidth = parseFloat(character.style.width) || 1920;
+    const charHeight = charWidth * (1080 / 1920);
 
-    // スマホでも通常台詞と同じ固定位置ロジックを使う
-    speak(data.talk.greeting[0], centerX, centerY, null);
+    // 立ち絵の身体中央に、吹き出しが重なる感じ
+    const bodyCenterX = charLeft + charWidth * 0.5;
+    const bodyCenterY = charTop + charHeight * 0.50;
+
+    speak(
+        data.talk.greeting[0],
+        bodyCenterX,
+        bodyCenterY,
+        { x: bodyCenterX, y: bodyCenterY }
+    );
 }
 
 function dateToNumber(value) {
@@ -1388,7 +1412,7 @@ function showBirthdayChoice(birthdayCharacters) {
         const item = document.createElement("div");
         item.className = "birthday-item";
         const cakeIcon = document.createElement("img");
-        cakeIcon.src = "icon/cake.png";
+        cakeIcon.src = "./icon/cake.png";
         cakeIcon.alt = "";
         cakeIcon.className = "birthday-cake-icon";
         const nameSpan = document.createElement("span");

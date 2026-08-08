@@ -346,6 +346,7 @@ body {
     display: flex;
 
     justify-content: center;
+
     align-items: center;
 
     width: 100%;
@@ -1002,9 +1003,9 @@ function centerCharacterOnMobile() {
 
     if (!characterWidth) return;
 
-    const characterCenter = characterLeft + characterWidth / 2;
-    const gameCenter = 900 / 2;
-    const offset = gameCenter - characterCenter;
+    const characterCenterInGame = characterLeft + characterWidth / 2;
+    const windowCenter = window.innerWidth / 2;
+    const offset = windowCenter - characterCenterInGame;
 
     game.style.left = offset + "px";
 }
@@ -1531,11 +1532,17 @@ function loadCostume() {
         character.onerror = null;
         character.src = currentCostume.image;
     };
+    character.onload = () => {
+        centerCharacterOnMobile();
+    };
     character.src = currentCostume.image;
     character.style.left = (position.x ?? basePosition.x ?? 0) + "px";
     character.style.top = (position.y ?? basePosition.y ?? 0) + "px";
     character.style.width = (basePosition.scale ?? 250) + "px";
-    centerCharacterOnMobile();
+
+    if (character.complete) {
+        centerCharacterOnMobile();
+    }
 }
 
 

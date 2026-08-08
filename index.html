@@ -262,11 +262,11 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 #diceButton {
     position: absolute;
-    right: 34px; /* 70pxの三ボタンと中心線を揃える */
+    right: 30px;
     bottom: 112px;
     z-index: 260;
-    width: 62px;
-    height: 62px;
+    width: 70px;
+    height: 70px;
     border: 2px solid #ffffff;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
@@ -282,8 +282,8 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 #diceButton img {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     object-fit: contain;
     pointer-events: none;
 }
@@ -626,26 +626,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 
 
-@media (max-width: 768px) {
-    #openMenu {
-        right: 18px !important;
-        bottom: 18px !important;
-        width: 70px !important;
-        height: 70px !important;
-    }
 
-    #diceButton {
-        right: 22px !important;
-        bottom: 100px !important;
-        width: 62px !important;
-        height: 62px !important;
-    }
-
-    #diceButton img {
-        width: 30px !important;
-        height: 30px !important;
-    }
-}
 
 
 /* 連打ボイス専用：大きく広がる衝撃リング */
@@ -677,6 +658,28 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     100% {
         opacity: 0;
         transform: translate(-50%, -50%) scale(2.75);
+    }
+}
+
+
+@media (max-width: 768px) {
+    #openMenu {
+        right: 18px !important;
+        bottom: 18px !important;
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    #diceButton {
+        right: 18px !important;
+        bottom: 100px !important;
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    #diceButton img {
+        width: 34px !important;
+        height: 34px !important;
     }
 }
 
@@ -1522,19 +1525,15 @@ function showRapidImpact(x, y) {
 function shakeCharacter() {
     if (!character || typeof character.animate !== "function") return;
 
-    // 連打時は左右だけに小さく振動。上下には動かさない。
+    // 連打時は「ガタッ」と左右へ1回だけ。上下には動かさない。
     character.animate(
         [
             { transform: "translateX(0px)" },
-            { transform: "translateX(-4px)" },
-            { transform: "translateX(4px)" },
-            { transform: "translateX(-3px)" },
-            { transform: "translateX(3px)" },
-            { transform: "translateX(-2px)" },
+            { transform: "translateX(-5px)" },
             { transform: "translateX(0px)" }
         ],
         {
-            duration: 170,
+            duration: 105,
             easing: "ease-out"
         }
     );

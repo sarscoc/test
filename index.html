@@ -33,28 +33,27 @@ body {
 #character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
-/* 台詞吹出し（灰色〜薄い白へ上から下へフェードアウトする上品なグラデーション） */
+/* 台詞吹出し（上部：濃い白 ➔ 下部：透明グラデーション） */
 #message {
     position: absolute;
     z-index: 100;
     display: none;
     width: 300px;
     padding: 16px 22px;
-
-    /* 上部を濃い白、下部に向かって薄い灰色〜透明に消えるグラデーション */
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(220, 224, 230, 0.4) 60%, rgba(255, 255, 255, 0.0) 100%);
+    
+    /* 上部をしっかり濃い白、下部に向かって透明に消えるグラデーション */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 244, 250, 0.7) 60%, rgba(255, 255, 255, 0.0) 100%);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
-    /* 文字色を少し引き締まったダークカラーにすると読みやすくなります */
+    
     color: #2b2d31;
     font-size: 15px;
     line-height: 1.6;
     letter-spacing: 0.05em;
     pointer-events: none;
     word-break: break-word;
+    font-weight: 400;
 
-    /* 略す（そのままのクリップパス等） */
     clip-path: polygon(
         8px 0, calc(100% - 8px) 0,
         100% 8px, 100% calc(100% - 8px),
@@ -62,33 +61,8 @@ body {
         0 calc(100% - 8px), 0 8px
     );
 
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-}
-
-/* 角アクセント */
-#message::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    border-top: 1.5px solid rgba(255, 255, 255, 0.7);
-    border-right: 1.5px solid rgba(255, 255, 255, 0.7);
-    pointer-events: none;
-}
-
-#message::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 20px;
-    height: 20px;
-    border-bottom: 1.5px solid rgba(255, 255, 255, 0.7);
-    border-left: 1.5px solid rgba(255, 255, 255, 0.7);
-    pointer-events: none;
 }
 
 /* 左上操作エリア（SATボタン風・統一デザイン） */
@@ -105,7 +79,7 @@ body {
     overflow-y: auto;
 }
 
-/* コントロールボタン共通 */
+/* SATボタンと同等デザインの共通コントロールボタン */
 .ctrl-btn {
     display: flex;
     justify-content: center;
@@ -232,7 +206,7 @@ body {
     display: none;
     overflow-y: auto;
     padding: 30px;
-    background: rgba(15, 15, 18, 0.65);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     color: #ffffff;
@@ -283,10 +257,9 @@ body {
     background: transparent;
     border: none;
     padding: 0;
-    content-visibility: auto;
 }
 
-/* キャラクターアイコン（56x56px） */
+/* キャラクターアイコン（56x56px・正方形角丸） */
 .card-character-thumb {
     position: relative;
     width: 56px;
@@ -295,28 +268,20 @@ body {
     border-radius: 14px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+    background: rgba(255, 255, 255, 0.1);
 }
 .card:hover .card-character-thumb {
     transform: scale(1.08);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
-/* サムネイル内の画像を安全にコンテナ内で保持・クロップするラッパー */
-.card-character-crop {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
 .card-character-image {
-    position: absolute;
     display: block;
+    position: absolute;
     max-width: none;
 }
 
-/* 背景選択セクション（短冊・横スクロール） */
+/* 背景選択セクション */
 #backgroundSection {
     position: absolute;
     inset: 0;
@@ -340,17 +305,14 @@ body {
 }
 
 #backgroundList::-webkit-scrollbar {
-    height: 8px;
+    height: 6px;
 }
 #backgroundList::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.2);
 }
 #backgroundList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 4px;
-}
-#backgroundList::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
 }
 
 .bg-card {
@@ -363,7 +325,6 @@ body {
     border-radius: 0;
     box-shadow: 2px 0 8px rgba(0,0,0,0.3);
     transition: flex-basis 0.25s ease, filter 0.2s ease;
-    content-visibility: auto;
 }
 
 .bg-card-image {
@@ -448,6 +409,7 @@ body {
 </div>
 
 <script>
+/* DOM要素 */
 const game = document.getElementById("game");
 const background = document.getElementById("background");
 const character = document.getElementById("character");
@@ -469,6 +431,7 @@ const clockDate = document.getElementById("clockDate");
 const clockTime = document.getElementById("clockTime");
 const clockDay = document.getElementById("clockDay");
 
+/* 状態管理 */
 let characters = [];
 let backgrounds = [];
 let data = null;
@@ -479,6 +442,7 @@ let lastClick = 0;
 let messageTimer = null;
 const RAPID_TIME = 400;
 
+/* 初期化 */
 async function init() {
     startClock();
     try {
@@ -493,6 +457,7 @@ async function init() {
     }
 }
 
+/* 時計の更新関数 */
 function startClock() {
     const dayOfWeekStr = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     
@@ -515,9 +480,12 @@ function startClock() {
     setInterval(updateClock, 1000);
 }
 
+/* キャラクターJSON読み込み */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
-    if (!response.ok) throw new Error("characters/index.json が読み込めません。");
+    if (!response.ok) {
+        throw new Error("characters/index.json が読み込めません。");
+    }
 
     let text = await response.text();
     text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -532,7 +500,10 @@ async function loadCharacters() {
     characters = [];
     for (const file of files) {
         const res = await fetch("characters/" + file);
-        if (!res.ok) continue;
+        if (!res.ok) {
+            console.error("キャラクター読み込み失敗:", file);
+            continue;
+        }
         let charText = await res.text();
         
         charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -546,14 +517,18 @@ async function loadCharacters() {
             const json = JSON.parse(charText);
             characters.push(json);
         } catch (e) {
+            console.error(`構文エラーがあるファイル: characters/${file}`);
             throw e;
         }
     }
 }
 
+/* 背景JSON読み込み */
 async function loadBackgrounds() {
     const response = await fetch("backgrounds/backgrounds.json");
-    if (!response.ok) throw new Error("backgrounds/backgrounds.json が読み込めません。");
+    if (!response.ok) {
+        throw new Error("backgrounds/backgrounds.json が読み込めません。");
+    }
 
     let bgText = await response.text();
     bgText = bgText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
@@ -567,7 +542,10 @@ async function loadBackgrounds() {
 
 function getToday() {
     const now = new Date();
-    return { month: now.getMonth() + 1, day: now.getDate() };
+    return {
+        month: now.getMonth() + 1,
+        day: now.getDate()
+    };
 }
 
 function getBirthdayCharacters() {
@@ -651,6 +629,7 @@ function loadFrame() {
     }
 }
 
+/* 表情切り替え */
 function setExpression(expression) {
     const expressions = currentCostume.expressions || {};
     
@@ -673,6 +652,7 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
+/* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -681,9 +661,10 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 
     const gameRect = game.getBoundingClientRect();
     const msgWidth = message.offsetWidth || 300;
-    const msgHeight = message.offsetHeight || 90;
+    const msgHeight = message.offsetHeight || 80;
     
     const offset = 20;
+
     let messageX, messageY;
 
     if (forcePosition) {
@@ -691,12 +672,15 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
         const isLeftHalf = clickX < (gameRect.width / 2);
-        messageX = isLeftHalf ? (clickX - msgWidth - offset) : (clickX + offset);
+        messageX = isLeftHalf 
+            ? (clickX - msgWidth - offset) 
+            : (clickX + offset);
         messageY = clickY - (msgHeight / 2);
     }
 
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
+
     if (messageY < 10) messageY = 10;
     if (messageY + msgHeight > gameRect.height - 10) messageY = gameRect.height - msgHeight - 10;
 
@@ -712,8 +696,10 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
+    
     const centerX = game.clientWidth / 2;
     const centerY = game.clientHeight * 0.45;
+
     speak(data.talk.greeting[0], centerX, centerY, { x: centerX, y: centerY });
 }
 
@@ -813,6 +799,7 @@ function getAreaRapidTalk(area) {
     return talk;
 }
 
+/* クリックイベント処理 */
 game.addEventListener("click", function(event) {
     if (event.target.closest("#menu, #openMenu, #leftControls")) return;
     if (!data) return;
@@ -849,7 +836,9 @@ game.addEventListener("click", function(event) {
     }
 
     const normalTalk = getNormalTalk();
-    if (normalTalk) speak(normalTalk, x, y);
+    if (normalTalk) {
+        speak(normalTalk, x, y);
+    }
 });
 
 function setBackground(bg) {
@@ -862,6 +851,7 @@ function setupBackground() {
     if (seasonal) setBackground(seasonal);
 }
 
+/* 背景短冊リスト生成 */
 function setupBackgroundMenu() {
     backgroundList.innerHTML = "";
     backgrounds.forEach(bg => {
@@ -872,8 +862,6 @@ function setupBackgroundMenu() {
         img.className = "bg-card-image";
         img.src = "backgrounds/" + bg.image;
         img.alt = bg.name;
-        img.loading = "lazy";
-        img.decoding = "async";
         card.appendChild(img);
 
         card.onclick = (e) => {
@@ -887,18 +875,21 @@ function setupBackgroundMenu() {
 
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
+    
     if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
         costumeSection.classList.add("hidden");
         return;
     }
 
     const otherCostumes = data.costumes.filter(costume => costume !== currentCostume);
+
     if (otherCostumes.length === 0) {
         costumeSection.classList.add("hidden");
         return;
     }
 
     costumeSection.classList.remove("hidden");
+
     otherCostumes.forEach(costume => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -908,6 +899,7 @@ function setupCostumeMenu() {
         btn.onclick = (e) => {
             e.stopPropagation();
             currentCostume = costume;
+            
             loadCostume();
             setupCostumeMenu();
         };
@@ -922,13 +914,15 @@ function setupCharacterMenu() {
     });
 }
 
+/* キャラクターアイコン用切抜き処理（56x56pxベース） */
 function applyFaceCrop(imgElement, position, face) {
     if (!face) {
         imgElement.style.width = "100%";
         imgElement.style.height = "100%";
         imgElement.style.objectFit = "cover";
-        imgElement.style.left = "0px";
-        imgElement.style.top = "0px";
+        imgElement.style.position = "absolute";
+        imgElement.style.left = "0";
+        imgElement.style.top = "0";
         return;
     }
     const pos = position || {};
@@ -937,6 +931,8 @@ function applyFaceCrop(imgElement, position, face) {
 
     imgElement.style.width = (scale * ratio) + "px";
     imgElement.style.height = "auto";
+    imgElement.style.maxWidth = "none";
+    imgElement.style.position = "absolute";
     imgElement.style.left = -((face.x - (pos.x || 0)) * ratio) + "px";
     imgElement.style.top = -((face.y - (pos.y || 0)) * ratio) + "px";
 }
@@ -948,18 +944,12 @@ function createCharacterCard(char) {
     const thumb = document.createElement("div");
     thumb.className = "card-character-thumb";
 
-    const crop = document.createElement("div");
-    crop.className = "card-character-crop";
-
     const img = document.createElement("img");
     img.className = "card-character-image";
     img.src = "images/" + char.image;
-    img.loading = "lazy";
-    img.decoding = "async";
     applyFaceCrop(img, char.position, char.menu ? char.menu.face : null);
 
-    crop.appendChild(img);
-    thumb.appendChild(crop);
+    thumb.appendChild(img);
     card.appendChild(thumb);
 
     card.onclick = async (e) => {
@@ -993,6 +983,7 @@ menu.addEventListener("click", (event) => {
     closeMenu();
 });
 
+/* タブ切り替え制御 */
 function showCharacterTab() {
     birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
@@ -1037,6 +1028,7 @@ document.getElementById("openMenu").onclick = (event) => {
     openMenu();
 };
 
+/* 起動 */
 init();
 </script>
 </body>

@@ -33,7 +33,7 @@ body {
 #character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
-/* 台詞吹出し（ここだけ斜め右下グラデーションの黒） */
+/* 台詞吹出し（背景がほんのり透ける絶妙な微透過・斜め右下グラデーション） */
 #message {
     position: absolute;
     z-index: 100;
@@ -41,8 +41,8 @@ body {
     width: 300px;
     padding: 16px 22px;
     
-    /* 左上から右下に向かって斜めに流れる、リッチなダークグラデーション */
-    background: linear-gradient(135deg, rgba(22, 24, 30, 0.92) 0%, rgba(10, 11, 15, 0.96) 70%, rgba(35, 40, 55, 0.85) 100%);
+    /* わずかに背景を透過させつつ、リッチなダークグラデーションをキープ */
+    background: linear-gradient(135deg, rgba(22, 24, 30, 0.85) 0%, rgba(10, 11, 15, 0.89) 70%, rgba(35, 40, 55, 0.78) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     
@@ -61,11 +61,11 @@ body {
         0 calc(100% - 8px), 0 8px
     );
 
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-/* 左上操作エリア（SATボタン風・元の明るいトーン） */
+/* 左上操作エリア（元の明るいトーン） */
 #leftControls {
     position: absolute;
     top: 16px;
@@ -198,7 +198,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* メニュー画面（元の半透明に戻しました） */
+/* メニュー画面 */
 #menu {
     position: absolute;
     inset: 0;

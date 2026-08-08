@@ -12,7 +12,7 @@ html, body {
     width: 100%; 
     height: 100%; 
     overflow: hidden;
-    background: #000;
+    background: #fff;
 }
 body {
     display: flex;
@@ -505,25 +505,52 @@ async function loadCharacters() {
 
     let text = await response.text();
     text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
-    
+
     const firstBracket = text.indexOf('[');
     const lastBracket = text.lastIndexOf(']');
     if (firstBracket !== -1 && lastBracket !== -1) {
         text = text.substring(firstBracket, lastBracket + 1);
     }
-    const files = JSON.parse(text);
 
+    const files = JSON.parse(text);
     characters = [];
+
     for (const file of files) {
-        const targetPath = file.startsWith("characters/") ? file : "characters/" + file;
-        const res = await fetch(targetPath);
-        if (!res.ok) {
-            console.error("キャラクター読み込み失敗:", targetPath);
+        // index.json が「143.json」でも「143/143.json」でも読めるようにする
+        const candidates = [];
+        if (file.startsWith("characters/")) {
+            candidates.push(file);
+        } else {
+            candidates.push("characters/" + file);
+            const slash = file.lastIndexOf("/");
+            const name = slash >= 0 ? file.substring(slash + 1) : file;
+            const folder = name.replace(/\.json$/i, "");
+            candidates.push("characters/" + folder + "/" + name);
+        }
+
+        let res = null;
+        let targetPath = "";
+        for (const candidate of candidates) {
+            try {
+                const r = await fetch(candidate);
+                if (r.ok) {
+                    res = r;
+                    targetPath = candidate;
+                    break;
+                }
+            } catch (e) {
+                // 次の候補を試す
+            }
+        }
+
+        if (!res) {
+            console.error("キャラクター読み込み失敗:", candidates);
             continue;
         }
+
         let charText = await res.text();
-        
         charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+
         const fBracket = charText.indexOf('{');
         const lBracket = charText.lastIndexOf('}');
         if (fBracket !== -1 && lBracket !== -1) {
@@ -532,13 +559,19 @@ async function loadCharacters() {
 
         try {
             const json = JSON.parse(charText);
-            // フォルダパスを保持（例: "143/"）
-            json._baseDir = file.includes('/') ? file.substring(0, file.lastIndexOf('/') + 1) : '';
+            // 実際に読み込んだJSONの場所を基準に画像を解決する
+            const relativePath = targetPath.substring("characters/".length);
+            const slash = relativePath.lastIndexOf('/');
+            json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : '';
             characters.push(json);
         } catch (e) {
             console.error(`構文エラーがあるファイル: ${targetPath}`);
             throw e;
         }
+    }
+
+    if (characters.length === 0) {
+        throw new Error("キャラクターJSONを1件も読み込めませんでした。");
     }
 }
 
@@ -611,11 +644,11 @@ function setupPersonalPage() {
     }
 }
 
-function getImagePath(imageName) {
+function getImagePath(imageName, charData = data) {
     if (!imageName) return "";
-    if (imageName.startsWith("http") || imageName.startsWith("/")) return imageName;
+    if (imageName.startsWith("http://") || imageName.startsWith("https://") || imageName.startsWith("/")) return imageName;
     if (imageName.startsWith("characters/")) return imageName;
-    const baseDir = data && data._baseDir ? data._baseDir : "";
+    const baseDir = charData && charData._baseDir ? charData._baseDir : "";
     return "characters/" + baseDir + imageName;
 }
 
@@ -908,9 +941,8 @@ function createCharacterCard(char) {
     const img = document.createElement("img");
     img.className = "card-character-image";
     
-    const baseDir = char._baseDir ? char._baseDir : '';
-    img.src = "characters/" + baseDir + char.image;
-    
+    img.src = getImagePath(char.image, char);
+
     applyFaceCrop(img, char, char.menu ? char.menu.face : null);
 
     thumb.appendChild(img);

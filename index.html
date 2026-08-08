@@ -13,7 +13,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: sans-serif;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Arial Round', sans-serif;
 }
 
 /* ゲーム本体 */
@@ -25,6 +25,8 @@ body {
     background: #fff;
     cursor: pointer;
     user-select: none;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', sans-serif;
+    font-weight: 300;
 }
 
 #background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
@@ -41,27 +43,67 @@ body {
     background: #fff;
     border-radius: 22px;
     box-shadow: 0 5px 20px rgba(0,0,0,.15);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.5;
     pointer-events: none;
     word-break: break-word;
+    font-weight: 400;
 }
 
-/* 個人ページ＆衣装選択パネルエリア（左上：縦並び・幅統一） */
+/* 左上操作エリア（SATボタン風・統一デザイン） */
 #leftControls {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 16px;
+    left: 16px;
     z-index: 200;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    width: 120px;
+    gap: 8px;
+    width: 100px;
     max-height: calc(100% - 100px);
     overflow-y: auto;
 }
 
-/* 左下時計・日付表示エリア（すっきりフォント・中央揃え・幅統一） */
+/* SATボタンと同等デザインの共通コントロールボタン */
+.ctrl-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 3px 0;
+    border: 1.5px solid #ffffff;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    text-align: center;
+    transition: all 0.2s;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#costumeSection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+#costumeList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* 左下時計・日付表示エリア */
 #clockArea {
     position: absolute;
     bottom: 16px;
@@ -73,24 +115,24 @@ body {
     align-items: center;
     text-align: center;
     color: #ffffff;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 300;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
-/* 時刻（大きめ・標準フォント） */
+/* 時刻（大きめ・丸みのある細身フォント） */
 #clockTime {
-    font-size: 38px;
-    font-weight: 600;
-    line-height: 1.0;
+    font-size: 40px;
+    font-weight: 300;
+    line-height: 0.95;
     letter-spacing: -0.5px;
 }
 
-/* 日付（時間に幅を合わせる調整） */
+/* 日付 */
 #clockDate {
     font-size: 14px;
-    font-weight: 500;
-    margin-top: 4px;
-    margin-bottom: 6px;
+    font-weight: 300;
+    margin-top: 5px;
+    margin-bottom: 7px;
     letter-spacing: 0.5px;
     line-height: 1.0;
     white-space: nowrap;
@@ -102,61 +144,45 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 2px 0;
+    padding: 3px 0;
     border: 1.5px solid #ffffff;
     border-radius: 20px;
     font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    line-height: 1.2;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(2px);
-    text-transform: lowercase;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    line-height: 1.1;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* 左上コントロール用共通ボタンデザイン */
-.ctrl-btn {
-    display: block;
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-    font-size: 13px;
-    text-align: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.ctrl-btn:hover { background: #fff; }
-
-#costumeSection {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-}
-#costumeList {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-}
-
-/* メニューボタン */
+/* 右上メニューボタン（SATと同じ白枠丸アイコン） */
 #openMenu {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 16px;
+    right: 16px;
     z-index: 200;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: rgba(255,255,255,.9);
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid #ffffff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+    line-height: 1;
+    padding: 0;
+}
+#openMenu:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* メニュー画面 */
@@ -170,7 +196,7 @@ body {
     background: rgba(255,255,255,.97);
     cursor: pointer;
 }
-#menu h1, #menu h2 { margin-top: 0; }
+#menu h1, #menu h2 { margin-top: 0; font-weight: 400; }
 
 .menu-buttons {
     position: absolute;
@@ -247,9 +273,9 @@ body {
     <img id="character" alt="">
     <img id="frame" alt="">
     
-    <!-- 左側操作コントロール -->
+    <!-- 左側操作コントロール（PC Page & 衣装） -->
     <div id="leftControls">
-        <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">個人ページ</a>
+        <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC Page</a>
         <div id="costumeSection" class="hidden">
             <div id="costumeList"></div>
         </div>
@@ -262,7 +288,8 @@ body {
         <div id="clockDay">---</div>
     </div>
 
-    <button id="openMenu" type="button">☰</button>
+    <!-- 右上メニューボタン（丸型白枠線） -->
+    <button id="openMenu" type="button" aria-label="メニュー">☰</button>
     <div id="message"></div>
 
     <div id="menu">
@@ -476,7 +503,7 @@ async function loadCharacter(char) {
 function setupPersonalPage() {
     if (data && data.page) {
         personalPage.href = data.page;
-        personalPage.style.display = "block";
+        personalPage.style.display = "flex";
     } else {
         personalPage.href = "#";
         personalPage.style.display = "none";

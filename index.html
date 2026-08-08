@@ -33,8 +33,18 @@ body {
 }
 
 /* =========================================================
-   ゲーム本体（1920x1080に拡大）
+   ゲーム本体（基準サイズ 1920x1080）
+   画面に合わせて自動で縮小・フィットします
    ========================================================= */
+
+#gameContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
 
 #game {
     position: relative;
@@ -58,6 +68,9 @@ body {
         sans-serif;
 
     font-weight: 300;
+
+    /* 画面比率を保ったまま自動縮小する設定 */
+    transform-origin: center center;
 }
 
 
@@ -753,128 +766,130 @@ body {
 
 <body>
 
-<div id="game">
+<div id="gameContainer">
+    <div id="game">
 
-    <img id="background" alt="">
+        <img id="background" alt="">
 
-    <img id="character" alt="">
+        <img id="character" alt="">
 
-    <img id="frame" alt="">
-
-
-    <div id="leftControls">
-
-        <a
-            id="personalPage"
-            class="ctrl-btn"
-            href="#"
-            target="_blank"
-            rel="noopener"
-            title="キャラクター個人ページ"
-        >PC Page</a>
+        <img id="frame" alt="">
 
 
-        <div
-            id="costumeSection"
-            class="hidden"
-        >
+        <div id="leftControls">
 
-            <div id="costumeList"></div>
+            <a
+                id="personalPage"
+                class="ctrl-btn"
+                href="#"
+                target="_blank"
+                rel="noopener"
+                title="キャラクター個人ページ"
+            >PC Page</a>
 
-        </div>
-
-    </div>
-
-
-    <div id="clockArea">
-
-        <div id="clockTime">
-            --:--
-        </div>
-
-        <div id="clockDate">
-            ----/-/--
-        </div>
-
-        <div id="clockDay">
-            ---
-        </div>
-
-    </div>
-
-
-    <button
-        id="openMenu"
-        type="button"
-        aria-label="メニュー"
-    >
-        ☰
-    </button>
-
-
-    <div id="message"></div>
-
-
-    <div id="menu">
-
-        <section
-            id="birthdayArea"
-            class="hidden"
-        >
 
             <div
-                id="birthdayList"
-                class="list"
-            ></div>
-
-        </section>
-
-
-        <section id="characterSection">
-
-            <div
-                id="characterList"
-                class="list"
-            ></div>
-
-        </section>
-
-
-        <section
-            id="backgroundSection"
-            class="hidden"
-        >
-
-            <div
-                id="backgroundList"
-            ></div>
-
-        </section>
-
-
-        <div class="menu-buttons">
-
-            <button
-                class="menu-button"
-                id="characterMenuButton"
-                type="button"
+                id="costumeSection"
+                class="hidden"
             >
-                Character
-            </button>
+
+                <div id="costumeList"></div>
+
+            </div>
+
+        </div>
 
 
-            <button
-                class="menu-button"
-                id="backgroundMenuButton"
-                type="button"
+        <div id="clockArea">
+
+            <div id="clockTime">
+                --:--
+            </div>
+
+            <div id="clockDate">
+                ----/-/--
+            </div>
+
+            <div id="clockDay">
+                ---
+            </div>
+
+        </div>
+
+
+        <button
+            id="openMenu"
+            type="button"
+            aria-label="メニュー"
+        >
+            ☰
+        </button>
+
+
+        <div id="message"></div>
+
+
+        <div id="menu">
+
+            <section
+                id="birthdayArea"
+                class="hidden"
             >
-                Background
-            </button>
+
+                <div
+                    id="birthdayList"
+                    class="list"
+                ></div>
+
+            </section>
+
+
+            <section id="characterSection">
+
+                <div
+                    id="characterList"
+                    class="list"
+                ></div>
+
+            </section>
+
+
+            <section
+                id="backgroundSection"
+                class="hidden"
+            >
+
+                <div
+                    id="backgroundList"
+                ></div>
+
+            </section>
+
+
+            <div class="menu-buttons">
+
+                <button
+                    class="menu-button"
+                    id="characterMenuButton"
+                    type="button"
+                >
+                    Character
+                </button>
+
+
+                <button
+                    class="menu-button"
+                    id="backgroundMenuButton"
+                    type="button"
+                >
+                    Background
+                </button>
+
+            </div>
 
         </div>
 
     </div>
-
 </div>
 
 
@@ -966,6 +981,28 @@ let lastClick = 0;
 let messageTimer = null;
 
 const RAPID_TIME = 400;
+
+
+/* =========================================================
+   自動リサイズ（画面に合わせて縮小・フィット）
+   ========================================================= */
+
+function resizeGame() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    const gameWidth = 1920;
+    const gameHeight = 1080;
+
+    const scaleX = windowWidth / gameWidth;
+    const scaleY = windowHeight / gameHeight;
+    const scale = Math.min(scaleX, scaleY);
+
+    game.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('resize', resizeGame);
+resizeGame();
 
 
 /* =========================================================
@@ -2123,7 +2160,7 @@ function getAreaRapidTalk(
 
 
 /* =========================================================
-   クリック
+   クリック（拡大縮小を考慮した正確な座標計算）
    ========================================================= */
 
 game.addEventListener(
@@ -2146,14 +2183,15 @@ game.addEventListener(
             game.getBoundingClientRect();
 
 
+        // 画面がCSSで縮小されていても、1920x1080上の正しい座標に自動変換
+        const scale = 1920 / rect.width;
+
         const x =
-            event.clientX -
-            rect.left;
+            (event.clientX - rect.left) * scale;
 
 
         const y =
-            event.clientY -
-            rect.top;
+            (event.clientY - rect.top) * scale;
 
 
         const now =

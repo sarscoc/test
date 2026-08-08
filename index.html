@@ -41,20 +41,20 @@ body {
     width: 300px;
     padding: 16px 22px;
 
-    /* 背景：上部は落ち着いた灰色、下部に向かって薄い白〜透明に優しく消えるグラデーション ＋ すりガラス */
-    background: linear-gradient(180deg, rgba(80, 82, 88, 0.85) 0%, rgba(200, 204, 212, 0.35) 60%, rgba(255, 255, 255, 0.0) 100%);
+    /* 上部を濃い白、下部に向かって薄い灰色〜透明に消えるグラデーション */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(220, 224, 230, 0.4) 60%, rgba(255, 255, 255, 0.0) 100%);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 
-    /* 文字装飾 */
-    color: #f2f2f2;
+    /* 文字色を少し引き締まったダークカラーにすると読みやすくなります */
+    color: #2b2d31;
     font-size: 15px;
     line-height: 1.6;
     letter-spacing: 0.05em;
     pointer-events: none;
     word-break: break-word;
 
-    /* シャープな斜めカット（四隅を6px〜8pxカット） */
+    /* 略す（そのままのクリップパス等） */
     clip-path: polygon(
         8px 0, calc(100% - 8px) 0,
         100% 8px, 100% calc(100% - 8px),
@@ -62,9 +62,8 @@ body {
         0 calc(100% - 8px), 0 8px
     );
 
-    /* 繊細な枠線と重厚な影 */
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 /* 角アクセント */

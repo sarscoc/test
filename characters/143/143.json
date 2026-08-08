@@ -1,168 +1,157 @@
 {
-"id": 143,
-"name": "御多福来迎",
-"image": "characters/143/143.png",
-"page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
-"menu": {
-"face": {
-"x": 350,
-"y": 50,
-"width": 100,
-"height": 100
-}
-},
-"position": {
-"x": 223,
-"y": -46,
-"scale": 200
-},
-"birthday": {
-"month": 8,
-"day": 8,
-"talk": [
-{
-"text": "今日誕生日だったっけ？",
-"expression": "笑顔"
-}
-]
-},
-"special": {
-"dates": [
-{
-"month": 1,
-"day": 1,
-"talk": [
-{
-"text": "あけましておめでと！！！",
-"expression": "笑顔"
-}
-]
-}
-],
-"periods": [
-{
-"start": "07-01",
-"end": "08-31",
-"talk": [
-{
-"text": "あっつ～～",
-"expression": "呆れ"
-}
-]
-}
-]
-},
-"costumes": [
-{
-"id": "default",
-"name": "通常",
-"image": "characters/143/143.png",
-"position": {
-"x": 350,
-"y": 0,
-"scale": 250
-}
-},
-{
-"id": "test",
-"name": "テスト衣装",
-"image": "characters/143/143A.png",
-"position": {
-"x": 350,
-"y": 0,
-"scale": 250
-}
-}
-],
-"areas": [
-{
-"name": "エリア1",
-"x": 110,
-"y": 58,
-"width": 100,
-"height": 100,
-"talk": [
-{
-"text": "サングラスが気になるかい？\n君に貸してあげよう！",
-"expression": "通常"
-}
-],
-"rapid": [
-{
-"text": "待たないか！",
-"expression": "怒り"
-},
-{
-"text": "強く人を殴るとそれだけで警察に連れていかれるぞ！",
-"expression": "怒り"
-}
-]
-},
-{
-"name": "エリア2",
-"x": 89,
-"y": 188,
-"width": 150,
-"height": 150,
-"talk": [],
-"rapid": [
-{
-"text": "肩を組もうじゃないか！",
-"expression": "笑顔"
-}
-]
-},
-{
-"name": "エリア3",
-"x": 40,
-"y": 408,
-"width": 80,
-"height": 80,
-"talk": [
-{
-"text": "怖くても俺がついてるから安心してくれたまえよ。",
-"expression": "笑顔"
-},
-{
-"text": "ほらこれ！幸運のお守りだよ！",
-"expression": "normal"
-}
-],
-"rapid": []
-}
-],
-"talk": {
-"greeting": [
-{
-"text": "やあ、元気にしてたかい？",
-"expression": "通常",
-"next": ""
-}
-],
-"normal": [
-{
-"text": "俺は頭が悪いから助かるよ。",
-"expression": "笑顔"
-},
-{
-"text": "お互い補いあって仕事を全うしようじゃないか！",
-"expression": "笑顔"
-},
-{
-"text": "怖くても俺がついてるから安心してくれたまえよ。",
-"expression": "笑顔"
-}
-],
-"rapid": [
-{
-"text": "俺は頭が悪いから助かるよ。",
-"expression": "怒り"
-},
-{
-"text": "お互い補いあって仕事を全うしようじゃないか！",
-"expression": "怒り"
-}
-]
-},
-"greetingDates": []
+  "id": 143,
+  "name": "御多福来迎",
+  "image": "characters/143/IMG_1753.webp",
+  "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
+  "menu": {
+    "face": {
+      "x": 350,
+      "y": 50,
+      "width": 100,
+      "height": 100
+    }
+  },
+  "position": {
+    "x": 223,
+    "y": -46,
+    "scale": 588
+  },
+  "birthday": {
+    "month": 8,
+    "day": 8,
+    "talk": [
+      {
+        "text": "今日誕生日だったっけ？",
+        "expression": "笑顔"
+      }
+    ]
+  },
+  "special": {
+    "dates": [
+      {
+        "month": 8,
+        "day": 8,
+        "talk": [
+          {
+            "text": "あけましておめでと！！！",
+            "expression": "笑顔"
+          }
+        ]
+      }
+    ],
+    "periods": [
+      {
+        "start": "07-01",
+        "end": "08-31",
+        "talk": [
+          {
+            "text": "あっつ～～",
+            "expression": "呆れ"
+          }
+        ]
+      }
+    ]
+  },
+  "costumes": [
+    {
+      "id": "default",
+      "name": "通常",
+      "image": "characters/143/IMG_1753.webp"
+    },
+    {
+      "id": "test",
+      "name": "テスト衣装",
+      "image": "characters/143/143A.png"
+    }
+  ],
+  "areas": [
+    {
+      "name": "エリア1",
+      "x": 110,
+      "y": 58,
+      "width": 100,
+      "height": 100,
+      "talk": [
+        {
+          "text": "サングラスが気になるかい？\n君に貸してあげよう！",
+          "expression": "通常"
+        }
+      ],
+      "rapid": [
+        {
+          "text": "待たないか！",
+          "expression": "怒り"
+        },
+        {
+          "text": "強く人を殴るとそれだけで警察に連れていかれるぞ！",
+          "expression": "怒り"
+        }
+      ]
+    },
+    {
+      "name": "エリア2",
+      "x": 89,
+      "y": 188,
+      "width": 150,
+      "height": 150,
+      "talk": [],
+      "rapid": [
+        {
+          "text": "肩を組もうじゃないか！",
+          "expression": "笑顔"
+        }
+      ]
+    },
+    {
+      "name": "エリア3",
+      "x": 40,
+      "y": 408,
+      "width": 80,
+      "height": 80,
+      "talk": [
+        {
+          "text": "怖くても俺がついてるから安心してくれたまえよ。",
+          "expression": "笑顔"
+        },
+        {
+          "text": "ほらこれ！幸運のお守りだよ！",
+          "expression": "normal"
+        }
+      ],
+      "rapid": []
+    }
+  ],
+  "talk": {
+    "greeting": [
+      {
+        "text": "やあ、元気にしてたかい？",
+        "expression": "通常"
+      }
+    ],
+    "normal": [
+      {
+        "text": "俺は頭が悪いから助かるよ。",
+        "expression": "笑顔"
+      },
+      {
+        "text": "お互い補いあって仕事を全うしようじゃないか！",
+        "expression": "笑顔"
+      },
+      {
+        "text": "怖くても俺がついてるから安心してくれたまえよ。",
+        "expression": "笑顔"
+      }
+    ],
+    "rapid": [
+      {
+        "text": "俺は頭が悪いから助かるよ。",
+        "expression": "怒り"
+      },
+      {
+        "text": "お互い補いあって仕事を全うしようじゃないか！",
+        "expression": "怒り"
+      }
+    ]
+  },
+  "greetingDates": []
 }

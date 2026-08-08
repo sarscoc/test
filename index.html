@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Character Game</title>
-
 <style>
+
+/* ==================================================
+   基本
+================================================== */
 
 * {
     box-sizing: border-box;
@@ -16,39 +16,16 @@
 
 html,
 body {
-    margin: 0;
     width: 100%;
     height: 100%;
+    margin: 0;
+    overflow: hidden;
 }
 
 body {
-    background: #eee;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    font-family: sans-serif;
-}
-
-
-/* ==================================================
-   ゲーム本体
-================================================== */
-
-#game {
     position: relative;
-
-    width: 900px;
-    height: 506px;
-
-    overflow: hidden;
-
-    background: #fff;
-
-    cursor: pointer;
-
-    user-select: none;
+    background: transparent;
+    font-family: sans-serif;
 }
 
 
@@ -57,8 +34,7 @@ body {
 ================================================== */
 
 #background {
-    position: absolute;
-
+    position: fixed;
     inset: 0;
 
     width: 100%;
@@ -67,8 +43,6 @@ body {
     object-fit: cover;
 
     z-index: 0;
-
-    pointer-events: none;
 }
 
 
@@ -77,13 +51,13 @@ body {
 ================================================== */
 
 #character {
-    position: absolute;
+    position: fixed;
 
     z-index: 10;
 
-    object-fit: contain;
-
     pointer-events: none;
+
+    transform-origin: center center;
 }
 
 
@@ -92,48 +66,15 @@ body {
 ================================================== */
 
 #frame {
-    position: absolute;
-
+    position: fixed;
     inset: 0;
 
     width: 100%;
     height: 100%;
 
+    pointer-events: none;
+
     z-index: 20;
-
-    pointer-events: none;
-
-    display: none;
-}
-
-
-/* ==================================================
-   台詞
-================================================== */
-
-#message {
-    position: absolute;
-
-    z-index: 100;
-
-    display: none;
-
-    max-width: 420px;
-
-    padding: 14px 22px;
-
-    background: #fff;
-
-    border-radius: 22px;
-
-    box-shadow:
-        0 5px 20px rgba(0,0,0,.15);
-
-    font-size: 20px;
-
-    line-height: 1.5;
-
-    pointer-events: none;
 }
 
 
@@ -142,34 +83,17 @@ body {
 ================================================== */
 
 #personalPage {
-    position: absolute;
+    position: fixed;
 
-    top: 12px;
-    left: 12px;
+    right: 20px;
+    top: 20px;
 
-    z-index: 200;
+    z-index: 50;
 
-    display: none;
-
-    padding: 8px 12px;
-
-    border: none;
-
-    border-radius: 10px;
-
-    background: rgba(255,255,255,.9);
-
-    color: #333;
-
+    color: inherit;
     text-decoration: none;
 
-    cursor: pointer;
-
-    font-size: 14px;
-}
-
-#personalPage:hover {
-    background: #fff;
+    font-size: 13px;
 }
 
 
@@ -178,24 +102,44 @@ body {
 ================================================== */
 
 #openMenu {
-    position: absolute;
+    position: fixed;
 
-    top: 12px;
-    right: 12px;
+    right: 18px;
+    bottom: 18px;
 
-    z-index: 200;
+    width: 38px;
+    height: 38px;
+
+    z-index: 100;
 
     border: none;
+    border-radius: 50%;
 
-    padding: 8px 12px;
-
-    border-radius: 10px;
-
-    background: rgba(255,255,255,.9);
-
-    cursor: pointer;
+    background: rgba(255,255,255,0.75);
 
     font-size: 18px;
+
+    cursor: pointer;
+}
+
+
+/* ==================================================
+   台詞
+================================================== */
+
+#message {
+    position: fixed;
+
+    left: 50%;
+    bottom: 30px;
+
+    transform: translateX(-50%);
+
+    z-index: 40;
+
+    max-width: 80%;
+
+    pointer-events: none;
 }
 
 
@@ -204,145 +148,21 @@ body {
 ================================================== */
 
 #menu {
-    position: absolute;
+    position: fixed;
 
     inset: 0;
 
-    z-index: 500;
+    z-index: 90;
 
     display: none;
 
-    overflow-y: auto;
+    background: rgba(255,255,255,0.94);
 
     padding: 30px;
-
-    background: rgba(255,255,255,.97);
 }
 
-
-#menu h1 {
-    margin-top: 0;
-}
-
-
-.menu-buttons {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 10px;
-
-    margin-bottom: 25px;
-}
-
-
-.menu-button {
-    border: 1px solid #ccc;
-
-    padding: 10px 16px;
-
-    border-radius: 10px;
-
-    background: #fff;
-
-    cursor: pointer;
-
-    font-size: 16px;
-}
-
-
-.menu-button:hover {
-    background: #f5f5f5;
-}
-
-
-/* ==================================================
-   一覧
-================================================== */
-
-.list {
-    display: grid;
-
-    grid-template-columns:
-        repeat(auto-fill, minmax(120px, 1fr));
-
-    gap: 12px;
-}
-
-
-.card {
-    overflow: hidden;
-
-    padding: 10px;
-
-    border: 1px solid #ddd;
-
-    border-radius: 12px;
-
-    background: #fff;
-
-    cursor: pointer;
-
-    text-align: center;
-}
-
-
-.card:hover {
-    background: #f5f5f5;
-}
-
-
-.card-character-image {
+#menu.open {
     display: block;
-
-    width: 80px;
-    height: 80px;
-
-    margin: 0 auto 8px;
-
-    object-fit: cover;
-
-    border-radius: 50%;
-}
-
-
-.card-background-image {
-    display: block;
-
-    width: 100%;
-    height: 80px;
-
-    margin-bottom: 8px;
-
-    object-fit: cover;
-
-    border-radius: 8px;
-}
-
-
-.card-name {
-    font-size: 14px;
-}
-
-
-/* ==================================================
-   誕生日
-================================================== */
-
-#birthdayArea {
-    margin-bottom: 25px;
-}
-
-
-.birthday-title {
-    margin-bottom: 10px;
-
-    font-size: 20px;
-}
-
-
-.birthday-empty {
-    color: #888;
 }
 
 
@@ -354,199 +174,279 @@ body {
     display: none !important;
 }
 
+
+/* ==================================================
+   誕生日
+================================================== */
+
+#birthdayArea {
+    width: 100%;
+    height: 100%;
+}
+
+#birthdayList {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+
+    font-size: 18px;
+}
+
+.birthday-item {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    cursor: pointer;
+}
+
+
+/* ==================================================
+   リスト
+================================================== */
+
+.list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+/* ==================================================
+   Character / Background
+   右下に小さく
+================================================== */
+
+.menu-buttons {
+    position: absolute;
+
+    right: 20px;
+    bottom: 18px;
+
+    display: flex;
+
+    gap: 5px;
+
+    z-index: 110;
+}
+
+.menu-button {
+    padding: 4px 7px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #555;
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    opacity: 0.55;
+}
+
+.menu-button:hover {
+    opacity: 1;
+}
+
+
+/* ==================================================
+   背景選択
+================================================== */
+
+#backgroundSection,
+#characterSection {
+    width: 100%;
+    height: 100%;
+
+    overflow-y: auto;
+}
+
+#backgroundSection h2 {
+    margin-top: 0;
+}
+
 </style>
-
 </head>
-
 
 <body>
 
 
-<div id="game">
+<!-- ==================================================
+     背景
+================================================== -->
+
+<img
+    id="background"
+    alt=""
+>
 
 
-    <!-- 背景 -->
+<!-- ==================================================
+     キャラクター
+================================================== -->
 
-    <img
-        id="background"
-        alt=""
-    >
+<img
+    id="character"
+    alt=""
+>
+
+
+<!-- ==================================================
+     枠
+================================================== -->
+
+<img
+    id="frame"
+    alt=""
+>
+
+
+<!-- ==================================================
+     個人ページ
+================================================== -->
+
+<a
+    id="personalPage"
+    href="#"
+    target="_blank"
+    rel="noopener"
+    title="キャラクター個人ページ"
+>
+    ↗ 個人ページ
+</a>
+
+
+<!-- ==================================================
+     メニューボタン
+================================================== -->
+
+<button
+    id="openMenu"
+    type="button"
+>
+    ☰
+</button>
+
+
+<!-- ==================================================
+     台詞
+================================================== -->
+
+<div id="message"></div>
+
+
+<!-- ==================================================
+     メニュー本体
+================================================== -->
+
+<div id="menu">
+
+
+    <!-- 今日の誕生日 -->
+
+    <section id="birthdayArea">
+
+        <div
+            id="birthdayList"
+            class="list"
+        ></div>
+
+    </section>
 
 
     <!-- キャラクター -->
 
-    <img
-        id="character"
-        alt=""
+    <section
+        id="characterSection"
+        class="hidden"
     >
 
+        <div
+            id="characterList"
+            class="list"
+        ></div>
 
-    <!-- 枠 -->
+    </section>
 
-    <img
-        id="frame"
-        alt=""
+
+    <!-- 背景 -->
+
+    <section
+        id="backgroundSection"
+        class="hidden"
     >
 
+        <h2>
+            背景選択
+        </h2>
 
-    <!-- 個人ページ -->
+        <div
+            id="backgroundList"
+            class="list"
+        ></div>
 
-    <a
-        id="personalPage"
-        href="#"
-        target="_blank"
-        rel="noopener"
-        title="キャラクター個人ページ"
-    >
-        ↗ 個人ページ
-    </a>
+    </section>
 
 
-    <!-- メニューボタン -->
+    <!-- 右下の小さいメニュー -->
 
-    <button
-        id="openMenu"
-    >
-        ☰
-    </button>
+    <div class="menu-buttons">
 
-
-    <!-- 台詞 -->
-
-    <div id="message"></div>
-
-
-    <!-- ==================================================
-         メニュー本体
-    ================================================== -->
-
-    <div id="menu">
-
-        <div class="menu-buttons">
-
-
-            <button
-                class="menu-button"
-                id="characterMenuButton"
-            >
-                Character
-            </button>
-
-
-            <button
-                class="menu-button"
-                id="backgroundMenuButton"
-            >
-                Background
-            </button>
-
-
-            <button
-                class="menu-button"
-                id="closeMenu"
-            >
-                Back
-            </button>
-
-
-        </div>
-
-
-        <!-- 今日の誕生日 -->
-
-        <section id="birthdayArea">
-
-            <div class="birthday-title">
-                🎂
-            </div>
-
-            <div
-                id="birthdayList"
-                class="list"
-            ></div>
-
-        </section>
-
-
-        <!-- キャラクター -->
-
-        <section
-            id="characterSection"
-            class="hidden"
+        <button
+            class="menu-button"
+            id="characterMenuButton"
+            type="button"
         >
+            Character
+        </button>
 
-            <div
-                id="characterList"
-                class="list"
-            ></div>
-
-        </section>
-
-
-        <!-- 背景 -->
-
-        <section
-            id="backgroundSection"
-            class="hidden"
+        <button
+            class="menu-button"
+            id="backgroundMenuButton"
+            type="button"
         >
-
-            <h2>
-                背景選択
-            </h2>
-
-            <div
-                id="backgroundList"
-                class="list"
-            ></div>
-
-        </section>
-
+            Background
+        </button>
 
     </div>
 
-
 </div>
-
 
 
 <script>
 
 /* ==================================================
-   DOM
+   要素
 ================================================== */
-
-const game =
-    document.getElementById("game");
-
-const background =
-    document.getElementById("background");
-
-const character =
-    document.getElementById("character");
-
-const frame =
-    document.getElementById("frame");
-
-const message =
-    document.getElementById("message");
 
 const menu =
     document.getElementById("menu");
 
-const personalPage =
-    document.getElementById("personalPage");
+const openMenu =
+    document.getElementById("openMenu");
+
+const characterMenuButton =
+    document.getElementById("characterMenuButton");
+
+const backgroundMenuButton =
+    document.getElementById("backgroundMenuButton");
 
 const birthdayArea =
     document.getElementById("birthdayArea");
 
 const birthdayList =
     document.getElementById("birthdayList");
-
-const characterList =
-    document.getElementById("characterList");
-
-const backgroundList =
-    document.getElementById("backgroundList");
 
 const characterSection =
     document.getElementById("characterSection");
@@ -556,1716 +456,183 @@ const backgroundSection =
 
 
 /* ==================================================
-   状態
+   メニューを開く
 ================================================== */
 
-let characters = [];
+openMenu.addEventListener("click", function(event) {
 
-let backgrounds = [];
+    event.stopPropagation();
 
-let data = null;
+    menu.classList.add("open");
 
-let currentCostume = null;
-
-let currentBackground = null;
-
-let count = {};
-
-let lastClick = 0;
-
-const RAPID_TIME = 400;
-
-let messageTimer = null;
+});
 
 
 /* ==================================================
-   初期化
+   メニューを閉じる
+   Backボタンは使用しない
 ================================================== */
 
-async function init() {
+function closeMenu() {
 
-    try {
+    menu.classList.remove("open");
 
-        await loadCharacters();
+    birthdayArea.classList.remove("hidden");
 
-        await loadBackgrounds();
+    characterSection.classList.add("hidden");
 
-        setupBackground();
-
-        setupBirthdayMenu();
-
-        setupBackgroundMenu();
-
-        await chooseInitialCharacter();
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        alert(
-            "ゲームデータを読み込めませんでした。"
-        );
-
-    }
+    backgroundSection.classList.add("hidden");
 
 }
 
 
 /* ==================================================
-   キャラクター一覧読み込み
+   空白をクリックしたら閉じる
 ================================================== */
 
-async function loadCharacters() {
-
-    const response =
-        await fetch(
-            "characters/index.json"
-        );
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            "characters/index.json が読み込めません。"
-        );
-
-    }
-
-
-    const files =
-        await response.json();
-
-
-    characters = [];
-
-
-    for (
-        const file of files
-    ) {
-
-        const response =
-            await fetch(
-                "characters/" + file
-            );
-
-
-        if (!response.ok) {
-
-            console.error(
-                "キャラクター読み込み失敗:",
-                file
-            );
-
-            continue;
-
-        }
-
-
-        const json =
-            await response.json();
-
-
-        characters.push(
-            json
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   背景読み込み
-================================================== */
-
-async function loadBackgrounds() {
-
-    const response =
-        await fetch(
-            "backgrounds/backgrounds.json"
-        );
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            "backgrounds/backgrounds.json が読み込めません。"
-        );
-
-    }
-
-
-    backgrounds =
-        await response.json();
-
-}
-
-
-/* ==================================================
-   今日の日付
-================================================== */
-
-function getToday() {
-
-    const now =
-        new Date();
-
-
-    return {
-
-        month:
-            now.getMonth() + 1,
-
-        day:
-            now.getDate()
-
-    };
-
-}
-
-
-/* ==================================================
-   誕生日キャラクター
-================================================== */
-
-function getBirthdayCharacters() {
-
-    const today =
-        getToday();
-
-
-    return characters.filter(
-        char => {
-
-            if (!char.birthday) {
-
-                return false;
-
-            }
-
-
-            return (
-
-                Number(
-                    char.birthday.month
-                ) === today.month &&
-
-                Number(
-                    char.birthday.day
-                ) === today.day
-
-            );
-
-        }
-    );
-
-}
-
-
-/* ==================================================
-   初期キャラクター選択
-================================================== */
-
-async function chooseInitialCharacter() {
-
-    const birthdayCharacters =
-        getBirthdayCharacters();
-
+menu.addEventListener("click", function(event) {
 
     /*
-       今日の誕生日が1人
-    */
+     * ボタンやリストをクリックした場合は
+     * 「空白」ではないので閉じない
+     */
 
     if (
-        birthdayCharacters.length === 1
+        event.target.closest("button") ||
+        event.target.closest(".list") ||
+        event.target.closest("a")
     ) {
-
-        await loadCharacter(
-            birthdayCharacters[0]
-        );
-
         return;
-
     }
-
-
-    /*
-       今日の誕生日が複数
-    */
-
-    if (
-        birthdayCharacters.length > 1
-    ) {
-
-        showBirthdayChoice(
-            birthdayCharacters
-        );
-
-        return;
-
-    }
-
-
-    /*
-       誕生日なし
-       → 144人からランダム
-    */
-
-    if (
-        characters.length > 0
-    ) {
-
-        const index =
-            Math.floor(
-                Math.random() *
-                characters.length
-            );
-
-
-        await loadCharacter(
-            characters[index]
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   キャラクター読み込み
-================================================== */
-
-async function loadCharacter(char) {
-
-    data = char;
-
-    count = {};
-
-    currentCostume = null;
-
-
-    /*
-       衣装
-    */
-
-    if (
-
-        Array.isArray(
-            data.costumes
-        ) &&
-
-        data.costumes.length > 0
-
-    ) {
-
-        currentCostume =
-            data.costumes[0];
-
-    }
-
-    else {
-
-        currentCostume = {
-
-            id: "default",
-
-            name: "通常",
-
-            image:
-                data.image,
-
-            position:
-                data.position || {},
-
-            expressions: {}
-
-        };
-
-    }
-
-
-    /*
-       キャラクター画像
-    */
-
-    loadCostume();
-
-
-    /*
-       枠
-    */
-
-    loadFrame();
-
-
-    /*
-       個人ページ
-    */
-
-    setupPersonalPage();
-
-
-    /*
-       メニューを閉じる
-    */
 
     closeMenu();
 
-
-    /*
-       挨拶
-    */
-
-    showGreeting();
-
-}
+});
 
 
 /* ==================================================
-   個人ページURL
+   Character
 ================================================== */
 
-function setupPersonalPage() {
-
-    /*
-       JSONに page がある場合
-    */
-
-    if (
-        data &&
-        data.page
-    ) {
-
-        personalPage.href =
-            data.page;
-
-        personalPage.style.display =
-            "block";
-
-    }
-
-    else {
-
-        personalPage.href =
-            "#";
-
-        personalPage.style.display =
-            "none";
-
-    }
-
-}
-
-
-/* ==================================================
-   衣装読み込み
-================================================== */
-
-function loadCostume() {
-
-    const position =
-        currentCostume.position ||
-        data.position ||
-        {};
-
-
-    character.onerror =
-        null;
-
-
-    character.src =
-        "images/" +
-        currentCostume.image;
-
-
-    character.style.left =
-        (position.x || 0) +
-        "px";
-
-
-    character.style.top =
-        (position.y || 0) +
-        "px";
-
-
-    character.style.width =
-        (position.scale || 250) +
-        "px";
-
-}
-
-
-/* ==================================================
-   枠
-================================================== */
-
-function loadFrame() {
-
-    if (
-        data.frame
-    ) {
-
-        frame.src =
-            "frames/" +
-            data.frame;
-
-        frame.style.display =
-            "block";
-
-    }
-
-    else {
-
-        frame.removeAttribute(
-            "src"
-        );
-
-        frame.style.display =
-            "none";
-
-    }
-
-}
-
-
-/* ==================================================
-   表情
-================================================== */
-
-function setExpression(expression) {
-
-    const expressions =
-        currentCostume.expressions ||
-        {};
-
-
-    /*
-       通常表情
-       → 衣装の image に戻す
-    */
-
-    if (
-
-        !expression ||
-
-        expression === "通常"
-
-    ) {
-
-        character.onerror =
-            null;
-
-
-        character.src =
-            "images/" +
-            currentCostume.image;
-
-
-        return;
-
-    }
-
-
-    /*
-       差分が登録されている場合
-    */
-
-    if (
-        expressions[expression]
-    ) {
-
-        const expressionImage =
-            "images/" +
-            expressions[expression];
-
-
-        character.onerror =
-            () => {
-
-                character.onerror =
-                    null;
-
-
-                character.src =
-                    "images/" +
-                    currentCostume.image;
-
-            };
-
-
-        character.src =
-            expressionImage;
-
-
-        return;
-
-    }
-
-
-    /*
-       差分が存在しない場合
-       → 通常
-    */
-
-    character.onerror =
-        null;
-
-
-    character.src =
-        "images/" +
-        currentCostume.image;
-
-}
-
-
-/* ==================================================
-   台詞
-================================================== */
-
-function speak(talk, x, y) {
-
-    if (!talk) {
-
-        return;
-
-    }
-
-
-    /*
-       ★ 台詞が出た瞬間に
-          必ずその台詞の表情へ変更
-    */
-
-    setExpression(
-        talk.expression || "通常"
-    );
-
-
-    message.innerText =
-        talk.text;
-
-
-    let messageX =
-        x + 15;
-
-
-    let messageY =
-        y - 20;
-
-
-    if (
-        messageX + 420 >
-        game.clientWidth
-    ) {
-
-        messageX =
-            game.clientWidth - 440;
-
-    }
-
-
-    if (
-        messageX < 10
-    ) {
-
-        messageX = 10;
-
-    }
-
-
-    if (
-        messageY < 20
-    ) {
-
-        messageY = 20;
-
-    }
-
-
-    message.style.left =
-        messageX + "px";
-
-
-    message.style.top =
-        messageY + "px";
-
-
-    message.style.display =
-        "block";
-
-
-    /*
-       前のタイマーを解除
-    */
-
-    if (messageTimer) {
-
-        clearTimeout(
-            messageTimer
-        );
-
-    }
-
-
-    /*
-       0.5秒後
-       → 台詞を消す
-       → 通常表情に戻す
-    */
-
-    messageTimer =
-        setTimeout(
-            () => {
-
-                message.style.display =
-                    "none";
-
-
-                setExpression(
-                    "通常"
-                );
-
-            },
-
-            500
-
-        );
-
-}
-
-
-/* ==================================================
-   挨拶
-================================================== */
-
-function showGreeting() {
-
-    if (
-
-        !data.talk ||
-
-        !Array.isArray(
-            data.talk.greeting
-        )
-
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        data.talk.greeting.length === 0
-    ) {
-
-        return;
-
-    }
-
-
-    speak(
-
-        data.talk.greeting[0],
-
-        game.clientWidth / 2,
-
-        100
-
-    );
-
-}
-
-
-/* ==================================================
-   月日を数値化
-================================================== */
-
-function dateToNumber(value) {
-
-    const [
-        month,
-        day
-    ] =
-        value
-            .split("-")
-            .map(Number);
-
-
-    return (
-        month * 100 +
-        day
-    );
-
-}
-
-
-/* ==================================================
-   期間判定
-   ※ 年またぎ対応
-================================================== */
-
-function isInPeriod(start, end) {
-
-    const today =
-        getToday();
-
-
-    const current =
-        today.month * 100 +
-        today.day;
-
-
-    const startNumber =
-        dateToNumber(start);
-
-
-    const endNumber =
-        dateToNumber(end);
-
-
-    /*
-       通常期間
-       07-01 ～ 08-31
-    */
-
-    if (
-        startNumber <= endNumber
-    ) {
-
-        return (
-
-            current >= startNumber &&
-
-            current <= endNumber
-
-        );
-
-    }
-
-
-    /*
-       年またぎ
-       12-20 ～ 01-10
-    */
-
-    return (
-
-        current >= startNumber ||
-
-        current <= endNumber
-
-    );
-
-}
-
-
-/* ==================================================
-   特別台詞
-================================================== */
-
-function getSpecialTalks() {
-
-    const talks = [];
-
-    const today =
-        getToday();
-
-
-    /*
-       誕生日
-    */
-
-    if (
-
-        data.birthday &&
-
-        Number(
-            data.birthday.month
-        ) === today.month &&
-
-        Number(
-            data.birthday.day
-        ) === today.day &&
-
-        Array.isArray(
-            data.birthday.talk
-        )
-
-    ) {
-
-        talks.push(
-            ...data.birthday.talk
-        );
-
-    }
-
-
-    /*
-       特定の日
-    */
-
-    if (
-
-        data.special &&
-
-        Array.isArray(
-            data.special.dates
-        )
-
-    ) {
-
-        data.special.dates.forEach(
-            item => {
-
-                if (
-
-                    Number(
-                        item.month
-                    ) === today.month &&
-
-                    Number(
-                        item.day
-                    ) === today.day
-
-                ) {
-
-                    if (
-                        Array.isArray(
-                            item.talk
-                        )
-                    ) {
-
-                        talks.push(
-                            ...item.talk
-                        );
-
-                    }
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /*
-       月
-    */
-
-    if (
-
-        data.special &&
-
-        data.special.months
-
-    ) {
-
-        const monthTalk =
-            data.special.months[
-                String(
-                    today.month
-                )
-            ];
-
-
-        if (
-            Array.isArray(
-                monthTalk
-            )
-        ) {
-
-            talks.push(
-                ...monthTalk
-            );
-
-        }
-
-    }
-
-
-    /*
-       期間
-    */
-
-    if (
-
-        data.special &&
-
-        Array.isArray(
-            data.special.periods
-        )
-
-    ) {
-
-        data.special.periods.forEach(
-            period => {
-
-                if (
-
-                    isInPeriod(
-                        period.start,
-                        period.end
-                    )
-
-                ) {
-
-                    if (
-                        Array.isArray(
-                            period.talk
-                        )
-                    ) {
-
-                        talks.push(
-                            ...period.talk
-                        );
-
-                    }
-
-                }
-
-            }
-        );
-
-    }
-
-
-    return talks;
-
-}
-
-
-/* ==================================================
-   通常台詞
-================================================== */
-
-function getNormalTalk() {
-
-    const pool = [];
-
-
-    /*
-       通常台詞
-    */
-
-    if (
-
-        data.talk &&
-
-        Array.isArray(
-            data.talk.normal
-        )
-
-    ) {
-
-        pool.push(
-            ...data.talk.normal
-        );
-
-    }
-
-
-    /*
-       特別台詞も混ぜる
-    */
-
-    pool.push(
-        ...getSpecialTalks()
-    );
-
-
-    if (
-        pool.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    const key =
-        "normal";
-
-
-    if (
-        count[key] === undefined
-    ) {
-
-        count[key] = 0;
-
-    }
-
-
-    const talk =
-        pool[
-            count[key] %
-            pool.length
-        ];
-
-
-    count[key]++;
-
-
-    return talk;
-
-}
-
-
-/* ==================================================
-   連打台詞
-================================================== */
-
-function getRapidTalk() {
-
-    if (
-
-        !data.talk ||
-
-        !Array.isArray(
-            data.talk.rapid
-        )
-
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        data.talk.rapid.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    const key =
-        "rapid";
-
-
-    if (
-        count[key] === undefined
-    ) {
-
-        count[key] = 0;
-
-    }
-
-
-    const talk =
-        data.talk.rapid[
-            count[key] %
-            data.talk.rapid.length
-        ];
-
-
-    count[key]++;
-
-
-    return talk;
-
-}
-
-
-/* ==================================================
-   エリア判定
-================================================== */
-
-function getArea(x, y) {
-
-    if (
-
-        !data ||
-
-        !Array.isArray(
-            data.areas
-        )
-
-    ) {
-
-        return null;
-
-    }
-
-
-    for (
-
-        let i =
-            data.areas.length - 1;
-
-        i >= 0;
-
-        i--
-
-    ) {
-
-        const area =
-            data.areas[i];
-
-
-        if (
-
-            x >= area.x &&
-
-            x <=
-                area.x +
-                area.width &&
-
-            y >= area.y &&
-
-            y <=
-                area.y +
-                area.height
-
-        ) {
-
-            return area;
-
-        }
-
-    }
-
-
-    return null;
-
-}
-
-
-/* ==================================================
-   エリア台詞
-================================================== */
-
-function getAreaTalk(area) {
-
-    if (
-
-        !area ||
-
-        !Array.isArray(
-            area.talk
-        )
-
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        area.talk.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    const key =
-        "area_" +
-        area.name;
-
-
-    if (
-        count[key] === undefined
-    ) {
-
-        count[key] = 0;
-
-    }
-
-
-    const talk =
-        area.talk[
-            count[key] %
-            area.talk.length
-        ];
-
-
-    count[key]++;
-
-
-    return talk;
-
-}
-
-
-/* ==================================================
-   エリア連打
-================================================== */
-
-function getAreaRapidTalk(area) {
-
-    if (
-
-        !area ||
-
-        !Array.isArray(
-            area.rapid
-        )
-
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        area.rapid.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    const key =
-        "rapid_area_" +
-        area.name;
-
-
-    if (
-        count[key] === undefined
-    ) {
-
-        count[key] = 0;
-
-    }
-
-
-    const talk =
-        area.rapid[
-            count[key] %
-            area.rapid.length
-        ];
-
-
-    count[key]++;
-
-
-    return talk;
-
-}
-
-
-/* ==================================================
-   ゲームクリック
-================================================== */
-
-game.addEventListener(
+characterMenuButton.addEventListener(
     "click",
     function(event) {
 
-        /*
-           ボタン・リンク・メニューをクリックした場合
-           台詞処理をしない
-        */
+        event.stopPropagation();
 
-        if (
-            event.target.closest(
-                "#menu, #openMenu, #personalPage"
-            )
-        ) {
+        birthdayArea.classList.add("hidden");
 
-            return;
+        backgroundSection.classList.add("hidden");
 
-        }
-
-
-        if (!data) {
-
-            return;
-
-        }
-
-
-        const rect =
-            game.getBoundingClientRect();
-
-
-        const x =
-            event.clientX -
-            rect.left;
-
-
-        const y =
-            event.clientY -
-            rect.top;
-
-
-        const now =
-            Date.now();
-
-
-        const rapid =
-            now - lastClick <
-            RAPID_TIME;
-
-
-        lastClick =
-            now;
-
-
-        /*
-           エリア
-        */
-
-        const area =
-            getArea(
-                x,
-                y
-            );
-
-
-        if (area) {
-
-            /*
-               エリア連打
-            */
-
-            if (rapid) {
-
-                const rapidTalk =
-                    getAreaRapidTalk(
-                        area
-                    );
-
-
-                if (rapidTalk) {
-
-                    speak(
-                        rapidTalk,
-                        x,
-                        y
-                    );
-
-                    return;
-
-                }
-
-            }
-
-
-            /*
-               エリア通常
-            */
-
-            const areaTalk =
-                getAreaTalk(
-                    area
-                );
-
-
-            if (areaTalk) {
-
-                speak(
-                    areaTalk,
-                    x,
-                    y
-                );
-
-                return;
-
-            }
-
-        }
-
-
-        /*
-           全体連打
-        */
-
-        if (rapid) {
-
-            const rapidTalk =
-                getRapidTalk();
-
-
-            if (rapidTalk) {
-
-                speak(
-                    rapidTalk,
-                    x,
-                    y
-                );
-
-                return;
-
-            }
-
-        }
-
-
-        /*
-           通常
-        */
-
-        const normalTalk =
-            getNormalTalk();
-
-
-        if (normalTalk) {
-
-            speak(
-                normalTalk,
-                x,
-                y
-            );
-
-        }
+        characterSection.classList.remove("hidden");
 
     }
 );
 
 
 /* ==================================================
-   背景設定
+   Background
 ================================================== */
 
-function setBackground(bg) {
+backgroundMenuButton.addEventListener(
+    "click",
+    function(event) {
 
-    currentBackground =
-        bg;
+        event.stopPropagation();
 
+        birthdayArea.classList.add("hidden");
 
-    background.src =
-        "backgrounds/" +
-        bg.image;
+        characterSection.classList.add("hidden");
 
-}
+        backgroundSection.classList.remove("hidden");
+
+    }
+);
 
 
 /* ==================================================
-   季節背景
+   誕生日表示
 ================================================== */
 
-function setupBackground() {
+/*
+ * キャラクターJSONを読み込んだあと、
+ *
+ * birthdayList.innerHTML = ...
+ *
+ * の部分で以下の関数を使えます。
+ */
 
-    const seasonal =
-        backgrounds.find(
-            bg => {
+function showBirthday(character) {
 
-                if (
-                    !bg.season
-                ) {
+    birthdayList.innerHTML = "";
 
-                    return false;
+    if (!character || !character.birthday) {
+        return;
+    }
 
-                }
+    const item =
+        document.createElement("div");
 
+    item.className =
+        "birthday-item";
 
-                return isInPeriod(
+    /*
+     * 名前の横に🎂だけ表示
+     */
 
-                    bg.season.start,
+    item.textContent =
+        character.name + " 🎂";
 
-                    bg.season.end
+    /*
+     * 個人ページが設定されている場合
+     */
 
+    if (character.page) {
+
+        item.addEventListener(
+            "click",
+            function() {
+
+                window.open(
+                    character.page,
+                    "_blank",
+                    "noopener"
                 );
 
             }
         );
 
-
-    if (seasonal) {
-
-        setBackground(
-            seasonal
-        );
-
     }
 
-}
-
-
-/* ==================================================
-   背景一覧
-================================================== */
-
-function setupBackgroundMenu() {
-
-    backgroundList.innerHTML =
-        "";
-
-
-    backgrounds.forEach(
-        bg => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "card";
-
-
-            const img =
-                document.createElement(
-                    "img"
-                );
-
-
-            img.className =
-                "card-background-image";
-
-
-            img.src =
-                "backgrounds/" +
-                bg.image;
-
-
-            img.alt =
-                bg.name;
-
-
-            card.appendChild(
-                img
-            );
-
-
-            const name =
-                document.createElement(
-                    "div"
-                );
-
-
-            name.className =
-                "card-name";
-
-
-            name.innerText =
-                bg.name;
-
-
-            card.appendChild(
-                name
-            );
-
-
-            card.onclick =
-                () => {
-
-                    setBackground(
-                        bg
-                    );
-
-                    closeMenu();
-
-                };
-
-
-            backgroundList.appendChild(
-                card
-            );
-
-        }
-    );
+    birthdayList.appendChild(item);
 
 }
 
 
 /* ==================================================
-   キャラクター一覧
+   今日が誕生日か判定
 ================================================== */
 
-function setupCharacterMenu() {
+function isBirthday(character) {
 
-    characterList.innerHTML =
-        "";
+    if (!character || !character.birthday) {
+        return false;
+    }
 
+    const today =
+        new Date();
 
-    characters.forEach(
-        char => {
+    return (
+        Number(character.birthday.month)
+        ===
+        today.getMonth() + 1
 
-            characterList.appendChild(
-                createCharacterCard(
-                    char
-                )
-            );
+        &&
 
-        }
+        Number(character.birthday.day)
+        ===
+        today.getDate()
     );
-
-}
-
-
-/* ==================================================
-   キャラクターカード
-================================================== */
-
-function createCharacterCard(char) {
-
-    const card =
-        document.createElement(
-            "div"
-        );
-
-
-    card.className =
-        "card";
-
-
-    const img =
-        document.createElement(
-            "img"
-        );
-
-
-    img.className =
-        "card-character-image";
-
-
-    img.src =
-        "images/" +
-        char.image;
-
-
-    img.alt =
-        char.name;
-
-
-    card.appendChild(
-        img
-    );
-
-
-    const name =
-        document.createElement(
-            "div"
-        );
-
-
-    name.className =
-        "card-name";
-
-
-    name.innerText =
-        char.name;
-
-
-    card.appendChild(
-        name
-    );
-
-
-    card.onclick =
-        async () => {
-
-            await loadCharacter(
-                char
-            );
-
-        };
-
-
-    return card;
 
 }
 
@@ -2274,38 +641,49 @@ function createCharacterCard(char) {
    誕生日一覧
 ================================================== */
 
-function setupBirthdayMenu() {
+function showBirthdays(characters) {
 
-    const birthdayCharacters =
-        getBirthdayCharacters();
+    birthdayList.innerHTML = "";
 
-
-    birthdayList.innerHTML =
-        "";
-
-
-    if (
-        birthdayCharacters.length === 0
-    ) {
-
-        birthdayList.innerHTML =
-            '<div class="birthday-empty">' +
-            '今日は誕生日のキャラクターはいません。' +
-            '</div>';
-
+    if (!Array.isArray(characters)) {
         return;
-
     }
 
+    const birthdays =
+        characters.filter(
+            isBirthday
+        );
 
-    birthdayCharacters.forEach(
-        char => {
+    birthdays.forEach(
+        function(character) {
 
-            birthdayList.appendChild(
-                createCharacterCard(
-                    char
-                )
-            );
+            const item =
+                document.createElement("div");
+
+            item.className =
+                "birthday-item";
+
+            item.textContent =
+                character.name + " 🎂";
+
+            if (character.page) {
+
+                item.addEventListener(
+                    "click",
+                    function() {
+
+                        window.open(
+                            character.page,
+                            "_blank",
+                            "noopener"
+                        );
+
+                    }
+                );
+
+            }
+
+            birthdayList.appendChild(item);
 
         }
     );
@@ -2314,152 +692,21 @@ function setupBirthdayMenu() {
 
 
 /* ==================================================
-   誕生日複数選択
+   画面外クリック対策
 ================================================== */
 
-function showBirthdayChoice(
-    birthdayCharacters
-) {
+document.addEventListener(
+    "keydown",
+    function(event) {
 
-    menu.style.display =
-        "block";
-
-
-    birthdayArea.style.display =
-        "block";
-
-
-    characterSection.classList.add(
-        "hidden"
-    );
-
-
-    backgroundSection.classList.add(
-        "hidden"
-    );
-
-
-    birthdayList.innerHTML =
-        "";
-
-
-    birthdayCharacters.forEach(
-        char => {
-
-            birthdayList.appendChild(
-                createCharacterCard(
-                    char
-                )
-            );
-
+        if (event.key === "Escape") {
+            closeMenu();
         }
-    );
 
-}
-
-
-/* ==================================================
-   メニュー
-================================================== */
-
-function openMenu() {
-
-    menu.style.display =
-        "block";
-
-}
-
-
-function closeMenu() {
-
-    menu.style.display =
-        "none";
-
-}
-
-
-/* ==================================================
-   メニューボタン
-================================================== */
-
-document
-    .getElementById(
-        "openMenu"
-    )
-    .onclick =
-    () => {
-
-        openMenu();
-
-    };
-
-
-document
-    .getElementById(
-        "closeMenu"
-    )
-    .onclick =
-    () => {
-
-        closeMenu();
-
-    };
-
-
-document
-    .getElementById(
-        "characterMenuButton"
-    )
-    .onclick =
-    () => {
-
-        characterSection.classList.remove(
-            "hidden"
-        );
-
-        backgroundSection.classList.add(
-            "hidden"
-        );
-
-        birthdayArea.style.display =
-            "none";
-
-        setupCharacterMenu();
-
-    };
-
-
-document
-    .getElementById(
-        "backgroundMenuButton"
-    )
-    .onclick =
-    () => {
-
-        characterSection.classList.add(
-            "hidden"
-        );
-
-        backgroundSection.classList.remove(
-            "hidden"
-        );
-
-        birthdayArea.style.display =
-            "none";
-
-        setupBackgroundMenu();
-
-    };
-
-
-/* ==================================================
-   起動
-================================================== */
-
-init();
+    }
+);
 
 </script>
 
 </body>
-
 </html>

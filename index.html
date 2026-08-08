@@ -33,26 +33,63 @@ body {
 #character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
-/* 台詞吹出し */
+/* 台詞吹出し（ソシャゲ風シャープデザイン） */
 #message {
     position: absolute;
     z-index: 100;
     display: none;
-    width: 280px;
-    padding: 14px 20px;
-    background: rgba(0, 0, 0, 0.7); /* 半透明の黒 */
+    width: 300px;
+    padding: 16px 22px;
+
+    /* 背景：濃いグラデーション＋すりガラス */
+    background: linear-gradient(135deg, rgba(15, 18, 28, 0.9) 0%, rgba(5, 7, 12, 0.95) 100%);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.25); /* 上品な白枠 */
-    border-radius: 20px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    color: #ffffff; /* 白文字 */
-    font-size: 16px;
-    line-height: 1.5;
+
+    /* 文字装飾 */
+    color: #f0f4f8;
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
     pointer-events: none;
     word-break: break-word;
-    font-weight: 400;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+
+    /* シャープな斜めカット（四隅を6px〜8pxカット） */
+    clip-path: polygon(
+        8px 0, calc(100% - 8px) 0,
+        100% 8px, 100% calc(100% - 8px),
+        calc(100% - 8px) 100%, 8px 100%,
+        0 calc(100% - 8px), 0 8px
+    );
+
+    /* 枠線と光の表現 */
+    border-left: 3px solid #3a86ff; /* 左端のアクセントライン */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* 四隅のフレーム装飾（ソシャゲ風の金飾り） */
+#message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    border-top: 2px solid #d4af37; /* ゴールド */
+    border-right: 2px solid #d4af37;
+    pointer-events: none;
+}
+
+#message::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    border-bottom: 2px solid #d4af37; /* ゴールド */
+    border-left: 2px solid #d4af37;
+    pointer-events: none;
 }
 
 /* 左上操作エリア（SATボタン風・統一デザイン） */
@@ -649,8 +686,8 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     message.style.display = "block";
 
     const gameRect = game.getBoundingClientRect();
-    const msgWidth = message.offsetWidth || 280;
-    const msgHeight = message.offsetHeight || 80;
+    const msgWidth = message.offsetWidth || 300;
+    const msgHeight = message.offsetHeight || 90;
     
     const offset = 20;
 
@@ -975,8 +1012,8 @@ function showCharacterTab() {
     backgroundSection.classList.add("hidden");
     characterSection.classList.remove("hidden");
     
-    characterMenuButton.classList.add("hidden"); // Character表示時はボタンを隠す
-    backgroundMenuButton.classList.remove("hidden"); // Backgroundボタンを表示する
+    characterMenuButton.classList.add("hidden");
+    backgroundMenuButton.classList.remove("hidden");
     
     setupCharacterMenu();
 }
@@ -986,8 +1023,8 @@ function showBackgroundTab() {
     characterSection.classList.add("hidden");
     backgroundSection.classList.remove("hidden");
     
-    backgroundMenuButton.classList.add("hidden"); // Background表示時はボタンを隠す
-    characterMenuButton.classList.remove("hidden"); // Characterボタンを表示する
+    backgroundMenuButton.classList.add("hidden");
+    characterMenuButton.classList.remove("hidden");
 }
 
 characterMenuButton.onclick = (e) => {

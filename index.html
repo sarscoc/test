@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
+<link rel="shortcut icon" href="#">
 <style>
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 100%; height: 100%; }
@@ -213,9 +214,14 @@ const characterSection = document.getElementById("characterSection");
 const backgroundSection = document.getElementById("backgroundSection");
 
 /* 状態管理 */
-let characters = [], backgrounds = [];
-let data = null, currentCostume = null, currentBackground = null;
-let count = {}, lastClick = 0, messageTimer = null;
+let characters = [];
+let backgrounds = [];
+let data = null;
+let currentCostume = null;
+let currentBackground = null;
+let count = {};
+let lastClick = 0;
+let messageTimer = null;
 const RAPID_TIME = 400;
 
 /* 初期化 */
@@ -233,10 +239,517 @@ async function init() {
     }
 }
 
-/* キャラクターJSON読み込み（自動清掃パース機能付き） */
+/* キャラクターJSON読み込み */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
-    if (!response.ok) throw new Error("characters/index.json が読み込めません。");
+    if (!response.ok) {
+        throw new Error("characters/index.json が読み込めません。");
+    }
 
     let text = await response.text();
-    text = text.replace(/^```json\s*/i, "").replace(/^
+    text = text.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    const files = JSON.parse(text);
+
+    characters = [];
+    for (const file of files) {
+        const res = await fetch("characters/" + file);
+        if (!res.ok) {
+            console.error("キャラクター読み込み失敗:", file);
+            continue;
+        }
+        let charText = await res.text();
+        charText = charText.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+
+        try {
+            const json = JSON.parse(charText);
+            characters.push(json);
+        } catch (e) {
+            console.error(`構文エラーがあるファイル: characters/${file}`);
+            throw e;
+        }
+    }
+}
+
+/* 背景JSON読み込み */
+async function loadBackgrounds() {
+    const response = await fetch("backgrounds/backgrounds.json");
+    if (!response.ok) {
+        throw new Error("backgrounds/backgrounds.json が読み込めません。");
+    }
+
+    let bgText = await response.text();
+    bgText = bgText.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    backgrounds = JSON.parse(bgText);
+}
+
+function getToday() {
+    const now = new Date();
+    return {
+        month: now.getMonth() + 1,
+        day: now.getDate()
+    };
+}
+
+function getBirthdayCharacters() {
+    const today = getToday();
+    return characters.filter(char => {
+        if (!char.birthday) return false;
+        return Number(char.birthday.month) === today.month && Number(char.birthday.day) === today.day;
+    });
+}
+
+async function chooseInitialCharacter() {
+    const birthdayCharacters = getBirthdayCharacters();
+    if (birthdayCharacters.length === 1) {
+        await loadCharacter(birthdayCharacters[0]);
+        return;
+    }
+    if (birthdayCharacters.length > 1) {
+        showBirthdayChoice(birthdayCharacters);
+        return;
+    }
+    if (characters.length > 0) {
+        const index = Math.floor(Math.random() * characters.length);
+        await loadCharacter(characters[index]);
+    }
+}
+
+async function loadCharacter(char) {
+    data = char;
+    count = {};
+    currentCostume = null;
+
+    if (Array.isArray(data.costumes) && data.costumes.length > 0) {
+        currentCostume = data.costumes[0];
+    } else {
+        currentCostume = {
+            id: "default",
+            name: "通常",
+            image: data.image,
+            position: data.position || {},
+            expressions: {}
+        };
+    }
+
+    loadCostume();
+    loadFrame();
+    setupPersonalPage();
+    setupCostumeMenu();
+    closeMenu();
+    showGreeting();
+}
+
+function setupPersonalPage() {
+    if (data && data.page) {
+        personalPage.href = data.page;
+        personalPage.style.display = "block";
+    } else {
+        personalPage.href = "#";
+        personalPage.style.display = "none";
+    }
+}
+
+function loadCostume() {
+    const position = currentCostume.position || data.position || {};
+    character.onerror = null;
+    character.src = "images/" + currentCostume.image;
+    character.style.left = (position.x || 0) + "px";
+    character.style.top = (position.y || 0) + "px";
+    character.style.width = (position.scale || 250) + "px";
+}
+
+function loadFrame() {
+    if (data.frame) {
+        frame.src = "frames/" + data.frame;
+        frame.style.display = "block";
+    } else {
+        frame.removeAttribute("src");
+        frame.style.display = "none";
+    }
+}
+
+function setExpression(expression) {
+    const expressions = currentCostume.expressions || {};
+    if (!expression || expression === "通常") {
+        character.onerror = null;
+        character.src = "images/" + currentCostume.image;
+        return;
+    }
+    if (expressions[expression]) {
+        character.onerror = () => {
+            character.onerror = null;
+            character.src = "images/" + currentCostume.image;
+        };
+        character.src = "images/" + expressions[expression];
+        return;
+    }
+    character.onerror = null;
+    character.src = "images/" + currentCostume.image;
+}
+
+function speak(talk, x, y) {
+    if (!talk) return;
+    setExpression(talk.expression || "通常");
+    message.innerText = talk.text;
+
+    let messageX = x + 15;
+    let messageY = y - 20;
+
+    if (messageX + 420 > game.clientWidth) messageX = game.clientWidth - 440;
+    if (messageX < 10) messageX = 10;
+    if (messageY < 20) messageY = 20;
+
+    message.style.left = messageX + "px";
+    message.style.top = messageY + "px";
+    message.style.display = "block";
+
+    if (messageTimer) clearTimeout(messageTimer);
+    messageTimer = setTimeout(() => {
+        message.style.display = "none";
+        setExpression("通常");
+    }, 2000);
+}
+
+function showGreeting() {
+    if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
+    speak(data.talk.greeting[0], game.clientWidth / 2, 100);
+}
+
+function dateToNumber(value) {
+    const [month, day] = value.split("-").map(Number);
+    return month * 100 + day;
+}
+
+function isInPeriod(start, end) {
+    const today = getToday();
+    const current = today.month * 100 + today.day;
+    const startNumber = dateToNumber(start);
+    const endNumber = dateToNumber(end);
+
+    if (startNumber <= endNumber) {
+        return current >= startNumber && current <= endNumber;
+    }
+    return current >= startNumber || current <= endNumber;
+}
+
+function getSpecialTalks() {
+    const talks = [];
+    const today = getToday();
+
+    if (data.birthday && Number(data.birthday.month) === today.month && Number(data.birthday.day) === today.day && Array.isArray(data.birthday.talk)) {
+        talks.push(...data.birthday.talk);
+    }
+    if (data.special && Array.isArray(data.special.dates)) {
+        data.special.dates.forEach(item => {
+            if (Number(item.month) === today.month && Number(item.day) === today.day && Array.isArray(item.talk)) {
+                talks.push(...item.talk);
+            }
+        });
+    }
+    if (data.special && data.special.months) {
+        const monthTalk = data.special.months[String(today.month)];
+        if (Array.isArray(monthTalk)) talks.push(...monthTalk);
+    }
+    if (data.special && Array.isArray(data.special.periods)) {
+        data.special.periods.forEach(period => {
+            if (isInPeriod(period.start, period.end) && Array.isArray(period.talk)) {
+                talks.push(...period.talk);
+            }
+        });
+    }
+    return talks;
+}
+
+function getNormalTalk() {
+    const pool = [];
+    if (data.talk && Array.isArray(data.talk.normal)) pool.push(...data.talk.normal);
+    pool.push(...getSpecialTalks());
+    if (pool.length === 0) return null;
+
+    const key = "normal";
+    if (count[key] === undefined) count[key] = 0;
+    const talk = pool[count[key] % pool.length];
+    count[key]++;
+    return talk;
+}
+
+function getRapidTalk() {
+    if (!data.talk || !Array.isArray(data.talk.rapid) || data.talk.rapid.length === 0) return null;
+    const key = "rapid";
+    if (count[key] === undefined) count[key] = 0;
+    const talk = data.talk.rapid[count[key] % data.talk.rapid.length];
+    count[key]++;
+    return talk;
+}
+
+function getArea(x, y) {
+    if (!data || !Array.isArray(data.areas)) return null;
+    for (let i = data.areas.length - 1; i >= 0; i--) {
+        const area = data.areas[i];
+        if (x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height) {
+            return area;
+        }
+    }
+    return null;
+}
+
+function getAreaTalk(area) {
+    if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
+    const key = "area_" + area.name;
+    if (count[key] === undefined) count[key] = 0;
+    const talk = area.talk[count[key] % area.talk.length];
+    count[key]++;
+    return talk;
+}
+
+function getAreaRapidTalk(area) {
+    if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
+    const key = "rapid_area_" + area.name;
+    if (count[key] === undefined) count[key] = 0;
+    const talk = area.rapid[count[key] % area.rapid.length];
+    count[key]++;
+    return talk;
+}
+
+/* クリックイベント処理 */
+game.addEventListener("click", function(event) {
+    if (event.target.closest("#menu, #openMenu, #personalPage")) return;
+    if (!data) return;
+
+    const rect = game.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const now = Date.now();
+    const rapid = now - lastClick < RAPID_TIME;
+    lastClick = now;
+
+    const area = getArea(x, y);
+    if (area) {
+        if (rapid) {
+            const rapidTalk = getAreaRapidTalk(area);
+            if (rapidTalk) {
+                speak(rapidTalk, x, y);
+                return;
+            }
+        }
+        const areaTalk = getAreaTalk(area);
+        if (areaTalk) {
+            speak(areaTalk, x, y);
+            return;
+        }
+    }
+
+    if (rapid) {
+        const rapidTalk = getRapidTalk();
+        if (rapidTalk) {
+            speak(rapidTalk, x, y);
+            return;
+        }
+    }
+
+    const normalTalk = getNormalTalk();
+    if (normalTalk) {
+        speak(normalTalk, x, y);
+    }
+});
+
+function setBackground(bg) {
+    currentBackground = bg;
+    background.src = "backgrounds/" + bg.image;
+}
+
+function setupBackground() {
+    const seasonal = backgrounds.find(bg => bg.season && isInPeriod(bg.season.start, bg.season.end));
+    if (seasonal) setBackground(seasonal);
+}
+
+function setupBackgroundMenu() {
+    backgroundList.innerHTML = "";
+    backgrounds.forEach(bg => {
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        const img = document.createElement("img");
+        img.className = "card-background-image";
+        img.src = "backgrounds/" + bg.image;
+        img.alt = bg.name;
+        card.appendChild(img);
+
+        const name = document.createElement("div");
+        name.className = "card-name";
+        name.innerText = bg.name;
+        card.appendChild(name);
+
+        card.onclick = () => {
+            setBackground(bg);
+            closeMenu();
+        };
+        backgroundList.appendChild(card);
+    });
+}
+
+function setupCostumeMenu() {
+    costumeList.innerHTML = "";
+    if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
+        costumeSection.classList.add("hidden");
+        return;
+    }
+    costumeSection.classList.remove("hidden");
+
+    data.costumes.forEach(costume => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const thumb = document.createElement("div");
+        thumb.className = "card-character-thumb";
+
+        const img = document.createElement("img");
+        img.className = "card-character-image";
+        img.src = "images/" + costume.image;
+        applyFaceCrop(img, costume.position || data.position, data.menu ? data.menu.face : null);
+
+        thumb.appendChild(img);
+        card.appendChild(thumb);
+
+        const name = document.createElement("div");
+        name.className = "card-name";
+        name.innerText = costume.name;
+        card.appendChild(name);
+
+        card.onclick = () => {
+            currentCostume = costume;
+            loadCostume();
+            closeMenu();
+        };
+        costumeList.appendChild(card);
+    });
+}
+
+function setupCharacterMenu() {
+    characterList.innerHTML = "";
+    characters.forEach(char => {
+        characterList.appendChild(createCharacterCard(char));
+    });
+}
+
+/* menu.faceによる切り抜き計算 */
+function applyFaceCrop(imgElement, position, face) {
+    if (!face) {
+        imgElement.style.objectFit = "cover";
+        return;
+    }
+    const pos = position || {};
+    const scale = pos.scale || 250;
+    const ratio = 80 / face.width;
+
+    imgElement.style.width = (scale * ratio) + "px";
+    imgElement.style.height = "auto";
+    imgElement.style.maxWidth = "none";
+    imgElement.style.position = "absolute";
+    imgElement.style.left = -((face.x - (pos.x || 0)) * ratio) + "px";
+    imgElement.style.top = -((face.y - (pos.y || 0)) * ratio) + "px";
+}
+
+function createCharacterCard(char) {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const thumb = document.createElement("div");
+    thumb.className = "card-character-thumb";
+
+    const img = document.createElement("img");
+    img.className = "card-character-image";
+    img.src = "images/" + char.image;
+    applyFaceCrop(img, char.position, char.menu ? char.menu.face : null);
+
+    thumb.appendChild(img);
+    card.appendChild(thumb);
+
+    const name = document.createElement("div");
+    name.className = "card-name";
+    name.innerText = char.name;
+    card.appendChild(name);
+
+    card.onclick = async () => {
+        await loadCharacter(char);
+    };
+    return card;
+}
+
+function setupBirthdayMenu() {
+    const birthdayCharacters = getBirthdayCharacters();
+    birthdayList.innerHTML = "";
+
+    if (birthdayCharacters.length === 0) {
+        birthdayList.innerHTML = '<div class="birthday-empty">今日は誕生日のキャラクターはいません。</div>';
+        return;
+    }
+
+    birthdayCharacters.forEach(char => {
+        const item = document.createElement("div");
+        item.className = "birthday-item";
+        item.innerText = char.name + " 🎂";
+        item.onclick = async () => {
+            await loadCharacter(char);
+        };
+        birthdayList.appendChild(item);
+    });
+}
+
+function showBirthdayChoice(birthdayCharacters) {
+    menu.style.display = "block";
+    birthdayArea.style.display = "block";
+    characterSection.classList.add("hidden");
+    backgroundSection.classList.add("hidden");
+
+    birthdayList.innerHTML = "";
+    birthdayCharacters.forEach(char => {
+        const item = document.createElement("div");
+        item.className = "birthday-item";
+        item.innerText = char.name + " 🎂";
+        item.onclick = async () => {
+            await loadCharacter(char);
+        };
+        birthdayList.appendChild(item);
+    });
+}
+
+/* メニュー切り替えボタン */
+document.getElementById("characterMenuButton").onclick = () => {
+    birthdayArea.style.display = "none";
+    costumeSection.classList.add("hidden");
+    backgroundSection.classList.add("hidden");
+    characterSection.classList.remove("hidden");
+    setupCharacterMenu();
+};
+
+document.getElementById("backgroundMenuButton").onclick = () => {
+    birthdayArea.style.display = "none";
+    costumeSection.classList.add("hidden");
+    characterSection.classList.add("hidden");
+    backgroundSection.classList.remove("hidden");
+};
+
+function openMenu() {
+    birthdayArea.style.display = "block";
+    characterSection.classList.add("hidden");
+    backgroundSection.classList.add("hidden");
+    setupBirthdayMenu();
+    setupCostumeMenu();
+    menu.style.display = "block";
+}
+
+function closeMenu() {
+    menu.style.display = "none";
+}
+
+document.getElementById("openMenu").onclick = (event) => {
+    event.stopPropagation();
+    openMenu();
+};
+
+/* 起動 */
+init();
+</script>
+</body>
+</html>

@@ -14,7 +14,7 @@
     "position": {
         "x": 223,
         "y": -46,
-        "scale": 588
+        "scale": 2000
     },
     "birthday": {
         "month": 8,
@@ -75,7 +75,7 @@
                 "scale": 250
             },
             "expressions": {
-                "通常": "characters/143/143.png",
+                "通常": "characters/143/143_通常.png",
                 "笑顔": "characters/143/143_笑顔.png",
                 "怒り": "characters/143/143_怒り.png",
                 "呆れ": "characters/143/143_呆れ.png",
@@ -159,7 +159,8 @@
         "greeting": [
             {
                 "text": "やあ、元気にしてたかい？",
-                "expression": "通常"
+                "expression": "通常",
+                "next": ""
             }
         ],
         "normal": [

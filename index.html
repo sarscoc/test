@@ -61,31 +61,34 @@ body {
     overflow-y: auto;
 }
 
-/* 左下時計・日付表示エリア */
+/* 左下時計・日付表示エリア（白文字・背景なし） */
 #clockArea {
     position: absolute;
-    bottom: 12px;
-    left: 12px;
+    bottom: 16px;
+    left: 16px;
     z-index: 200;
-    background: rgba(255, 255, 255, 0.85);
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(200, 200, 200, 0.8);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    pointer-events: none; /* クリックイベントを透過 */
-    text-align: center;
-    font-family: monospace, sans-serif;
+    pointer-events: none;
+    text-align: left;
+    font-family: sans-serif;
+    color: #ffffff;
+    /* 背景画像の上でも文字が見やすいように可読性用のシャドウを追加 */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
 }
-#clockDate {
-    font-size: 11px;
-    color: #555;
-    margin-bottom: 2px;
-}
+
+/* 時刻（大きい表示） */
 #clockTime {
-    font-size: 16px;
+    font-size: 32px;
     font-weight: bold;
-    color: #222;
+    line-height: 1.0;
     letter-spacing: 1px;
+}
+
+/* 日付と曜日 */
+#clockDate {
+    font-size: 13px;
+    margin-top: 4px;
+    opacity: 0.95;
+    line-height: 1.3;
 }
 
 /* 左上コントロール用共通ボタンデザイン */
@@ -229,10 +232,10 @@ body {
         </div>
     </div>
 
-    <!-- 左下時計エリア -->
+    <!-- 左下時計エリア（時刻上・日付曜日下） -->
     <div id="clockArea">
-        <div id="clockDate">----/--/-- (-)</div>
-        <div id="clockTime">00:00:00</div>
+        <div id="clockTime">--:--</div>
+        <div id="clockDate">----/-/--<br>---</div>
     </div>
 
     <button id="openMenu" type="button">☰</button>
@@ -305,23 +308,22 @@ async function init() {
     }
 }
 
-/* 時計の更新関数 */
+/* 時計の更新関数（指定レイアウト：時刻大きめ / 日付 / 英語小文字曜日） */
 function startClock() {
-    const dayOfWeekStr = ["日", "月", "火", "水", "木", "金", "土"];
+    const dayOfWeekStr = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     
     function updateClock() {
         const now = new Date();
         const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const date = String(now.getDate()).padStart(2, '0');
+        const month = now.getMonth() + 1; // 頭の0をつけない（8）
+        const date = now.getDate();        // 頭の0をつけない（8）
         const day = dayOfWeekStr[now.getDay()];
         
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
         
-        clockDate.innerText = `${year}/${month}/${date} (${day})`;
-        clockTime.innerText = `${hours}:${minutes}:${seconds}`;
+        clockTime.innerText = `${hours}:${minutes}`;
+        clockDate.innerHTML = `${year}/${month}/${date}<br>${day}`;
     }
     
     updateClock();
@@ -477,7 +479,7 @@ function loadFrame() {
     }
 }
 
-/* 表情切り替え（未設定・エラー時は現在の衣装の通常画像） */
+/* 表情切り替え */
 function setExpression(expression) {
     const expressions = currentCostume.expressions || {};
     
@@ -500,7 +502,7 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
-/* 吹き出し位置の自動調整（forcePositionがある場合は位置を直接固定） */
+/* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -511,16 +513,14 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const msgWidth = message.offsetWidth || 280;
     const msgHeight = message.offsetHeight || 80;
     
-    const offset = 20; // クリック位置からの間隔
+    const offset = 20;
 
     let messageX, messageY;
 
     if (forcePosition) {
-        // 挨拶など特定の位置に固定したい場合
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
-        // 通常のクリック時（画面の左半分なら左側に、右半分なら右側に表示）
         const isLeftHalf = clickX < (gameRect.width / 2);
         messageX = isLeftHalf 
             ? (clickX - msgWidth - offset) 
@@ -528,7 +528,6 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         messageY = clickY - (msgHeight / 2);
     }
 
-    // 画面端からはみ出さないための補正処理
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
 
@@ -548,7 +547,6 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
     
-    // 画面の中央に配置
     const centerX = game.clientWidth / 2;
     const centerY = game.clientHeight * 0.45;
 
@@ -729,7 +727,6 @@ function setupBackgroundMenu() {
     });
 }
 
-/* 衣装選択メニュー描画（未選択の衣装のみをボタン表示） */
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
     

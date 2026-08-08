@@ -61,34 +61,54 @@ body {
     overflow-y: auto;
 }
 
-/* 左下時計・日付表示エリア（白文字・背景なし） */
+/* 左下時計・日付表示エリア（縦長フォント・中央揃え・幅統一） */
 #clockArea {
     position: absolute;
     bottom: 16px;
     left: 16px;
     z-index: 200;
     pointer-events: none;
-    text-align: left;
-    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     color: #ffffff;
-    /* 背景画像の上でも文字が見やすいように可読性用のシャドウを追加 */
+    font-family: 'Impact', 'Arial Narrow', sans-serif-condensed, sans-serif;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
-/* 時刻（大きい表示） */
+/* 時刻（大きめの縦長表示） */
 #clockTime {
-    font-size: 32px;
-    font-weight: bold;
-    line-height: 1.0;
+    font-size: 42px;
+    font-weight: normal;
+    line-height: 0.95;
     letter-spacing: 1px;
 }
 
-/* 日付と曜日 */
+/* 日付（時間に幅を合わせるため字間とサイズを調整） */
 #clockDate {
-    font-size: 13px;
+    font-size: 17px;
     margin-top: 4px;
-    opacity: 0.95;
-    line-height: 1.3;
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+    line-height: 1.0;
+    white-space: nowrap;
+}
+
+/* 曜日ボタン（角丸・白枠線） */
+#clockDay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 2px 0;
+    border: 1.5px solid #ffffff;
+    border-radius: 20px;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    line-height: 1.1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
 }
 
 /* 左上コントロール用共通ボタンデザイン */
@@ -232,10 +252,11 @@ body {
         </div>
     </div>
 
-    <!-- 左下時計エリア（時刻上・日付曜日下） -->
+    <!-- 左下時計エリア -->
     <div id="clockArea">
         <div id="clockTime">--:--</div>
-        <div id="clockDate">----/-/--<br>---</div>
+        <div id="clockDate">----/-/--</div>
+        <div id="clockDay">---</div>
     </div>
 
     <button id="openMenu" type="button">☰</button>
@@ -281,6 +302,7 @@ const characterSection = document.getElementById("characterSection");
 const backgroundSection = document.getElementById("backgroundSection");
 const clockDate = document.getElementById("clockDate");
 const clockTime = document.getElementById("clockTime");
+const clockDay = document.getElementById("clockDay");
 
 /* 状態管理 */
 let characters = [];
@@ -308,22 +330,23 @@ async function init() {
     }
 }
 
-/* 時計の更新関数（指定レイアウト：時刻大きめ / 日付 / 英語小文字曜日） */
+/* 時計の更新関数 */
 function startClock() {
     const dayOfWeekStr = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     
     function updateClock() {
         const now = new Date();
         const year = now.getFullYear();
-        const month = now.getMonth() + 1; // 頭の0をつけない（8）
-        const date = now.getDate();        // 頭の0をつけない（8）
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
         const day = dayOfWeekStr[now.getDay()];
         
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         
         clockTime.innerText = `${hours}:${minutes}`;
-        clockDate.innerHTML = `${year}/${month}/${date}<br>${day}`;
+        clockDate.innerText = `${year}/${month}/${date}`;
+        clockDay.innerText = day;
     }
     
     updateClock();
@@ -541,7 +564,7 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     messageTimer = setTimeout(() => {
         message.style.display = "none";
         setExpression("通常");
-    }, 1000);
+    }, 3000);
 }
 
 function showGreeting() {

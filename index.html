@@ -233,8 +233,8 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 /* 右上メニューボタン */
 #openMenu {
     position: absolute;
-    bottom: 30px;
     right: 30px;
+    bottom: 30px;
     z-index: 260;
     width: 70px;
     height: 70px;
@@ -242,6 +242,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     color: #ffffff;
     cursor: pointer;
     font-size: 32px;
@@ -255,6 +256,40 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     padding: 0;
 }
 #openMenu:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+
+#diceButton {
+    position: absolute;
+    right: 34px; /* 70pxの三ボタンと中心線を揃える */
+    bottom: 112px;
+    z-index: 260;
+    width: 62px;
+    height: 62px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    padding: 0;
+}
+
+#diceButton img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+
+#diceButton:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -587,6 +622,31 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     100% { opacity: 0; transform: translate(-50%, -50%) scale(1.14); }
 }
 
+
+
+
+
+@media (max-width: 768px) {
+    #openMenu {
+        right: 18px !important;
+        bottom: 18px !important;
+        width: 70px !important;
+        height: 70px !important;
+    }
+
+    #diceButton {
+        right: 22px !important;
+        bottom: 100px !important;
+        width: 62px !important;
+        height: 62px !important;
+    }
+
+    #diceButton img {
+        width: 30px !important;
+        height: 30px !important;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -611,6 +671,9 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         </div>
 
         <!-- 右上メニューボタン -->
+        <button id="diceButton" type="button" aria-label="サイコロ" title="サイコロ">
+            <img src="icon/dice.png" alt="">
+        </button>
         <button id="openMenu" type="button" aria-label="メニュー">☰</button>
         <div id="message"></div>
 
@@ -722,6 +785,13 @@ const clockHour = document.getElementById("clockHour");
 const clockMinute = document.getElementById("clockMinute");
 const clockColon = document.getElementById("clockColon");
 const clockDay = document.getElementById("clockDay");
+
+
+const diceButton = document.getElementById("diceButton");
+const diceImage = diceButton ? diceButton.querySelector("img") : null;
+if (diceImage) {
+    diceImage.onerror = () => console.error("サイコロアイコン読み込み失敗: icon/dice.png");
+}
 
 /* 状態管理 */
 let characters = [];
@@ -1417,7 +1487,7 @@ function showTapFlash(x, y) {
 
 
 game.addEventListener("pointerdown", function(event) {
-    if (event.target.closest("#menu, #openMenu, #leftControls")) return;
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
     if (!data) return;
 
     const rect = game.getBoundingClientRect();
@@ -1428,7 +1498,7 @@ game.addEventListener("pointerdown", function(event) {
 
 /* クリックイベント処理（1920x1080基準の座標変換） */
 game.addEventListener("click", function(event) {
-    if (event.target.closest("#menu, #openMenu, #leftControls")) return;
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
     if (!data) return;
 
     const rect = game.getBoundingClientRect();
@@ -1524,6 +1594,26 @@ function setupBackgroundMenu() {
         };
         backgroundList.appendChild(card);
     });
+}
+
+
+async function chooseRandomCharacter() {
+    if (!Array.isArray(characters) || characters.length === 0) return;
+
+    let pool = characters;
+
+    // 2人以上いる場合は、なるべく現在表示中のキャラ以外から選ぶ
+    if (characters.length > 1 && data && data.id !== undefined) {
+        const otherCharacters = characters.filter(char => Number(char.id) !== Number(data.id));
+        if (otherCharacters.length > 0) {
+            pool = otherCharacters;
+        }
+    }
+
+    const index = Math.floor(Math.random() * pool.length);
+    const selected = pool[index];
+
+    await loadCharacter(selected);
 }
 
 function setupCharacterMenu() {
@@ -1703,6 +1793,14 @@ document.getElementById("openMenu").onclick = (event) => {
     event.stopPropagation();
     openMenu();
 };
+
+
+if (diceButton) {
+    diceButton.onclick = async (event) => {
+        event.stopPropagation();
+        await chooseRandomCharacter();
+    };
+}
 
 /* 起動 */
 window.addEventListener("resize", () => { resizeGame(); applyMobileCharacterTransform(); });

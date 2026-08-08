@@ -228,7 +228,7 @@ body {
 }
 .menu-button:hover { background: rgba(255, 255, 255, 0.35); }
 
-/* カード・アイコン一覧 */
+/* キャラクター一覧リスト */
 .list {
     display: flex;
     flex-wrap: wrap;
@@ -244,7 +244,7 @@ body {
     padding: 0;
 }
 
-/* キャラクターアイコン（一回り拡大：56x56px・正方形角丸） */
+/* キャラクターアイコン（56x56px・正方形角丸） */
 .card-character-thumb {
     position: relative;
     width: 56px;
@@ -254,26 +254,74 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
-/* 背景アイコン（縦長スタイル：36x64px・｜｜｜｜デザイン） */
-.card-background-image {
-    display: block;
-    width: 36px;
-    height: 64px;
-    object-fit: cover;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover .card-character-thumb,
-.card:hover .card-background-image {
+.card:hover .card-character-thumb {
     transform: scale(1.08);
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
 .card-character-image {
     display: block;
+}
+
+/* 背景選択セクション（縦画面全体を覆う縦割り・短冊・横スクロール） */
+#backgroundSection {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#backgroundList {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 4px; /* 短冊同士のスリット幅 */
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+}
+
+/* スクロールバーのスタイル調整（横スクロールバー） */
+#backgroundList::-webkit-scrollbar {
+    height: 6px;
+}
+#backgroundList::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+#backgroundList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+}
+
+/* 背景短冊カード（角丸なし・角アイコン・直角スタイル） */
+.bg-card {
+    flex: 0 0 120px; /* 短冊1本の幅 */
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 0; /* 直角（角アイコン） */
+    box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+    transition: flex-basis 0.25s ease, filter 0.2s ease;
+}
+
+.bg-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+}
+
+.bg-card:hover {
+    flex-basis: 160px; /* ホバーで少し幅が広がる演出 */
+    filter: brightness(1.15);
 }
 
 /* 誕生日表示 */
@@ -334,8 +382,7 @@ body {
         </section>
 
         <section id="backgroundSection" class="hidden">
-            <h2>背景選択</h2>
-            <div id="backgroundList" class="list"></div>
+            <div id="backgroundList"></div>
         </section>
 
         <div class="menu-buttons">
@@ -362,6 +409,8 @@ const characterList = document.getElementById("characterList");
 const backgroundList = document.getElementById("backgroundList");
 const characterSection = document.getElementById("characterSection");
 const backgroundSection = document.getElementById("backgroundSection");
+const characterMenuButton = document.getElementById("characterMenuButton");
+const backgroundMenuButton = document.getElementById("backgroundMenuButton");
 const clockDate = document.getElementById("clockDate");
 const clockTime = document.getElementById("clockTime");
 const clockDay = document.getElementById("clockDay");
@@ -786,14 +835,15 @@ function setupBackground() {
     if (seasonal) setBackground(seasonal);
 }
 
+/* 背景短冊リスト生成（全高スリット・横スクロール） */
 function setupBackgroundMenu() {
     backgroundList.innerHTML = "";
     backgrounds.forEach(bg => {
         const card = document.createElement("div");
-        card.className = "card";
+        card.className = "bg-card";
         
         const img = document.createElement("img");
-        img.className = "card-background-image";
+        img.className = "bg-card-image";
         img.src = "backgrounds/" + bg.image;
         img.alt = bg.name;
         card.appendChild(img);
@@ -910,30 +960,43 @@ function showBirthdayChoice(birthdayCharacters) {
 }
 
 menu.addEventListener("click", (event) => {
-    if (event.target.closest(".card, .birthday-item, .menu-button, .ctrl-btn")) return;
+    if (event.target.closest(".card, .bg-card, .birthday-item, .menu-button, .ctrl-btn")) return;
     closeMenu();
 });
 
-document.getElementById("characterMenuButton").onclick = (e) => {
-    e.stopPropagation();
+/* タブ切り替え制御（選択中タブのボタンを非表示化） */
+function showCharacterTab() {
     birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
     characterSection.classList.remove("hidden");
+    
+    characterMenuButton.classList.add("hidden"); // Character表示時はボタンを隠す
+    backgroundMenuButton.classList.remove("hidden"); // Backgroundボタンを表示する
+    
     setupCharacterMenu();
-};
+}
 
-document.getElementById("backgroundMenuButton").onclick = (e) => {
-    e.stopPropagation();
+function showBackgroundTab() {
     birthdayArea.classList.add("hidden");
     characterSection.classList.add("hidden");
     backgroundSection.classList.remove("hidden");
+    
+    backgroundMenuButton.classList.add("hidden"); // Background表示時はボタンを隠す
+    characterMenuButton.classList.remove("hidden"); // Characterボタンを表示する
+}
+
+characterMenuButton.onclick = (e) => {
+    e.stopPropagation();
+    showCharacterTab();
+};
+
+backgroundMenuButton.onclick = (e) => {
+    e.stopPropagation();
+    showBackgroundTab();
 };
 
 function openMenu() {
-    birthdayArea.classList.add("hidden");
-    backgroundSection.classList.add("hidden");
-    characterSection.classList.remove("hidden");
-    setupCharacterMenu();
+    showCharacterTab();
     menu.style.display = "block";
 }
 

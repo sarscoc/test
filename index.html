@@ -57,6 +57,35 @@ body {
     flex-direction: column;
     gap: 6px;
     width: 120px;
+    max-height: calc(100% - 100px);
+    overflow-y: auto;
+}
+
+/* 左下時計・日付表示エリア */
+#clockArea {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(200, 200, 200, 0.8);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    pointer-events: none; /* クリックイベントを透過 */
+    text-align: center;
+    font-family: monospace, sans-serif;
+}
+#clockDate {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 2px;
+}
+#clockTime {
+    font-size: 16px;
+    font-weight: bold;
+    color: #222;
+    letter-spacing: 1px;
 }
 
 /* 左上コントロール用共通ボタンデザイン */
@@ -200,6 +229,12 @@ body {
         </div>
     </div>
 
+    <!-- 左下時計エリア -->
+    <div id="clockArea">
+        <div id="clockDate">----/--/-- (-)</div>
+        <div id="clockTime">00:00:00</div>
+    </div>
+
     <button id="openMenu" type="button">☰</button>
     <div id="message"></div>
 
@@ -241,6 +276,8 @@ const characterList = document.getElementById("characterList");
 const backgroundList = document.getElementById("backgroundList");
 const characterSection = document.getElementById("characterSection");
 const backgroundSection = document.getElementById("backgroundSection");
+const clockDate = document.getElementById("clockDate");
+const clockTime = document.getElementById("clockTime");
 
 /* 状態管理 */
 let characters = [];
@@ -255,6 +292,7 @@ const RAPID_TIME = 400;
 
 /* 初期化 */
 async function init() {
+    startClock();
     try {
         await loadCharacters();
         await loadBackgrounds();
@@ -265,6 +303,29 @@ async function init() {
         console.error(error);
         alert("ゲームデータを読み込めませんでした。");
     }
+}
+
+/* 時計の更新関数 */
+function startClock() {
+    const dayOfWeekStr = ["日", "月", "火", "水", "木", "金", "土"];
+    
+    function updateClock() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const day = dayOfWeekStr[now.getDay()];
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        clockDate.innerText = `${year}/${month}/${date} (${day})`;
+        clockTime.innerText = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    updateClock();
+    setInterval(updateClock, 1000);
 }
 
 /* キャラクターJSON読み込み */
@@ -472,7 +533,7 @@ function speak(talk, clickX, clickY) {
     messageTimer = setTimeout(() => {
         message.style.display = "none";
         setExpression("通常");
-    }, 1000);
+    }, 3000);
 }
 
 function showGreeting() {
@@ -665,16 +726,13 @@ function setupBackgroundMenu() {
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
     
-    // 衣装リストが無い、または1パターン以下の場合は非表示
     if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
         costumeSection.classList.add("hidden");
         return;
     }
 
-    // 現在選択していない衣装のみをフィルタリング
     const otherCostumes = data.costumes.filter(costume => costume !== currentCostume);
 
-    // 選択可能な他衣装がない場合は非表示
     if (otherCostumes.length === 0) {
         costumeSection.classList.add("hidden");
         return;
@@ -693,7 +751,6 @@ function setupCostumeMenu() {
             currentCostume = costume;
             
             loadCostume();
-            // 切り替え後にボタン一覧を再生成（選択した衣装が消え、他の選択肢が表示される）
             setupCostumeMenu();
         };
         costumeList.appendChild(btn);

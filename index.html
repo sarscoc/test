@@ -1666,7 +1666,7 @@ function speak(
 
         const isLeftHalf =
             clickX <
-            gameRect.width / 2;
+            900 / 2;
 
 
         messageX =
@@ -1687,11 +1687,11 @@ function speak(
 
     if (
         messageX + msgWidth >
-        gameRect.width - 10
+        900 - 10
     ) {
 
         messageX =
-            gameRect.width -
+            900 -
             msgWidth -
             10;
     }
@@ -1703,11 +1703,11 @@ function speak(
 
     if (
         messageY + msgHeight >
-        gameRect.height - 10
+        506 - 10
     ) {
 
         messageY =
-            gameRect.height -
+            506 -
             msgHeight -
             10;
     }
@@ -1757,11 +1757,11 @@ function showGreeting() {
 
 
     const centerX =
-        game.clientWidth / 2;
+        900 / 2;
 
 
     const centerY =
-        game.clientHeight * 0.45;
+        506 * 0.45;
 
 
     speak(
@@ -2186,14 +2186,16 @@ game.addEventListener(
             game.getBoundingClientRect();
 
 
+        // 画面の縮小率を考慮して、ゲーム内部の正確な座標(900x506基準)に変換
+        const scaleX = 900 / rect.width;
+        const scaleY = 506 / rect.height;
+
         const x =
-            event.clientX -
-            rect.left;
+            (event.clientX - rect.left) * scaleX;
 
 
         const y =
-            event.clientY -
-            rect.top;
+            (event.clientY - rect.top) * scaleY;
 
 
         const now =

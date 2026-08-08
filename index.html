@@ -239,7 +239,7 @@ async function init() {
     }
 }
 
-/* キャラクターJSON読み込み */
+/* キャラクターJSON読み込み（制御文字・ゴミ除去つき） */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
     if (!response.ok) {
@@ -247,7 +247,13 @@ async function loadCharacters() {
     }
 
     let text = await response.text();
-    text = text.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    
+    const firstBracket = text.indexOf('[');
+    const lastBracket = text.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1) {
+        text = text.substring(firstBracket, lastBracket + 1);
+    }
     const files = JSON.parse(text);
 
     characters = [];
@@ -258,7 +264,13 @@ async function loadCharacters() {
             continue;
         }
         let charText = await res.text();
-        charText = charText.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+        
+        charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+        const fBracket = charText.indexOf('{');
+        const lBracket = charText.lastIndexOf('}');
+        if (fBracket !== -1 && lBracket !== -1) {
+            charText = charText.substring(fBracket, lBracket + 1);
+        }
 
         try {
             const json = JSON.parse(charText);
@@ -278,7 +290,12 @@ async function loadBackgrounds() {
     }
 
     let bgText = await response.text();
-    bgText = bgText.replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    bgText = bgText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    const firstBracket = bgText.indexOf('[');
+    const lastBracket = bgText.lastIndexOf(']');
+    if (firstBracket !== -1 && lastBracket !== -1) {
+        bgText = bgText.substring(firstBracket, lastBracket + 1);
+    }
     backgrounds = JSON.parse(bgText);
 }
 

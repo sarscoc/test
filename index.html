@@ -409,19 +409,15 @@ body {
 <script>
 /* 画面全体の自動レスポンシブスケール処理（1920x1080基準） */
 function resizeGame() {
-    const game = document.getElementById("game");
+    const container = document.getElementById("game-container");
     const baseWidth = 1920;
     const baseHeight = 1080;
-    
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    
-    const scaleX = windowWidth / baseWidth;
-    const scaleY = windowHeight / baseHeight;
+    const scaleX = window.innerWidth / baseWidth;
+    const scaleY = window.innerHeight / baseHeight;
     const scale = Math.min(scaleX, scaleY);
-    
-    game.style.transformOrigin = "center center";
-    game.style.transform = `scale(${scale})`;
+
+    container.style.transformOrigin = "center center";
+    container.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener("resize", resizeGame);
@@ -653,6 +649,7 @@ function getImagePath(imageName, charData = data) {
 }
 
 function loadCharacterImage() {
+    // キャラクターPNGは1920x1080キャンバス基準。position.scale は表示幅(px)。
     const position = data.position || {};
     const imgPath = getImagePath(data.image);
 
@@ -748,6 +745,8 @@ function getSpecialTalks() {
     const talks = [];
     const today = getToday();
 
+    // 誕生日・日付指定・期間指定だけを対象にする。
+    // greetingDates は将来の挨拶日付機能用なので、現時点ではここでは処理しない。
     if (data.birthday && Number(data.birthday.month) === today.month && Number(data.birthday.day) === today.day && Array.isArray(data.birthday.talk)) {
         talks.push(...data.birthday.talk);
     }
@@ -757,10 +756,6 @@ function getSpecialTalks() {
                 talks.push(...item.talk);
             }
         });
-    }
-    if (data.special && data.special.months) {
-        const monthTalk = data.special.months[String(today.month)];
-        if (Array.isArray(monthTalk)) talks.push(...monthTalk);
     }
     if (data.special && Array.isArray(data.special.periods)) {
         data.special.periods.forEach(period => {
@@ -772,15 +767,22 @@ function getSpecialTalks() {
     return talks;
 }
 
-function getNormalTalk() {
-    const pool = [];
-    if (data.talk && Array.isArray(data.talk.normal)) pool.push(...data.talk.normal);
-    pool.push(...getSpecialTalks());
+function getSpecialTalk() {
+    const pool = getSpecialTalks();
     if (pool.length === 0) return null;
 
-    const key = "normal";
+    const key = "special";
     if (count[key] === undefined) count[key] = 0;
     const talk = pool[count[key] % pool.length];
+    count[key]++;
+    return talk;
+}
+
+function getNormalTalk() {
+    if (!data.talk || !Array.isArray(data.talk.normal) || data.talk.normal.length === 0) return null;
+    const key = "normal";
+    if (count[key] === undefined) count[key] = 0;
+    const talk = data.talk.normal[count[key] % data.talk.normal.length];
     count[key]++;
     return talk;
 }
@@ -861,6 +863,13 @@ game.addEventListener("click", function(event) {
             speak(rapidTalk, x, y);
             return;
         }
+    }
+
+    // タッチ範囲・連打の次に季節/日付台詞を優先し、最後に通常台詞を出す。
+    const specialTalk = getSpecialTalk();
+    if (specialTalk) {
+        speak(specialTalk, x, y);
+        return;
     }
 
     const normalTalk = getNormalTalk();

@@ -11,11 +11,11 @@
       "height": 100
     }
   },
-  "position": {
-    "x": 223,
-    "y": -46,
-    "scale": 588
-  },
+"position": {
+    "x": 600,
+    "y": 100,
+    "scale": 1200
+},
   "birthday": {
     "month": 8,
     "day": 8,

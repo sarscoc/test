@@ -48,6 +48,19 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 }
 
 #background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
+
+#backgroundVideo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+    display: none;
+    background: #fff;
+}
+
 #character { position: absolute;  object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
@@ -680,6 +693,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 <div id="game-container">
     <div id="game">
         <img id="background" alt="">
+        <video id="backgroundVideo" autoplay muted loop playsinline preload="auto"></video>
         <img id="character" alt="">
         <img id="frame" alt="">
         
@@ -791,6 +805,7 @@ if (data) {
 /* DOM要素 */
 const game = document.getElementById("game");
 const background = document.getElementById("background");
+const backgroundVideo = document.getElementById("backgroundVideo");
 const character = document.getElementById("character");
 const frame = document.getElementById("frame");
 const message = document.getElementById("message");
@@ -1624,9 +1639,78 @@ game.addEventListener("click", function(event) {
         speak(normalTalk, x, y);
     }
 });
+
+backgroundVideo.addEventListener("playing", () => {
+    if (currentBackground && currentBackground.video) {
+        background.style.display = "none";
+    }
+});
+
+backgroundVideo.addEventListener("error", () => {
+    // MP4が失敗したら付属PNGへ戻す
+    if (currentBackground && currentBackground.image) {
+        background.style.display = "block";
+        backgroundVideo.style.display = "none";
+    }
+});
+
 function setBackground(bg) {
     currentBackground = bg;
-    background.src = "backgrounds/" + bg.image;
+
+    const imagePath = bg && bg.image ? "backgrounds/" + bg.image : "";
+    const videoPath = bg && bg.video ? "backgrounds/" + bg.video : "";
+
+    // MP4動画背景
+    if (videoPath) {
+        // 読み込み中・再生不可時の静止画フォールバック
+        if (imagePath) {
+            background.src = imagePath;
+            background.style.display = "block";
+            backgroundVideo.poster = imagePath;
+        } else {
+            background.removeAttribute("src");
+            background.style.display = "none";
+            backgroundVideo.removeAttribute("poster");
+        }
+
+        // 同じ動画を選び直した時は無駄にリロードしない
+        const absoluteVideoPath = new URL(videoPath, document.baseURI).href;
+        if (backgroundVideo.src !== absoluteVideoPath) {
+            backgroundVideo.src = videoPath;
+            backgroundVideo.load();
+        }
+
+        backgroundVideo.muted = true;
+        backgroundVideo.loop = true;
+        backgroundVideo.playsInline = true;
+        backgroundVideo.autoplay = true;
+        backgroundVideo.style.display = "block";
+
+        const playPromise = backgroundVideo.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {
+                // autoplayが止められた場合はposter/静止画を見せる
+                backgroundVideo.style.display = imagePath ? "none" : "block";
+                background.style.display = imagePath ? "block" : "none";
+            });
+        }
+        return;
+    }
+
+    // 従来の静止画背景
+    backgroundVideo.pause();
+    backgroundVideo.removeAttribute("src");
+    backgroundVideo.removeAttribute("poster");
+    backgroundVideo.load();
+    backgroundVideo.style.display = "none";
+
+    if (imagePath) {
+        background.src = imagePath;
+        background.style.display = "block";
+    } else {
+        background.removeAttribute("src");
+        background.style.display = "none";
+    }
 }
 
 function setupBackground() {
@@ -1641,11 +1725,23 @@ function setupBackgroundMenu() {
         const card = document.createElement("div");
         card.className = "bg-card";
         
-        const img = document.createElement("img");
-        img.className = "bg-card-image";
-        img.src = "backgrounds/" + bg.image;
-        img.alt = bg.name;
-        card.appendChild(img);
+        if (bg.image) {
+            const img = document.createElement("img");
+            img.className = "bg-card-image";
+            img.src = "backgrounds/" + bg.image;
+            img.alt = bg.name || "";
+            card.appendChild(img);
+        } else if (bg.video) {
+            const preview = document.createElement("video");
+            preview.className = "bg-card-image";
+            preview.src = "backgrounds/" + bg.video;
+            preview.muted = true;
+            preview.loop = true;
+            preview.autoplay = true;
+            preview.playsInline = true;
+            preview.preload = "metadata";
+            card.appendChild(preview);
+        }
 
         card.onclick = (e) => {
             e.stopPropagation();

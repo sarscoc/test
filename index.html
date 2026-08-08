@@ -47,7 +47,7 @@ body {
     word-break: break-word;
 }
 
-/* 個人ページ＆衣装選択パネルエリア（左上） */
+/* 個人ページ＆衣装選択パネルエリア（左上：縦並び・幅統一） */
 #leftControls {
     position: absolute;
     top: 12px;
@@ -55,52 +55,41 @@ body {
     z-index: 200;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    max-width: 220px;
+    gap: 6px;
+    width: 120px; /* ボタン幅を揃える */
 }
 
-#personalPage {
-    display: none;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255,255,255,.9);
+/* 左上コントロール用共通ボタンデザイン */
+.ctrl-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
     color: #333;
     text-decoration: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     text-align: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-#personalPage:hover { background: #fff; }
+.ctrl-btn:hover { background: #fff; }
+.ctrl-btn.active { background: #333; color: #fff; border-color: #333; }
 
-/* 個人ページ（左URL）直下に表示される衣装選択パネル */
 #costumeSection {
-    background: rgba(255,255,255,.9);
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-#costumeSection h2 {
-    font-size: 12px;
-    margin: 0 0 8px 0;
-    color: #555;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
 }
 #costumeList {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 6px;
+    width: 100%;
 }
-.costume-btn {
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-.costume-btn:hover { background: #f0f0f0; }
-.costume-btn.active { background: #333; color: #fff; border-color: #333; }
 
 /* メニューボタン */
 #openMenu {
@@ -204,13 +193,12 @@ body {
     <img id="character" alt="">
     <img id="frame" alt="">
     
-    <!-- 左側操作コントロール -->
+    <!-- 左側操作コントロール（個人ページと衣装切り替えボタンが縦並び） -->
     <div id="leftControls">
-        <a id="personalPage" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">↗ 個人ページ</a>
-        <section id="costumeSection" class="hidden">
-            <h2>衣装選択</h2>
+        <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">個人ページ</a>
+        <div id="costumeSection" class="hidden">
             <div id="costumeList"></div>
-        </section>
+        </div>
     </div>
 
     <button id="openMenu" type="button">☰</button>
@@ -409,7 +397,10 @@ function setupPersonalPage() {
 
 function loadCostume() {
     const position = currentCostume.position || data.position || {};
-    character.onerror = null;
+    character.onerror = () => {
+        character.onerror = null;
+        character.src = "images/" + currentCostume.image;
+    };
     character.src = "images/" + currentCostume.image;
     character.style.left = (position.x || 0) + "px";
     character.style.top = (position.y || 0) + "px";
@@ -426,26 +417,34 @@ function loadFrame() {
     }
 }
 
+/* 表情切り替え（表情差分画像がない・読み込み失敗時は該当衣装の「通常」画像を代用） */
 function setExpression(expression) {
     const expressions = currentCostume.expressions || {};
+    
+    // 指定なし・または「通常」指定のときはその衣装の基本画像
     if (!expression || expression === "通常") {
         character.onerror = null;
         character.src = "images/" + currentCostume.image;
         return;
     }
+
+    // 表情差分が定義されている場合
     if (expressions[expression]) {
         character.onerror = () => {
+            // 画像ロードエラー時に現在の衣装の通常画像を表示
             character.onerror = null;
             character.src = "images/" + currentCostume.image;
         };
         character.src = "images/" + expressions[expression];
         return;
     }
+
+    // 定義自体がない場合は通常画像を表示
     character.onerror = null;
     character.src = "images/" + currentCostume.image;
 }
 
-/* ★ 吹き出し位置の自動調整関数（身体に被らず、画面外へ出ない位置） */
+/* 吹き出し位置の自動調整関数 */
 function speak(talk, clickX, clickY) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -456,7 +455,7 @@ function speak(talk, clickX, clickY) {
     const msgWidth = message.offsetWidth || 280;
     const msgHeight = message.offsetHeight || 80;
     
-    const offset = 35; // クリック位置からの距離（離しすぎない値）
+    const offset = 35; // クリック位置からの距離
 
     // 1. クリック位置の右側に置くスペースがあるか判定
     let messageX = clickX + offset;
@@ -483,22 +482,21 @@ function speak(talk, clickX, clickY) {
     messageTimer = setTimeout(() => {
         message.style.display = "none";
         setExpression("通常");
-    }, 500);
+    }, 3000);
 }
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
     
-    // 画面の幅と高さを3分割した基準値を計算
-    const gridX = game.clientWidth / 3;   // 1マス分の幅
-    const gridY = game.clientHeight / 3;  // 1マス分の高さ
+    const gridX = game.clientWidth / 3;
+    const gridY = game.clientHeight / 3;
 
-    // 左列（0.5マス目）× 中央行（1.5マス目）の中心座標
-    const targetX = gridX * 0.9; // 左マスの横中央 (約150px)
-    const targetY = gridY * 1.5; // 中央マスの縦中央 (約253px)
+    const targetX = gridX * 0.9;
+    const targetY = gridY * 1.5;
 
     speak(data.talk.greeting[0], targetX, targetY);
 }
+
 function dateToNumber(value) {
     const [month, day] = value.split("-").map(Number);
     return month * 100 + day;
@@ -673,6 +671,7 @@ function setupBackgroundMenu() {
     });
 }
 
+/* 衣装選択メニュー描画（差分なしなら隠す／あれば縦並び生成） */
 function setupCostumeMenu() {
     costumeList.innerHTML = "";
     if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
@@ -684,14 +683,14 @@ function setupCostumeMenu() {
     data.costumes.forEach(costume => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "costume-btn" + (costume === currentCostume ? " active" : "");
+        btn.className = "ctrl-btn" + (costume === currentCostume ? " active" : "");
         btn.innerText = costume.name;
 
         btn.onclick = (e) => {
             e.stopPropagation();
             currentCostume = costume;
             
-            const allBtns = costumeList.querySelectorAll(".costume-btn");
+            const allBtns = costumeList.querySelectorAll(".ctrl-btn");
             allBtns.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
 
@@ -772,7 +771,7 @@ function showBirthdayChoice(birthdayCharacters) {
 }
 
 menu.addEventListener("click", (event) => {
-    if (event.target.closest(".card, .birthday-item, .menu-button, .costume-btn")) return;
+    if (event.target.closest(".card, .birthday-item, .menu-button, .ctrl-btn")) return;
     closeMenu();
 });
 

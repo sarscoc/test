@@ -961,17 +961,19 @@ function loadFrame() {
 
 function setExpression(expression) {
 
-    /*
-       現在の通常画像
-    */
-
     const baseImage =
         "images/" +
         currentCostume.image;
 
 
+    /*
+       衣装側に表情があればそれを使用。
+       なければキャラクター本体の表情を見る。
+    */
+
     const expressions =
         currentCostume.expressions ||
+        data.expressions ||
         {};
 
 
@@ -982,8 +984,7 @@ function setExpression(expression) {
 
     if (!expression) {
 
-        character.onerror =
-            null;
+        character.onerror = null;
 
         character.src =
             baseImage;
@@ -994,7 +995,7 @@ function setExpression(expression) {
 
 
     /*
-       登録されている表情
+       表情画像が登録されている場合
     */
 
     if (
@@ -1031,8 +1032,7 @@ function setExpression(expression) {
        → 通常画像
     */
 
-    character.onerror =
-        null;
+    character.onerror = null;
 
     character.src =
         baseImage;

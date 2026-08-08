@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -23,11 +24,9 @@ body {
 
 body {
     background: #eee;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     font-family: sans-serif;
 }
 
@@ -765,10 +764,6 @@ async function chooseInitialCharacter() {
         getBirthdayCharacters();
 
 
-    /*
-       誕生日が1人
-    */
-
     if (
         birthdayCharacters.length === 1
     ) {
@@ -782,10 +777,6 @@ async function chooseInitialCharacter() {
     }
 
 
-    /*
-       複数
-    */
-
     if (
         birthdayCharacters.length > 1
     ) {
@@ -798,11 +789,6 @@ async function chooseInitialCharacter() {
 
     }
 
-
-    /*
-       誕生日なし
-       → ランダム
-    */
 
     if (
         characters.length > 0
@@ -915,6 +901,24 @@ function loadCostume() {
         (position.scale || 250) +
         "px";
 
+
+    /*
+       衣装画像が存在しなかった場合
+       キャラクター本体の画像へ戻す
+    */
+
+    character.onerror =
+        () => {
+
+            character.onerror =
+                null;
+
+            character.src =
+                "images/" +
+                data.image;
+
+        };
+
 }
 
 
@@ -957,6 +961,15 @@ function loadFrame() {
 
 function setExpression(expression) {
 
+    /*
+       現在の通常画像
+    */
+
+    const baseImage =
+        "images/" +
+        currentCostume.image;
+
+
     const expressions =
         currentCostume.expressions ||
         {};
@@ -964,36 +977,65 @@ function setExpression(expression) {
 
     /*
        表情指定なし
-       → 通常に戻す
+       → 通常画像
     */
 
     if (!expression) {
 
+        character.onerror =
+            null;
+
         character.src =
-            "images/" +
-            currentCostume.image;
+            baseImage;
 
         return;
 
     }
 
+
+    /*
+       登録されている表情
+    */
 
     if (
         expressions[expression]
     ) {
 
-        character.src =
+        const expressionImage =
             "images/" +
             expressions[expression];
+
+
+        character.onerror =
+            () => {
+
+                character.onerror =
+                    null;
+
+                character.src =
+                    baseImage;
+
+            };
+
+
+        character.src =
+            expressionImage;
 
         return;
 
     }
 
 
+    /*
+       表情が存在しない
+       → 通常画像
+    */
+
+    character.onerror =
+        null;
+
     character.src =
-        "images/" +
-        currentCostume.image;
+        baseImage;
 
 }
 
@@ -1010,6 +1052,10 @@ function speak(talk, x, y) {
 
     }
 
+
+    /*
+       台詞ごとの表情
+    */
 
     setExpression(
         talk.expression
@@ -1160,7 +1206,6 @@ function dateToNumber(value) {
 
 /* ==================================================
    期間判定
-   年またぎ対応
 ================================================== */
 
 function isInPeriod(start, end) {
@@ -1182,11 +1227,6 @@ function isInPeriod(start, end) {
         dateToNumber(end);
 
 
-    /*
-       通常
-       03-01 ～ 05-31
-    */
-
     if (
         startNumber <= endNumber
     ) {
@@ -1204,7 +1244,6 @@ function isInPeriod(start, end) {
 
     /*
        年またぎ
-       12-01 ～ 02-28
     */
 
     return (
@@ -1389,44 +1428,6 @@ function getSpecialTalks() {
     }
 
 
-    /*
-       季節
-    */
-
-    if (
-
-        data.special &&
-
-        data.special.seasons
-
-    ) {
-
-        /*
-           キャラクター側の季節指定も
-           同じ期間方式にすることが可能。
-        */
-
-        Object.values(
-            data.special.seasons
-        ).forEach(
-            season => {
-
-                if (
-                    Array.isArray(season.talk)
-                ) {
-
-                    talks.push(
-                        ...season.talk
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
     return talks;
 
 }
@@ -1501,7 +1502,7 @@ function getNormalTalk() {
 
 
 /* ==================================================
-   連打
+   連打台詞
 ================================================== */
 
 function getRapidTalk() {
@@ -1913,7 +1914,7 @@ function setBackground(bg) {
 
 
 /* ==================================================
-   起動時の季節背景
+   季節背景
 ================================================== */
 
 function setupBackground() {
@@ -2362,3 +2363,4 @@ init();
 </body>
 
 </html>
+```

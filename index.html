@@ -48,21 +48,6 @@ body {
 
 #background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
 #character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; }
-.tap-bloom {
-    position: absolute;
-    z-index: 90;
-    width: 30px;
-    height: 30px;
-    margin-left: -15px;
-    margin-top: -15px;
-    pointer-events: none;
-    color: rgba(255,255,255,0.98);
-    text-shadow: 0 1px 3px rgba(0,0,0,0.55);
-    font-size: 30px;
-    line-height: 30px;
-    text-align: center;
-    animation: tapBloom 0.24s cubic-bezier(.2,.75,.25,1) forwards;
-}
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
 /* 台詞吹出し */
@@ -166,39 +151,36 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', sans-serif;
+    font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Arial Rounded MT Bold", Arial, sans-serif;
     font-size: 80px;
     font-weight: 300;
     line-height: 1;
     letter-spacing: -1px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.68), 0 0 10px rgba(0,0,0,0.35);
 }
-#clockDigits { display: inline-flex; align-items: center; line-height: 1; }
-#clockColon {
-    display: inline-flex;
-    width: 0.34em;
-    height: 0.72em;
-    flex: 0 0 0.34em;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.13em;
-    opacity: 1;
-    transition: opacity 0.08s linear;
-}
-#clockColon::before, #clockColon::after {
-    content: "";
+#clockHour, #clockMinute {
     display: block;
-    width: 0.075em;
-    height: 0.075em;
-    min-width: 4px;
-    min-height: 4px;
-    border-radius: 50%;
-    background: currentColor;
+    line-height: 1;
+}
+#clockColon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: 0.34em;
+    height: 1em;
+    line-height: 1;
+    margin: 0 0.015em;
+    padding: 0;
+    transform: translateY(-0.035em);
+    opacity: 1;
+    color: inherit;
+    text-shadow: inherit;
+    transition: opacity 0.06s linear;
 }
 #clockColon.off { opacity: 0; }
-
 #clockDate {
     font-size: 26px;
     font-weight: 300;
@@ -541,39 +523,31 @@ body {
 
 
 /* タップ：最初のホワッを短くした版 */
-.tap-flash {
-    position: absolute;
-    z-index: 180;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.92);
-    background: rgba(255,255,255,0.12);
-    transform: translate(-50%, -50%) scale(0.45);
-    pointer-events: none;
-    animation: tapFlash 220ms ease-out forwards;
-}
-@keyframes tapFlash {
-    0%   { opacity: 0.95; transform: translate(-50%, -50%) scale(0.45); }
-    55%  { opacity: 0.65; transform: translate(-50%, -50%) scale(0.95); }
+55%  { opacity: 0.65; transform: translate(-50%, -50%) scale(0.95); }
     100% { opacity: 0; transform: translate(-50%, -50%) scale(1.18); }
 }
 
 
-@media (max-width: 768px) {
-    #message {
-        position: fixed !important;
-        left: 50% !important;
-        top: 60vh !important;
-        transform: translate(-50%, -50%) !important;
-        width: min(88vw, 560px) !important;
-        max-height: 34vh !important;
-        overflow-y: auto !important;
-        font-size: clamp(20px, 5.2vw, 28px) !important;
-        line-height: 1.5 !important;
-        padding: 18px 22px !important;
-        z-index: 1000 !important;
-    }
+
+
+
+/* タップ：短くキレのあるホワッ */
+.tap-flash {
+    position: absolute;
+    z-index: 180;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.96);
+    background: rgba(255,255,255,0.10);
+    transform: translate(-50%, -50%) scale(0.55);
+    pointer-events: none;
+    animation: tapFlash 170ms ease-out forwards;
+}
+@keyframes tapFlash {
+    0%   { opacity: 0.95; transform: translate(-50%, -50%) scale(0.55); }
+    55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
 }
 
 </style>
@@ -594,7 +568,7 @@ body {
 
         <!-- 左下時計エリア -->
         <div id="clockArea">
-            <div id="clockTime"><span id="clockHour">--</span><span id="clockColon" class="clock-colon" aria-hidden="true"></span><span id="clockMinute">--</span></div>
+            <div id="clockTime"><span id="clockHour">--</span><span id="clockColon">:</span><span id="clockMinute">--</span></div>
             <div id="clockDate">----/-/--</div>
             <div id="clockDay">---</div>
         </div>
@@ -752,10 +726,9 @@ function startClock() {
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         
-        clockTime.innerHTML = `<span id="clockDigits">${hours}<span id="clockColon" aria-hidden="true"></span>${minutes}</span>`;
-        const colon = document.getElementById("clockColon");
-        if (colon) colon.classList.toggle("off", now.getSeconds() % 2 === 1);
-        clockColon.classList.toggle("colon-off", now.getSeconds() % 2 !== 0);
+        clockHour.textContent = hours;
+        clockMinute.textContent = minutes;
+        clockColon.classList.toggle("off", now.getSeconds() % 2 === 1);
         clockDate.innerText = `${year}/${month}/${date}`;
         clockDay.innerText = day;
     }
@@ -989,13 +962,21 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 
     if (layout.active) {
         // 実画面で読みやすい大きさになるよう、基準座標上では少し大きめにする。
-        message.style.width = Math.min(700, visibleWidth - 52) + "px";
+        message.style.width = Math.min(760, visibleWidth - 52) + "px";
+        message.style.maxWidth = (visibleWidth - 52) + "px";
         message.style.fontSize = "34px";
+        message.style.whiteSpace = "normal";
+        message.style.overflowWrap = "anywhere";
+        message.style.wordBreak = "normal";
         message.style.lineHeight = "1.5";
         message.style.padding = "22px 26px";
     } else {
         message.style.width = "600px";
+        message.style.maxWidth = "600px";
         message.style.fontSize = "28px";
+        message.style.whiteSpace = "normal";
+        message.style.overflowWrap = "anywhere";
+        message.style.wordBreak = "normal";
         message.style.lineHeight = "1.6";
         message.style.padding = "24px 32px";
     }
@@ -1006,14 +987,14 @@ function speak(talk, clickX, clickY, forcePosition = null) {
 
     let messageX, messageY;
     if (layout.active) {
-        // スマホでは左右へ飛ばさず、常に見える中央付近へ。
+        // スマホでは、画面上から約6割＝時計の少し上に固定。
+        // 文字サイズは変えず、横幅内で自然改行させる。
+        const rect = game.getBoundingClientRect();
+        const targetClientY = window.innerHeight * 0.60;
+        const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
+
         messageX = (leftBound + rightBound - msgWidth) / 2;
-        if (forcePosition) {
-            messageY = forcePosition.y - (msgHeight / 2);
-        } else {
-            messageY = clickY - msgHeight - 44;
-            if (messageY < topBound + 24) messageY = clickY + 44;
-        }
+        messageY = targetGameY - (msgHeight / 2);
     } else if (forcePosition) {
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
@@ -1166,28 +1147,13 @@ function getAreaRapidTalk(area) {
     return talk;
 }
 
-/* タップ／クリック時のシャープな◆エフェクト */
-function showTapBloom(clientX, clientY) {
-    const rect = game.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const x = (clientX - rect.left) * (1920 / rect.width);
-    const y = (clientY - rect.top) * (1080 / rect.height);
-    const bloom = document.createElement("div");
-    bloom.className = "tap-bloom";
-    bloom.textContent = "◆";
-    bloom.style.left = x + "px";
-    bloom.style.top = y + "px";
-    game.appendChild(bloom);
-    bloom.addEventListener("animationend", () => bloom.remove(), { once: true });
-}
-
-game.addEventListener("pointerdown", function(event) {
-    if (event.target.closest("#menu, #openMenu, #leftControls")) return;
-    showTapBloom(event.clientX, event.clientY);
-});
-
-
 function showTapFlash(x, y) {
+    const effect = document.createElement("div");
+    effect.className = "tap-flash";
+    effect.style.left = x + "px";
+    effect.style.top = y + "px";
+    game.appendChild(effect);
+    setTimeout(() => effect.remove(), 220);
 }
 
 /* クリックイベント処理（1920x1080基準の座標変換） */

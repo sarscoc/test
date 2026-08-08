@@ -1,9 +1,11 @@
+```json
 {
   "id": 143,
   "name": "御多福来迎",
 
   "image": "143.png",
-   "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
+
+  "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
 
   "menu": {
     "face": {
@@ -37,7 +39,6 @@
   },
 
   "special": {
-
     "dates": [
       {
         "month": 8,
@@ -53,7 +54,6 @@
     ],
 
     "months": {
-
       "8": [
         {
           "text": "暑いな。",
@@ -64,11 +64,9 @@
           "expression": "通常"
         }
       ]
-
     },
 
     "periods": [
-
       {
         "start": "07-01",
         "end": "08-31",
@@ -100,13 +98,10 @@
           }
         ]
       }
-
     ]
-
   },
 
   "costumes": [
-
     {
       "id": "default",
       "name": "通常",
@@ -120,19 +115,12 @@
       },
 
       "expressions": {
-
         "通常": "143.png",
-
         "笑顔": "143_smile.png",
-
         "怒り": "143_angry.png",
-
         "呆れ": "143_akire.png",
-
         "困惑": "143_confused.png"
-
       }
-
     },
 
     {
@@ -148,27 +136,19 @@
       },
 
       "expressions": {
-
         "通常": "143_test.png",
-
         "笑顔": "143_test_smile.png",
-
         "怒り": "143_test_angry.png"
-
       }
-
     }
-
   ],
 
   "areas": [
-
     {
       "name": "エリア1",
 
       "x": 350,
       "y": 50,
-
       "width": 100,
       "height": 100,
 
@@ -200,7 +180,6 @@
 
       "x": 350,
       "y": 250,
-
       "width": 150,
       "height": 150,
 
@@ -232,7 +211,6 @@
 
       "x": 180,
       "y": 300,
-
       "width": 80,
       "height": 80,
 
@@ -254,11 +232,9 @@
         }
       ]
     }
-
   ],
 
   "talk": {
-
     "greeting": [
       {
         "text": "俺は御多福来迎。",
@@ -295,7 +271,6 @@
         "expression": "怒り"
       }
     ]
-
   }
-
 }
+```

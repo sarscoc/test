@@ -34,7 +34,6 @@ body {
 
 /* =========================================================
    ゲーム本体（基準サイズ 1920x1080）
-   画面に合わせて自動で縮小・フィットします
    ========================================================= */
 
 #gameContainer {
@@ -69,7 +68,6 @@ body {
 
     font-weight: 300;
 
-    /* 画面比率を保ったまま自動縮小する設定 */
     transform-origin: center center;
 }
 
@@ -980,6 +978,8 @@ let lastClick = 0;
 
 let messageTimer = null;
 
+let currentScale = 1; // 現在の縮小率を保持
+
 const RAPID_TIME = 400;
 
 
@@ -996,9 +996,9 @@ function resizeGame() {
 
     const scaleX = windowWidth / gameWidth;
     const scaleY = windowHeight / gameHeight;
-    const scale = Math.min(scaleX, scaleY);
+    currentScale = Math.min(scaleX, scaleY);
 
-    game.style.transform = `scale(${scale})`;
+    game.style.transform = `scale(${currentScale})`;
 }
 
 window.addEventListener('resize', resizeGame);
@@ -2160,7 +2160,7 @@ function getAreaRapidTalk(
 
 
 /* =========================================================
-   クリック（拡大縮小を考慮した正確な座標計算）
+   クリック（scaleを考慮した正確な座標計算）
    ========================================================= */
 
 game.addEventListener(
@@ -2183,15 +2183,13 @@ game.addEventListener(
             game.getBoundingClientRect();
 
 
-        // 画面がCSSで縮小されていても、1920x1080上の正しい座標に自動変換
-        const scale = 1920 / rect.width;
-
+        // scaleを考慮して1920x1080上の正確な座標に変換
         const x =
-            (event.clientX - rect.left) * scale;
+            (event.clientX - rect.left) / currentScale;
 
 
         const y =
-            (event.clientY - rect.top) * scale;
+            (event.clientY - rect.top) / currentScale;
 
 
         const now =

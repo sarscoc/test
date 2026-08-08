@@ -224,7 +224,7 @@ body {
 }
 
 
-#menu h1 {
+#menu h1, #menu h2 {
     margin-top: 0;
 }
 
@@ -287,6 +287,8 @@ body {
         repeat(auto-fill, minmax(120px, 1fr));
 
     gap: 12px;
+
+    margin-bottom: 20px;
 }
 
 
@@ -312,17 +314,27 @@ body {
 }
 
 
-.card-character-image {
-    display: block;
+/* アイコン切り抜き用の容器 */
+.card-character-thumb {
+    position: relative;
 
     width: 80px;
     height: 80px;
 
     margin: 0 auto 8px;
 
-    object-fit: cover;
+    overflow: hidden;
 
     border-radius: 50%;
+}
+
+.card-character-image {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
 
 
@@ -354,19 +366,10 @@ body {
 }
 
 
-/*
-   大きな 🎂 タイトルは削除
-*/
-
-
 .birthday-empty {
     color: #888;
 }
 
-
-/*
-   誕生日は名前＋🎂だけ
-*/
 
 .birthday-item {
     display: inline-flex;
@@ -479,6 +482,23 @@ body {
         </section>
 
 
+        <!-- 衣装選択（複数の場合のみ表示） -->
+
+        <section
+            id="costumeSection"
+            class="hidden"
+        >
+
+            <h2>衣装選択</h2>
+
+            <div
+                id="costumeList"
+                class="list"
+            ></div>
+
+        </section>
+
+
         <!-- キャラクター -->
 
         <section
@@ -501,9 +521,7 @@ body {
             class="hidden"
         >
 
-            <h2>
-                背景選択
-            </h2>
+            <h2>背景選択</h2>
 
             <div
                 id="backgroundList"
@@ -575,6 +593,12 @@ const birthdayArea =
 
 const birthdayList =
     document.getElementById("birthdayList");
+
+const costumeSection =
+    document.getElementById("costumeSection");
+
+const costumeList =
+    document.getElementById("costumeList");
 
 const characterList =
     document.getElementById("characterList");
@@ -808,10 +832,6 @@ async function chooseInitialCharacter() {
         getBirthdayCharacters();
 
 
-    /*
-       今日の誕生日が1人
-    */
-
     if (
         birthdayCharacters.length === 1
     ) {
@@ -825,10 +845,6 @@ async function chooseInitialCharacter() {
     }
 
 
-    /*
-       今日の誕生日が複数
-    */
-
     if (
         birthdayCharacters.length > 1
     ) {
@@ -841,11 +857,6 @@ async function chooseInitialCharacter() {
 
     }
 
-
-    /*
-       誕生日なし
-       → ランダム
-    */
 
     if (
         characters.length > 0
@@ -921,6 +932,8 @@ async function loadCharacter(char) {
     loadFrame();
 
     setupPersonalPage();
+
+    setupCostumeMenu();
 
     closeMenu();
 
@@ -2085,6 +2098,132 @@ function setupBackgroundMenu() {
 
 
 /* ==================================================
+   衣装メニュー設定（衣装が2つ以上ある場合のみ）
+================================================== */
+
+function setupCostumeMenu() {
+
+    costumeList.innerHTML =
+        "";
+
+
+    if (
+        !data ||
+        !Array.isArray(data.costumes) ||
+        data.costumes.length <= 1
+    ) {
+
+        costumeSection.classList.add(
+            "hidden"
+        );
+
+        return;
+
+    }
+
+
+    costumeSection.classList.remove(
+        "hidden"
+    );
+
+
+    data.costumes.forEach(
+        costume => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "card";
+
+
+            const thumb =
+                document.createElement(
+                    "div"
+                );
+
+
+            thumb.className =
+                "card-character-thumb";
+
+
+            const img =
+                document.createElement(
+                    "img"
+                );
+
+
+            img.className =
+                "card-character-image";
+
+
+            img.src =
+                "images/" +
+                costume.image;
+
+
+            applyFaceCrop(
+                img,
+                costume.position || data.position,
+                data.menu ? data.menu.face : null
+            );
+
+
+            thumb.appendChild(
+                img
+            );
+
+
+            card.appendChild(
+                thumb
+            );
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+
+            name.className =
+                "card-name";
+
+
+            name.innerText =
+                costume.name;
+
+
+            card.appendChild(
+                name
+            );
+
+
+            card.onclick =
+                () => {
+
+                    currentCostume = costume;
+
+                    loadCostume();
+
+                    closeMenu();
+
+                };
+
+
+            costumeList.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+/* ==================================================
    キャラクター一覧
 ================================================== */
 
@@ -2110,6 +2249,51 @@ function setupCharacterMenu() {
 
 
 /* ==================================================
+   menu.face によるアイコン切り抜き適用
+================================================== */
+
+function applyFaceCrop(imgElement, position, face) {
+
+    if (!face) {
+
+        imgElement.style.objectFit = "cover";
+
+        return;
+
+    }
+
+
+    const pos = position || {};
+
+    const scale = pos.scale || 250;
+
+
+    // 拡大比率を計算
+    const ratio = 80 / face.width;
+
+    const imgWidth = scale * ratio;
+
+    const offsetX = (face.x - (pos.x || 0)) * ratio;
+
+    const offsetY = (face.y - (pos.y || 0)) * ratio;
+
+
+    imgElement.style.width = imgWidth + "px";
+
+    imgElement.style.height = "auto";
+
+    imgElement.style.maxWidth = "none";
+
+    imgElement.style.position = "absolute";
+
+    imgElement.style.left = -offsetX + "px";
+
+    imgElement.style.top = -offsetY + "px";
+
+}
+
+
+/* ==================================================
    キャラクターカード
 ================================================== */
 
@@ -2123,6 +2307,16 @@ function createCharacterCard(char) {
 
     card.className =
         "card";
+
+
+    const thumb =
+        document.createElement(
+            "div"
+        );
+
+
+    thumb.className =
+        "card-character-thumb";
 
 
     const img =
@@ -2140,12 +2334,20 @@ function createCharacterCard(char) {
         char.image;
 
 
-    img.alt =
-        char.name;
+    applyFaceCrop(
+        img,
+        char.position,
+        char.menu ? char.menu.face : null
+    );
+
+
+    thumb.appendChild(
+        img
+    );
 
 
     card.appendChild(
-        img
+        thumb
     );
 
 
@@ -2185,7 +2387,6 @@ function createCharacterCard(char) {
 
 /* ==================================================
    誕生日一覧
-   名前＋🎂だけ表示
 ================================================== */
 
 function setupBirthdayMenu() {
@@ -2317,8 +2518,36 @@ function showBirthdayChoice(
 
 
 /* ==================================================
-   メニュー
+   メニュー開閉ナビゲーション
 ================================================== */
+
+document.getElementById("characterMenuButton").onclick = () => {
+
+    birthdayArea.style.display = "none";
+
+    costumeSection.classList.add("hidden");
+
+    backgroundSection.classList.add("hidden");
+
+    characterSection.classList.remove("hidden");
+
+    setupCharacterMenu();
+
+};
+
+
+document.getElementById("backgroundMenuButton").onclick = () => {
+
+    birthdayArea.style.display = "none";
+
+    costumeSection.classList.add("hidden");
+
+    characterSection.classList.add("hidden");
+
+    backgroundSection.classList.remove("hidden");
+
+};
+
 
 function openMenu() {
 
@@ -2335,6 +2564,8 @@ function openMenu() {
 
     setupBirthdayMenu();
 
+    setupCostumeMenu();
+
     menu.style.display =
         "block";
 
@@ -2350,7 +2581,7 @@ function closeMenu() {
 
 
 /* ==================================================
-   メニューボタン
+   メニューボタンイベント
 ================================================== */
 
 document
@@ -2367,93 +2598,7 @@ document
     };
 
 
-document
-    .getElementById(
-        "characterMenuButton"
-    )
-    .onclick =
-    (event) => {
-
-        event.stopPropagation();
-
-        characterSection.classList.remove(
-            "hidden"
-        );
-
-        backgroundSection.classList.add(
-            "hidden"
-        );
-
-        birthdayArea.style.display =
-            "none";
-
-        setupCharacterMenu();
-
-    };
-
-
-document
-    .getElementById(
-        "backgroundMenuButton"
-    )
-    .onclick =
-    (event) => {
-
-        event.stopPropagation();
-
-        characterSection.classList.add(
-            "hidden"
-        );
-
-        backgroundSection.classList.remove(
-            "hidden"
-        );
-
-        birthdayArea.style.display =
-            "none";
-
-        setupBackgroundMenu();
-
-    };
-
-
-/* ==================================================
-   メニューの空白クリックで閉じる
-================================================== */
-
-menu.addEventListener(
-    "click",
-    (event) => {
-
-        /*
-         * ボタン・カード・リストの中を
-         * クリックした場合は閉じない
-         */
-
-        if (
-            event.target.closest(
-                ".menu-button, .card, .birthday-item, #birthdayList, #characterList, #backgroundList"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        /*
-         * それ以外のメニュー部分＝空白
-         */
-
-        closeMenu();
-
-    }
-);
-
-
-/* ==================================================
-   起動
-================================================== */
+/* 起動実行 */
 
 init();
 

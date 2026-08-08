@@ -67,7 +67,7 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-/* モノトーンの角アクセント（青や金を廃止し白のグラデーションボーダーに） */
+/* モノトーンの角アクセント */
 #message::before {
     content: '';
     position: absolute;
@@ -106,7 +106,7 @@ body {
     overflow-y: auto;
 }
 
-/* SATボタンと同等デザインの共通コントロールボタン */
+/* コントロールボタン共通 */
 .ctrl-btn {
     display: flex;
     justify-content: center;
@@ -225,7 +225,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* メニュー画面（モノクログラデーションすりガラス） */
+/* メニュー画面 */
 #menu {
     position: absolute;
     inset: 0;
@@ -284,9 +284,11 @@ body {
     background: transparent;
     border: none;
     padding: 0;
+    /* 大量データ時のレンダリング負荷軽減 */
+    content-visibility: auto;
 }
 
-/* キャラクターアイコン（56x56px・正方形角丸） */
+/* キャラクターアイコン（56x56px） */
 .card-character-thumb {
     position: relative;
     width: 56px;
@@ -328,15 +330,19 @@ body {
     scroll-behavior: smooth;
 }
 
+/* スクロールバーを少し太くし、100件並んでも操作しやすく最適化 */
 #backgroundList::-webkit-scrollbar {
-    height: 6px;
+    height: 8px;
 }
 #backgroundList::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
 }
 #backgroundList::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+#backgroundList::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .bg-card {
@@ -349,6 +355,8 @@ body {
     border-radius: 0;
     box-shadow: 2px 0 8px rgba(0,0,0,0.3);
     transition: flex-basis 0.25s ease, filter 0.2s ease;
+    /* 大量データ時のレンダリング負荷軽減 */
+    content-visibility: auto;
 }
 
 .bg-card-image {
@@ -857,6 +865,9 @@ function setupBackgroundMenu() {
         img.className = "bg-card-image";
         img.src = "backgrounds/" + bg.image;
         img.alt = bg.name;
+        // 100件以上の運用でもカクつかないよう遅延読み込みと非同期デコードを適用
+        img.loading = "lazy";
+        img.decoding = "async";
         card.appendChild(img);
 
         card.onclick = (e) => {
@@ -934,6 +945,9 @@ function createCharacterCard(char) {
     const img = document.createElement("img");
     img.className = "card-character-image";
     img.src = "images/" + char.image;
+    // 多数のキャラクター登録時も軽快に動作させるため最適化
+    img.loading = "lazy";
+    img.decoding = "async";
     applyFaceCrop(img, char.position, char.menu ? char.menu.face : null);
 
     thumb.appendChild(img);

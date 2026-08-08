@@ -264,6 +264,7 @@ let currentBackground = null;
 let count = {};
 let lastClick = 0;
 let messageTimer = null;
+let expressionTimer = null; // ★ 立ち絵用タイマーを追加
 const RAPID_TIME = 400;
 
 /* 初期化 */
@@ -445,7 +446,7 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
-/* ★ 吹き出し位置の自動調整関数（身体に被らず、画面外へ出ない位置） */
+/* ★ 吹き出し位置の自動調整＆タイマー分離関数 */
 function speak(talk, clickX, clickY) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -453,23 +454,32 @@ function speak(talk, clickX, clickY) {
     message.style.display = "block";
 
     const gameRect = game.getBoundingClientRect();
+    const charRect = character.getBoundingClientRect();
     const msgWidth = message.offsetWidth || 280;
     const msgHeight = message.offsetHeight || 80;
-    
-    const offset = 35; // クリック位置からの距離（離しすぎない値）
 
-    // 1. クリック位置の右側に置くスペースがあるか判定
-    let messageX = clickX + offset;
-    
-    // 右側が画面外にはみ出すなら、クリック位置の左側に配置
-    if (messageX + msgWidth > gameRect.width - 10) {
-        messageX = clickX - msgWidth - offset;
+    const charLeft = charRect.left - gameRect.left;
+    const charRight = charRect.right - gameRect.left;
+    const charCenterX = charLeft + (charRect.width / 2);
+
+    const offset = 15; // キャラの画像領域からの距離
+    let messageX;
+
+    if (clickX >= charCenterX) {
+        messageX = charRight + offset;
+        if (messageX + msgWidth > gameRect.width - 10) {
+            messageX = charLeft - msgWidth - offset;
+        }
+    } else {
+        messageX = charLeft - msgWidth - offset;
+        if (messageX < 10) {
+            messageX = charRight + offset;
+        }
     }
 
-    // 2. 高さはクリック位置を中心にする
     let messageY = clickY - (msgHeight / 2);
 
-    // 3. 画面外（左右上下）へ飛び出さないよう最終ガード
+    // 画面外（左右上下）へ飛び出さないよう最終ガード
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
 
@@ -479,26 +489,34 @@ function speak(talk, clickX, clickY) {
     message.style.left = messageX + "px";
     message.style.top = messageY + "px";
 
+    // 既存タイマーをクリア
     if (messageTimer) clearTimeout(messageTimer);
+    if (expressionTimer) clearTimeout(expressionTimer);
+
+    // ① 立ち絵だけ先に「通常」へ戻す（0.8秒後）
+    expressionTimer = setTimeout(() => {
+        setExpression("通常");
+    }, 800);
+
+    // ② 吹き出しは後からゆっくり消す（3.0秒後）
     messageTimer = setTimeout(() => {
         message.style.display = "none";
-        setExpression("通常");
-    }, 500);
+    }, 3000);
 }
 
+/* ★ 挨拶（ログイン）表示：3x3分割の「左・中マス」に表示 */
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
-    
-    // 画面の幅と高さを3分割した基準値を計算
+
     const gridX = game.clientWidth / 3;   // 1マス分の幅
     const gridY = game.clientHeight / 3;  // 1マス分の高さ
 
-    // 左列（0.5マス目）× 中央行（1.5マス目）の中心座標
-    const targetX = gridX * 0.5; // 左マスの横中央 (約150px)
-    const targetY = gridY * 1.5; // 中央マスの縦中央 (約253px)
+    const targetX = gridX * 0.5; // 左マスの横中央
+    const targetY = gridY * 1.5; // 中央マスの縦中央
 
     speak(data.talk.greeting[0], targetX, targetY);
 }
+
 function dateToNumber(value) {
     const [month, day] = value.split("-").map(Number);
     return month * 100 + day;

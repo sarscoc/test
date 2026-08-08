@@ -505,9 +505,19 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     #openMenu {
         right: var(--mobile-right, 30px);
         bottom: 18px;
-        width: 82px;
-        height: 82px;
-        font-size: 38px;
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
+    }
+    #diceButton {
+        right: var(--mobile-right, 30px);
+        bottom: 100px;
+        width: 70px;
+        height: 70px;
+    }
+    #diceButton img {
+        width: 34px;
+        height: 34px;
     }
     #clockArea {
         left: var(--mobile-left, 30px);
@@ -662,26 +672,6 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 }
 
 
-@media (max-width: 768px) {
-    #openMenu {
-        right: 18px !important;
-        bottom: 18px !important;
-        width: 70px !important;
-        height: 70px !important;
-    }
-
-    #diceButton {
-        right: 18px !important;
-        bottom: 100px !important;
-        width: 70px !important;
-        height: 70px !important;
-    }
-
-    #diceButton img {
-        width: 34px !important;
-        height: 34px !important;
-    }
-}
 
 </style>
 </head>
@@ -763,7 +753,7 @@ function resizeGame() {
         };
 
         document.documentElement.style.setProperty("--mobile-left", `${leftBound + 28}px`);
-        document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 28}px`);
+        document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 36}px`);
         document.documentElement.style.setProperty("--mobile-content-left", `${leftBound}px`);
         document.documentElement.style.setProperty("--mobile-content-width", `${visibleBaseWidth}px`);
 

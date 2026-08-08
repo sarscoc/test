@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -137,7 +137,35 @@ body {
 
 
 /* =========================
-   ボタン
+   個人ページ
+========================= */
+
+#personalPage {
+    position: absolute;
+
+    top: 12px;
+    left: 12px;
+
+    z-index: 200;
+
+    display: none;
+
+    border: none;
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,.9);
+
+    cursor: pointer;
+
+    font-size: 14px;
+}
+
+
+/* =========================
+   メニューボタン
 ========================= */
 
 #openMenu {
@@ -159,31 +187,6 @@ body {
     cursor: pointer;
 
     font-size: 18px;
-}
-
-
-#birthdayIcon {
-    position: absolute;
-
-    top: 12px;
-    left: 12px;
-
-    z-index: 200;
-
-    display: none;
-
-    width: 42px;
-    height: 42px;
-
-    border: none;
-
-    border-radius: 50%;
-
-    background: rgba(255,255,255,.9);
-
-    cursor: pointer;
-
-    font-size: 20px;
 }
 
 
@@ -280,10 +283,6 @@ body {
 }
 
 
-/* =========================
-   キャラクター画像
-========================= */
-
 .card-character-image {
     display: block;
 
@@ -297,10 +296,6 @@ body {
     border-radius: 50%;
 }
 
-
-/* =========================
-   背景サムネイル
-========================= */
 
 .card-background-image {
     display: block;
@@ -386,13 +381,13 @@ body {
     <div id="message"></div>
 
 
-    <!-- 誕生日 -->
+    <!-- 個人ページ -->
 
     <button
-        id="birthdayIcon"
-        title="今日の誕生日"
+        id="personalPage"
+        title="キャラクター個人ページ"
     >
-        🎂
+        ↗ 個人ページ
     </button>
 
 
@@ -522,8 +517,8 @@ const message =
 const menu =
     document.getElementById("menu");
 
-const birthdayIcon =
-    document.getElementById("birthdayIcon");
+const personalPage =
+    document.getElementById("personalPage");
 
 const birthdayArea =
     document.getElementById("birthdayArea");
@@ -863,9 +858,52 @@ async function loadCharacter(char) {
 
     loadFrame();
 
+    setupPersonalPage();
+
     closeMenu();
 
     showGreeting();
+
+}
+
+
+/* ==================================================
+   個人ページ
+================================================== */
+
+function setupPersonalPage() {
+
+    if (
+        data &&
+        data.page
+    ) {
+
+        personalPage.style.display =
+            "block";
+
+
+        personalPage.onclick =
+            () => {
+
+                window.open(
+                    data.page,
+                    "_blank"
+                );
+
+            };
+
+    }
+
+    else {
+
+        personalPage.style.display =
+            "none";
+
+
+        personalPage.onclick =
+            null;
+
+    }
 
 }
 
@@ -901,11 +939,6 @@ function loadCostume() {
         (position.scale || 250) +
         "px";
 
-
-    /*
-       衣装画像が存在しなかった場合
-       キャラクター本体の画像へ戻す
-    */
 
     character.onerror =
         () => {
@@ -966,25 +999,15 @@ function setExpression(expression) {
         currentCostume.image;
 
 
-    /*
-       衣装側に表情があればそれを使用。
-       なければキャラクター本体の表情を見る。
-    */
-
     const expressions =
         currentCostume.expressions ||
-        data.expressions ||
         {};
 
 
-    /*
-       表情指定なし
-       → 通常画像
-    */
-
     if (!expression) {
 
-        character.onerror = null;
+        character.onerror =
+            null;
 
         character.src =
             baseImage;
@@ -993,10 +1016,6 @@ function setExpression(expression) {
 
     }
 
-
-    /*
-       表情画像が登録されている場合
-    */
 
     if (
         expressions[expression]
@@ -1027,12 +1046,8 @@ function setExpression(expression) {
     }
 
 
-    /*
-       表情が存在しない
-       → 通常画像
-    */
-
-    character.onerror = null;
+    character.onerror =
+        null;
 
     character.src =
         baseImage;
@@ -1052,10 +1067,6 @@ function speak(talk, x, y) {
 
     }
 
-
-    /*
-       台詞ごとの表情
-    */
 
     setExpression(
         talk.expression
@@ -1205,7 +1216,7 @@ function dateToNumber(value) {
 
 
 /* ==================================================
-   期間判定
+   期間
 ================================================== */
 
 function isInPeriod(start, end) {
@@ -1242,10 +1253,6 @@ function isInPeriod(start, end) {
     }
 
 
-    /*
-       年またぎ
-    */
-
     return (
 
         current >= startNumber ||
@@ -1268,10 +1275,6 @@ function getSpecialTalks() {
     const today =
         getToday();
 
-
-    /*
-       誕生日
-    */
 
     if (
 
@@ -1297,10 +1300,6 @@ function getSpecialTalks() {
 
     }
 
-
-    /*
-       月日イベント
-    */
 
     if (
 
@@ -1347,10 +1346,6 @@ function getSpecialTalks() {
     }
 
 
-    /*
-       月イベント
-    */
-
     if (
 
         data.special &&
@@ -1381,10 +1376,6 @@ function getSpecialTalks() {
 
     }
 
-
-    /*
-       期間イベント
-    */
 
     if (
 
@@ -1792,10 +1783,6 @@ game.addEventListener(
             now;
 
 
-        /*
-           エリア
-        */
-
         const area =
             getArea(
                 x,
@@ -1849,10 +1836,6 @@ game.addEventListener(
         }
 
 
-        /*
-           キャラクター連打
-        */
-
         if (rapid) {
 
             const rapidTalk =
@@ -1873,10 +1856,6 @@ game.addEventListener(
 
         }
 
-
-        /*
-           通常
-        */
 
         const normalTalk =
             getNormalTalk();
@@ -2165,18 +2144,9 @@ function setupBirthdayMenu() {
             '今日は誕生日のキャラクターはいません。' +
             '</div>';
 
-
-        birthdayIcon.style.display =
-            "none";
-
-
         return;
 
     }
-
-
-    birthdayIcon.style.display =
-        "block";
 
 
     birthdayCharacters.forEach(
@@ -2333,25 +2303,6 @@ document
     };
 
 
-birthdayIcon.onclick =
-    () => {
-
-        openMenu();
-
-        characterSection.classList.add(
-            "hidden"
-        );
-
-        backgroundSection.classList.add(
-            "hidden"
-        );
-
-        birthdayArea.style.display =
-            "block";
-
-    };
-
-
 /* ==================================================
    起動
 ================================================== */
@@ -2363,3 +2314,4 @@ init();
 </body>
 
 </html>
+```

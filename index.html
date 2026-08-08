@@ -386,9 +386,6 @@ body {
         <!-- 左側操作コントロール -->
         <div id="leftControls">
             <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC Page</a>
-            <div id="costumeSection" class="hidden">
-                <div id="costumeList"></div>
-            </div>
         </div>
 
         <!-- 左下時計エリア -->
@@ -454,8 +451,6 @@ const menu = document.getElementById("menu");
 const personalPage = document.getElementById("personalPage");
 const birthdayArea = document.getElementById("birthdayArea");
 const birthdayList = document.getElementById("birthdayList");
-const costumeSection = document.getElementById("costumeSection");
-const costumeList = document.getElementById("costumeList");
 const characterList = document.getElementById("characterList");
 const backgroundList = document.getElementById("backgroundList");
 const characterSection = document.getElementById("characterSection");
@@ -613,24 +608,9 @@ async function chooseInitialCharacter() {
 async function loadCharacter(char) {
     data = char;
     count = {};
-    currentCostume = null;
-
-    if (Array.isArray(data.costumes) && data.costumes.length > 0) {
-        currentCostume = data.costumes[0];
-    } else {
-        currentCostume = {
-            id: "default",
-            name: "通常",
-            image: data.image,
-            position: data.position || {},
-            expressions: {}
-        };
-    }
-
-    loadCostume();
+    loadCharacterImage();
     loadFrame();
     setupPersonalPage();
-    setupCostumeMenu();
     closeMenu();
     showGreeting();
 }
@@ -656,10 +636,10 @@ function getImagePath(imageName) {
     return "characters/" + baseDir + imageName;
 }
 
-function loadCostume() {
-    const position = currentCostume.position || data.position || {};
-    const imgPath = getImagePath(currentCostume.image);
-    
+function loadCharacterImage() {
+    const position = data.position || {};
+    const imgPath = getImagePath(data.image);
+
     character.onerror = () => {
         console.error("画像読み込み失敗:", imgPath);
     };
@@ -681,27 +661,9 @@ function loadFrame() {
     }
 }
 
-/* 表情切り替え */
-function setExpression(expression) {
-    const expressions = currentCostume.expressions || {};
-    
-    if (!expression || expression === "通常") {
-        character.src = getImagePath(currentCostume.image);
-        return;
-    }
-
-    if (expressions[expression]) {
-        character.src = getImagePath(expressions[expression]);
-        return;
-    }
-
-    character.src = getImagePath(currentCostume.image);
-}
-
 /* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
-    setExpression(talk.expression || "通常");
     message.innerText = talk.text;
     message.style.display = "block";
 
@@ -736,7 +698,6 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     if (messageTimer) clearTimeout(messageTimer);
     messageTimer = setTimeout(() => {
         message.style.display = "none";
-        setExpression("通常");
     }, 3000);
 }
 
@@ -920,40 +881,6 @@ function setupBackgroundMenu() {
             closeMenu();
         };
         backgroundList.appendChild(card);
-    });
-}
-
-function setupCostumeMenu() {
-    costumeList.innerHTML = "";
-    
-    if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
-        costumeSection.classList.add("hidden");
-        return;
-    }
-
-    const otherCostumes = data.costumes.filter(costume => costume !== currentCostume);
-
-    if (otherCostumes.length === 0) {
-        costumeSection.classList.add("hidden");
-        return;
-    }
-
-    costumeSection.classList.remove("hidden");
-
-    otherCostumes.forEach(costume => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "ctrl-btn";
-        btn.innerText = costume.name;
-
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            currentCostume = costume;
-            
-            loadCostume();
-            setupCostumeMenu();
-        };
-        costumeList.appendChild(btn);
     });
 }
 

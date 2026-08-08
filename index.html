@@ -119,13 +119,13 @@ body {
 
 
 /* =========================================================
-   台詞吹き出し
+   台詞吹き出し（z-indexを300に設定して時計より手前へ）
    ========================================================= */
 
 #message {
     position: absolute;
 
-    z-index: 100;
+    z-index: 300;
 
     display: none;
 
@@ -2693,7 +2693,7 @@ function createCharacterCard(
    誕生日
    ========================================================= */
 
-function showBirthdayChoice(
+showBirthdayChoice = function(
     birthdayCharacters
 ) {
 
@@ -2754,7 +2754,7 @@ function showBirthdayChoice(
             );
         }
     );
-}
+};
 
 
 /* =========================================================

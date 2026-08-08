@@ -9,7 +9,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; width: 100%; height: 100%; }
 body {
-    background: #eee;
+    background: #ffffff; /* 画面外を白に変更 */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -64,7 +64,7 @@ body {
     overflow-y: auto;
 }
 
-/* SATボタンと同等デザインの共通コントロールボタン（フォントのみ丸く太めに設定） */
+/* SATボタンと同等デザインの共通コントロールボタン */
 .ctrl-btn {
     display: flex;
     justify-content: center;
@@ -117,10 +117,9 @@ body {
     color: #ffffff;
     font-weight: 300;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
-    width: 100px; /* 横幅の揃えを安定させるため親要素の幅を指定 */
+    width: 100px;
 }
 
-/* 時刻（大きめ・丸みのある細身フォント） */
 #clockTime {
     font-size: 40px;
     font-weight: 300;
@@ -128,18 +127,16 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* 日付（文字間隔を拡げて時計の幅に合わせる） */
 #clockDate {
     font-size: 14px;
     font-weight: 300;
     margin-top: 5px;
     margin-bottom: 7px;
-    letter-spacing: 2.5px; /* 間隔を広げて時刻の幅と統一 */
+    letter-spacing: 2.5px;
     line-height: 1.0;
     white-space: nowrap;
 }
 
-/* 曜日ボタン（角丸・白枠線） */
 #clockDay {
     display: flex;
     justify-content: center;
@@ -158,7 +155,7 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* 右上メニューボタン（丸型白枠線） */
+/* 右上メニューボタン */
 #openMenu {
     position: absolute;
     top: 16px;
@@ -186,7 +183,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-/* メニュー画面 */
+/* メニュー画面（やや濃いめのすりガラス背景・白文字） */
 #menu {
     position: absolute;
     inset: 0;
@@ -194,75 +191,99 @@ body {
     display: none;
     overflow-y: auto;
     padding: 30px;
-    background: rgba(255,255,255,.97);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #ffffff;
     cursor: pointer;
 }
-#menu h1, #menu h2 { margin-top: 0; font-weight: 400; }
+#menu h1, #menu h2, #menu p, #menu span {
+    margin-top: 0;
+    color: #ffffff;
+    font-weight: 700; /* 左上ボタンと同じフォント設定 */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
 
 .menu-buttons {
     position: absolute;
     right: 15px;
     bottom: 12px;
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin: 0;
     z-index: 510;
 }
 .menu-button {
-    border: none;
-    padding: 4px 7px;
-    border-radius: 5px;
-    background: transparent;
-    color: #555;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 4px 10px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
     cursor: pointer;
-    font-size: 11px;
-    opacity: .55;
+    font-size: 12px;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s;
 }
-.menu-button:hover { background: #f5f5f5; opacity: 1; }
+.menu-button:hover { background: rgba(255, 255, 255, 0.35); }
 
-/* カード一覧 */
+/* カード・アイコン一覧（アイコン半分サイズ・角丸ドロップシャドウ） */
 .list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
     margin-bottom: 20px;
 }
-.card {
-    overflow: hidden;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    background: #fff;
-    cursor: pointer;
-    text-align: center;
-}
-.card:hover { background: #f5f5f5; }
 
-.card-character-thumb {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 8px;
-    overflow: hidden;
-    border-radius: 50%;
+.card {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
-.card-character-image { display: block; width: 100%; height: 100%; object-fit: cover; }
-.card-background-image { display: block; width: 100%; height: 80px; margin-bottom: 8px; object-fit: cover; border-radius: 8px; }
-.card-name { font-size: 14px; }
+
+/* キャラクター＆背景アイコン（約半分サイズ：40x40px・角丸・ドロップシャドウ） */
+.card-character-thumb, .card-background-image {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover .card-character-thumb,
+.card:hover .card-background-image {
+    transform: scale(1.08);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.card-character-image {
+    display: block;
+}
+.card-background-image {
+    object-fit: cover;
+}
 
 /* 誕生日表示 */
 #birthdayArea { margin-bottom: 25px; }
-.birthday-empty { color: #888; }
+.birthday-empty { color: rgba(255,255,255,0.7); }
 .birthday-item {
     display: inline-flex;
     align-items: center;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: #fff;
+    padding: 6px 14px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-.birthday-item:hover { background: #f5f5f5; }
+.birthday-item:hover { background: rgba(255, 255, 255, 0.35); }
 
 .hidden { display: none !important; }
 </style>
@@ -289,7 +310,7 @@ body {
         <div id="clockDay">---</div>
     </div>
 
-    <!-- 右上メニューボタン（丸型白枠線） -->
+    <!-- 右上メニューボタン -->
     <button id="openMenu" type="button" aria-label="メニュー">☰</button>
     <div id="message"></div>
 
@@ -767,11 +788,6 @@ function setupBackgroundMenu() {
         img.alt = bg.name;
         card.appendChild(img);
 
-        const name = document.createElement("div");
-        name.className = "card-name";
-        name.innerText = bg.name;
-        card.appendChild(name);
-
         card.onclick = (e) => {
             e.stopPropagation();
             setBackground(bg);
@@ -822,14 +838,17 @@ function setupCharacterMenu() {
     });
 }
 
+/* アイコン用の切り抜き・縮小処理（40x40pxサイズ） */
 function applyFaceCrop(imgElement, position, face) {
     if (!face) {
+        imgElement.style.width = "100%";
+        imgElement.style.height = "100%";
         imgElement.style.objectFit = "cover";
         return;
     }
     const pos = position || {};
     const scale = pos.scale || 250;
-    const ratio = 80 / face.width;
+    const ratio = 40 / face.width; // 40px幅に縮小計算
 
     imgElement.style.width = (scale * ratio) + "px";
     imgElement.style.height = "auto";
@@ -853,11 +872,6 @@ function createCharacterCard(char) {
 
     thumb.appendChild(img);
     card.appendChild(thumb);
-
-    const name = document.createElement("div");
-    name.className = "card-name";
-    name.innerText = char.name;
-    card.appendChild(name);
 
     card.onclick = async (e) => {
         e.stopPropagation();

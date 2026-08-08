@@ -75,7 +75,7 @@
                 "scale": 250
             },
             "expressions": {
-                "通常": "characters/143/143_通常.png",
+                "通常": "characters/143/143.png",
                 "笑顔": "characters/143/143_笑顔.png",
                 "怒り": "characters/143/143_怒り.png",
                 "呆れ": "characters/143/143_呆れ.png",

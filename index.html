@@ -8,12 +8,7 @@
 
 <title>Character Game</title>
 
-
 <style>
-
-/* ========================================
-   基本
-======================================== */
 
 * {
     box-sizing: border-box;
@@ -37,9 +32,9 @@ body {
 }
 
 
-/* ========================================
-   ゲーム画面
-======================================== */
+/* =========================
+   ゲーム
+========================= */
 
 #game {
     position: relative;
@@ -57,15 +52,14 @@ body {
 }
 
 
-/* ========================================
+/* =========================
    背景
-======================================== */
+========================= */
 
 #background {
     position: absolute;
 
-    left: 0;
-    top: 0;
+    inset: 0;
 
     width: 100%;
     height: 100%;
@@ -78,9 +72,9 @@ body {
 }
 
 
-/* ========================================
+/* =========================
    キャラクター
-======================================== */
+========================= */
 
 #character {
     position: absolute;
@@ -90,20 +84,17 @@ body {
     object-fit: contain;
 
     pointer-events: none;
-
-    user-select: none;
 }
 
 
-/* ========================================
+/* =========================
    枠
-======================================== */
+========================= */
 
 #frame {
     position: absolute;
 
-    left: 0;
-    top: 0;
+    inset: 0;
 
     width: 100%;
     height: 100%;
@@ -111,12 +102,14 @@ body {
     z-index: 20;
 
     pointer-events: none;
+
+    display: none;
 }
 
 
-/* ========================================
+/* =========================
    台詞
-======================================== */
+========================= */
 
 #message {
     position: absolute;
@@ -134,42 +127,25 @@ body {
     border-radius: 22px;
 
     box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.15);
+        0 5px 20px rgba(0,0,0,.15);
 
     font-size: 20px;
 
     line-height: 1.5;
 
     pointer-events: none;
-
-    animation: pop 0.2s ease-out;
 }
 
 
-@keyframes pop {
-
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.96);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-}
-
-
-/* ========================================
-   メニューボタン
-======================================== */
+/* =========================
+   ボタン
+========================= */
 
 #openMenu {
     position: absolute;
 
-    right: 12px;
     top: 12px;
+    right: 12px;
 
     z-index: 200;
 
@@ -179,7 +155,7 @@ body {
 
     border-radius: 10px;
 
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255,255,255,.9);
 
     cursor: pointer;
 
@@ -187,15 +163,11 @@ body {
 }
 
 
-/* ========================================
-   誕生日アイコン
-======================================== */
-
 #birthdayIcon {
     position: absolute;
 
-    left: 12px;
     top: 12px;
+    left: 12px;
 
     z-index: 200;
 
@@ -208,7 +180,7 @@ body {
 
     border-radius: 50%;
 
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255,255,255,.9);
 
     cursor: pointer;
 
@@ -216,28 +188,24 @@ body {
 }
 
 
-/* ========================================
+/* =========================
    メニュー
-======================================== */
+========================= */
 
 #menu {
     position: absolute;
 
-    left: 0;
-    top: 0;
+    inset: 0;
 
     z-index: 500;
 
     display: none;
 
-    width: 100%;
-    height: 100%;
-
     overflow-y: auto;
 
     padding: 30px;
 
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(255,255,255,.97);
 }
 
 
@@ -273,27 +241,23 @@ body {
 
 
 .menu-button:hover {
-    background: #f4f4f4;
+    background: #f5f5f5;
 }
 
 
-/* ========================================
+/* =========================
    一覧
-======================================== */
+========================= */
 
 .list {
     display: grid;
 
     grid-template-columns:
-        repeat(auto-fill, minmax(120px, 1fr));
+        repeat(auto-fill,minmax(120px,1fr));
 
     gap: 12px;
 }
 
-
-/* ========================================
-   カード
-======================================== */
 
 .card {
     overflow: hidden;
@@ -317,9 +281,9 @@ body {
 }
 
 
-/* ========================================
-   キャラクターサムネイル
-======================================== */
+/* =========================
+   キャラクター画像
+========================= */
 
 .card-character-image {
     display: block;
@@ -335,10 +299,9 @@ body {
 }
 
 
-/* ========================================
+/* =========================
    背景サムネイル
-   元のJPEGをそのまま切り取って使用
-======================================== */
+========================= */
 
 .card-background-image {
     display: block;
@@ -350,24 +313,18 @@ body {
 
     object-fit: cover;
 
-    object-position: center;
-
     border-radius: 8px;
 }
 
-
-/* ========================================
-   カード文字
-======================================== */
 
 .card-name {
     font-size: 14px;
 }
 
 
-/* ========================================
+/* =========================
    誕生日
-======================================== */
+========================= */
 
 #birthdayArea {
     margin-bottom: 25px;
@@ -386,10 +343,6 @@ body {
 }
 
 
-/* ========================================
-   非表示
-======================================== */
-
 .hidden {
     display: none !important;
 }
@@ -405,9 +358,7 @@ body {
 <div id="game">
 
 
-    <!-- ================================
-         背景
-    ================================= -->
+    <!-- 背景 -->
 
     <img
         id="background"
@@ -415,9 +366,7 @@ body {
     >
 
 
-    <!-- ================================
-         キャラクター
-    ================================= -->
+    <!-- キャラクター -->
 
     <img
         id="character"
@@ -425,9 +374,7 @@ body {
     >
 
 
-    <!-- ================================
-         枠
-    ================================= -->
+    <!-- 枠 -->
 
     <img
         id="frame"
@@ -435,16 +382,12 @@ body {
     >
 
 
-    <!-- ================================
-         台詞
-    ================================= -->
+    <!-- 台詞 -->
 
     <div id="message"></div>
 
 
-    <!-- ================================
-         誕生日アイコン
-    ================================= -->
+    <!-- 誕生日 -->
 
     <button
         id="birthdayIcon"
@@ -454,9 +397,7 @@ body {
     </button>
 
 
-    <!-- ================================
-         メニューボタン
-    ================================= -->
+    <!-- メニュー -->
 
     <button
         id="openMenu"
@@ -465,9 +406,7 @@ body {
     </button>
 
 
-    <!-- ================================
-         メニュー
-    ================================= -->
+    <!-- メニュー本体 -->
 
     <div id="menu">
 
@@ -502,9 +441,7 @@ body {
         </div>
 
 
-        <!-- ================================
-             誕生日
-        ================================= -->
+        <!-- 今日の誕生日 -->
 
         <section id="birthdayArea">
 
@@ -520,9 +457,7 @@ body {
         </section>
 
 
-        <!-- ================================
-             キャラクター一覧
-        ================================= -->
+        <!-- キャラクター -->
 
         <section
             id="characterSection"
@@ -541,9 +476,7 @@ body {
         </section>
 
 
-        <!-- ================================
-             背景一覧
-        ================================= -->
+        <!-- 背景 -->
 
         <section
             id="backgroundSection"
@@ -564,7 +497,6 @@ body {
     </div>
 
 </div>
-
 
 
 <script>
@@ -619,6 +551,8 @@ const backgroundSection =
 
 let characters = [];
 
+let backgrounds = [];
+
 let data = null;
 
 let currentCostume = null;
@@ -635,46 +569,7 @@ let messageTimer = null;
 
 
 /* ==================================================
-   背景
-   JSONは使わない。
-   JPEGファイルだけ用意する。
-================================================== */
-
-const backgrounds = [
-
-    {
-        id: "spring",
-        name: "春",
-        image: "spring.jpg",
-        season: "spring"
-    },
-
-    {
-        id: "summer",
-        name: "夏",
-        image: "summer.jpg",
-        season: "summer"
-    },
-
-    {
-        id: "autumn",
-        name: "秋",
-        image: "autumn.jpg",
-        season: "autumn"
-    },
-
-    {
-        id: "winter",
-        name: "冬",
-        image: "winter.jpg",
-        season: "winter"
-    }
-
-];
-
-
-/* ==================================================
-   起動
+   初期化
 ================================================== */
 
 async function init() {
@@ -682,6 +577,8 @@ async function init() {
     try {
 
         await loadCharacters();
+
+        await loadBackgrounds();
 
         setupBackground();
 
@@ -707,7 +604,7 @@ async function init() {
 
 
 /* ==================================================
-   キャラクター一覧読み込み
+   キャラクター一覧
 ================================================== */
 
 async function loadCharacters() {
@@ -738,40 +635,32 @@ async function loadCharacters() {
         const file of files
     ) {
 
-        try {
-
-            const response =
-                await fetch(
-                    "characters/" +
-                    file
-                );
-
-
-            if (!response.ok) {
-
-                continue;
-
-            }
-
-
-            const json =
-                await response.json();
-
-
-            characters.push(
-                json
+        const response =
+            await fetch(
+                "characters/" +
+                file
             );
 
-        }
 
-        catch (error) {
+        if (!response.ok) {
 
             console.error(
-                file,
-                error
+                "読み込み失敗:",
+                file
             );
 
+            continue;
+
         }
+
+
+        const json =
+            await response.json();
+
+
+        characters.push(
+            json
+        );
 
     }
 
@@ -779,7 +668,34 @@ async function loadCharacters() {
 
 
 /* ==================================================
-   今日の日付
+   背景JSON
+================================================== */
+
+async function loadBackgrounds() {
+
+    const response =
+        await fetch(
+            "backgrounds/backgrounds.json"
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "backgrounds/backgrounds.json が読み込めません。"
+        );
+
+    }
+
+
+    backgrounds =
+        await response.json();
+
+}
+
+
+/* ==================================================
+   今日
 ================================================== */
 
 function getToday() {
@@ -802,7 +718,7 @@ function getToday() {
 
 
 /* ==================================================
-   今日の誕生日
+   誕生日
 ================================================== */
 
 function getBirthdayCharacters() {
@@ -840,7 +756,7 @@ function getBirthdayCharacters() {
 
 
 /* ==================================================
-   最初のキャラクター選択
+   最初のキャラクター
 ================================================== */
 
 async function chooseInitialCharacter() {
@@ -850,7 +766,7 @@ async function chooseInitialCharacter() {
 
 
     /*
-       今日の誕生日が1人
+       誕生日が1人
     */
 
     if (
@@ -867,8 +783,7 @@ async function chooseInitialCharacter() {
 
 
     /*
-       今日の誕生日が複数
-       → 選択画面
+       複数
     */
 
     if (
@@ -886,14 +801,14 @@ async function chooseInitialCharacter() {
 
     /*
        誕生日なし
-       → 144人からランダム
+       → ランダム
     */
 
     if (
         characters.length > 0
     ) {
 
-        const randomIndex =
+        const index =
             Math.floor(
                 Math.random() *
                 characters.length
@@ -901,7 +816,7 @@ async function chooseInitialCharacter() {
 
 
         await loadCharacter(
-            characters[randomIndex]
+            characters[index]
         );
 
     }
@@ -922,10 +837,6 @@ async function loadCharacter(char) {
     currentCostume = null;
 
 
-    /*
-       衣装あり
-    */
-
     if (
 
         Array.isArray(
@@ -940,11 +851,6 @@ async function loadCharacter(char) {
             data.costumes[0];
 
     }
-
-
-    /*
-       衣装なし
-    */
 
     else {
 
@@ -969,24 +875,9 @@ async function loadCharacter(char) {
 
     loadCostume();
 
-
-    /*
-       枠
-    */
-
     loadFrame();
 
-
-    /*
-       メニューを閉じる
-    */
-
     closeMenu();
-
-
-    /*
-       挨拶
-    */
 
     showGreeting();
 
@@ -994,7 +885,7 @@ async function loadCharacter(char) {
 
 
 /* ==================================================
-   衣装読み込み
+   衣装
 ================================================== */
 
 function loadCostume() {
@@ -1032,16 +923,6 @@ function loadCostume() {
 ================================================== */
 
 function loadFrame() {
-
-    /*
-       JSONに
-
-       "frame": "frame.png"
-
-       があれば読み込む。
-
-       なければ非表示。
-    */
 
     if (
         data.frame
@@ -1083,7 +964,7 @@ function setExpression(expression) {
 
     /*
        表情指定なし
-       → 通常表情
+       → 通常に戻す
     */
 
     if (!expression) {
@@ -1096,10 +977,6 @@ function setExpression(expression) {
 
     }
 
-
-    /*
-       指定された表情
-    */
 
     if (
         expressions[expression]
@@ -1114,11 +991,6 @@ function setExpression(expression) {
     }
 
 
-    /*
-       見つからない
-       → 通常表情
-    */
-
     character.src =
         "images/" +
         currentCostume.image;
@@ -1127,20 +999,25 @@ function setExpression(expression) {
 
 
 /* ==================================================
-   台詞表示
+   台詞
 ================================================== */
 
-function showTalk(text, x, y) {
+function speak(talk, x, y) {
 
-    if (!text) {
+    if (!talk) {
 
         return;
 
     }
 
 
+    setExpression(
+        talk.expression
+    );
+
+
     message.innerText =
-        text;
+        talk.text;
 
 
     let messageX =
@@ -1150,10 +1027,6 @@ function showTalk(text, x, y) {
     let messageY =
         y - 20;
 
-
-    /*
-       右端からはみ出さない
-    */
 
     if (
         messageX + 420 >
@@ -1166,10 +1039,6 @@ function showTalk(text, x, y) {
     }
 
 
-    /*
-       左端
-    */
-
     if (
         messageX < 10
     ) {
@@ -1178,10 +1047,6 @@ function showTalk(text, x, y) {
 
     }
 
-
-    /*
-       上端
-    */
 
     if (
         messageY < 20
@@ -1204,25 +1069,6 @@ function showTalk(text, x, y) {
         "block";
 
 
-    /*
-       アニメーション再実行
-    */
-
-    message.style.animation =
-        "none";
-
-
-    void message.offsetWidth;
-
-
-    message.style.animation =
-        "pop 0.2s ease-out";
-
-
-    /*
-       自動消去
-    */
-
     if (messageTimer) {
 
         clearTimeout(
@@ -1240,36 +1086,8 @@ function showTalk(text, x, y) {
                     "none";
 
             },
-
             2500
         );
-
-}
-
-
-/* ==================================================
-   喋る
-================================================== */
-
-function speak(talk, x, y) {
-
-    if (!talk) {
-
-        return;
-
-    }
-
-
-    setExpression(
-        talk.expression
-    );
-
-
-    showTalk(
-        talk.text,
-        x,
-        y
-    );
 
 }
 
@@ -1286,10 +1104,17 @@ function showGreeting() {
 
         !Array.isArray(
             data.talk.greeting
-        ) ||
+        )
 
+    ) {
+
+        return;
+
+    }
+
+
+    if (
         data.talk.greeting.length === 0
-
     ) {
 
         return;
@@ -1311,28 +1136,30 @@ function showGreeting() {
 
 
 /* ==================================================
-   日付 → 数字
+   日付
 ================================================== */
 
-function dateNumber(value) {
+function dateToNumber(value) {
 
-    const parts =
-        value.split("-");
+    const [
+        month,
+        day
+    ] =
+        value
+            .split("-")
+            .map(Number);
 
 
     return (
-
-        Number(parts[0]) * 100 +
-
-        Number(parts[1])
-
+        month * 100 +
+        day
     );
 
 }
 
 
 /* ==================================================
-   期間
+   期間判定
    年またぎ対応
 ================================================== */
 
@@ -1348,16 +1175,16 @@ function isInPeriod(start, end) {
 
 
     const startNumber =
-        dateNumber(start);
+        dateToNumber(start);
 
 
     const endNumber =
-        dateNumber(end);
+        dateToNumber(end);
 
 
     /*
-       普通の期間
-       04-01 ～ 08-31
+       通常
+       03-01 ～ 05-31
     */
 
     if (
@@ -1433,7 +1260,7 @@ function getSpecialTalks() {
 
 
     /*
-       特定日
+       月日イベント
     */
 
     if (
@@ -1482,7 +1309,42 @@ function getSpecialTalks() {
 
 
     /*
-       期間
+       月イベント
+    */
+
+    if (
+
+        data.special &&
+
+        data.special.months
+
+    ) {
+
+        const monthTalk =
+            data.special.months[
+                String(
+                    today.month
+                )
+            ];
+
+
+        if (
+            Array.isArray(
+                monthTalk
+            )
+        ) {
+
+            talks.push(
+                ...monthTalk
+            );
+
+        }
+
+    }
+
+
+    /*
+       期間イベント
     */
 
     if (
@@ -1528,62 +1390,38 @@ function getSpecialTalks() {
 
 
     /*
-       月
-    */
-
-    if (
-
-        data.special &&
-
-        data.special.months
-
-    ) {
-
-        const monthTalk =
-            data.special.months[
-                String(
-                    today.month
-                )
-            ];
-
-
-        if (
-            Array.isArray(
-                monthTalk
-            )
-        ) {
-
-            talks.push(
-                ...monthTalk
-            );
-
-        }
-
-    }
-
-
-    /*
        季節
     */
 
-    const season =
-        getSeason();
-
-
     if (
 
         data.special &&
 
-        data.special.seasons &&
-
-        Array.isArray(
-            data.special.seasons[season]
-        )
+        data.special.seasons
 
     ) {
 
-        talks.push(
-            ...data.special.seasons[season]
+        /*
+           キャラクター側の季節指定も
+           同じ期間方式にすることが可能。
+        */
+
+        Object.values(
+            data.special.seasons
+        ).forEach(
+            season => {
+
+                if (
+                    Array.isArray(season.talk)
+                ) {
+
+                    talks.push(
+                        ...season.talk
+                    );
+
+                }
+
+            }
         );
 
     }
@@ -1603,10 +1441,6 @@ function getNormalTalk() {
     const pool = [];
 
 
-    /*
-       通常台詞
-    */
-
     if (
 
         data.talk &&
@@ -1623,10 +1457,6 @@ function getNormalTalk() {
 
     }
 
-
-    /*
-       季節・月・期間・イベント・誕生日
-    */
 
     pool.push(
         ...getSpecialTalks()
@@ -1671,7 +1501,7 @@ function getNormalTalk() {
 
 
 /* ==================================================
-   通常連打台詞
+   連打
 ================================================== */
 
 function getRapidTalk() {
@@ -1682,10 +1512,17 @@ function getRapidTalk() {
 
         !Array.isArray(
             data.talk.rapid
-        ) ||
+        )
 
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
         data.talk.rapid.length === 0
-
     ) {
 
         return null;
@@ -1722,29 +1559,8 @@ function getRapidTalk() {
 
 
 /* ==================================================
-   エリア判定
+   エリア
 ================================================== */
-
-function inside(x, y, area) {
-
-    return (
-
-        x >= area.x &&
-
-        x <=
-            area.x +
-            area.width &&
-
-        y >= area.y &&
-
-        y <=
-            area.y +
-            area.height
-
-    );
-
-}
-
 
 function getArea(x, y) {
 
@@ -1763,10 +1579,6 @@ function getArea(x, y) {
     }
 
 
-    /*
-       後ろに書いたエリアを優先
-    */
-
     for (
 
         let i =
@@ -1783,11 +1595,19 @@ function getArea(x, y) {
 
 
         if (
-            inside(
-                x,
-                y,
-                area
-            )
+
+            x >= area.x &&
+
+            x <=
+                area.x +
+                area.width &&
+
+            y >= area.y &&
+
+            y <=
+                area.y +
+                area.height
+
         ) {
 
             return area;
@@ -1814,10 +1634,17 @@ function getAreaTalk(area) {
 
         !Array.isArray(
             area.talk
-        ) ||
+        )
 
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
         area.talk.length === 0
-
     ) {
 
         return null;
@@ -1855,7 +1682,7 @@ function getAreaTalk(area) {
 
 
 /* ==================================================
-   エリア連打台詞
+   エリア連打
 ================================================== */
 
 function getAreaRapidTalk(area) {
@@ -1866,10 +1693,17 @@ function getAreaRapidTalk(area) {
 
         !Array.isArray(
             area.rapid
-        ) ||
+        )
 
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
         area.rapid.length === 0
-
     ) {
 
         return null;
@@ -1921,11 +1755,6 @@ game.addEventListener(
         }
 
 
-        /*
-           メニューなどのUIをクリックした場合
-           ゲームクリックとして扱わない
-        */
-
         if (
             event.target !== game
         ) {
@@ -1963,9 +1792,7 @@ game.addEventListener(
 
 
         /*
-           ==============================
            エリア
-           ==============================
         */
 
         const area =
@@ -1976,10 +1803,6 @@ game.addEventListener(
 
 
         if (area) {
-
-            /*
-               エリア連打
-            */
 
             if (rapid) {
 
@@ -2004,10 +1827,6 @@ game.addEventListener(
             }
 
 
-            /*
-               エリア通常
-            */
-
             const areaTalk =
                 getAreaTalk(
                     area
@@ -2030,9 +1849,7 @@ game.addEventListener(
 
 
         /*
-           ==============================
            キャラクター連打
-           ==============================
         */
 
         if (rapid) {
@@ -2057,9 +1874,7 @@ game.addEventListener(
 
 
         /*
-           ==============================
-           通常台詞
-           ==============================
+           通常
         */
 
         const normalTalk =
@@ -2081,52 +1896,7 @@ game.addEventListener(
 
 
 /* ==================================================
-   季節
-================================================== */
-
-function getSeason() {
-
-    const month =
-        new Date().getMonth() + 1;
-
-
-    if (
-        month >= 3 &&
-        month <= 5
-    ) {
-
-        return "spring";
-
-    }
-
-
-    if (
-        month >= 6 &&
-        month <= 8
-    ) {
-
-        return "summer";
-
-    }
-
-
-    if (
-        month >= 9 &&
-        month <= 11
-    ) {
-
-        return "autumn";
-
-    }
-
-
-    return "winter";
-
-}
-
-
-/* ==================================================
-   背景設定
+   背景
 ================================================== */
 
 function setBackground(bg) {
@@ -2143,19 +1913,33 @@ function setBackground(bg) {
 
 
 /* ==================================================
-   起動時背景
+   起動時の季節背景
 ================================================== */
 
 function setupBackground() {
 
-    const season =
-        getSeason();
-
-
     const seasonal =
         backgrounds.find(
-            bg =>
-                bg.season === season
+            bg => {
+
+                if (
+                    !bg.season
+                ) {
+
+                    return false;
+
+                }
+
+
+                return isInPeriod(
+
+                    bg.season.start,
+
+                    bg.season.end
+
+                );
+
+            }
         );
 
 
@@ -2171,8 +1955,7 @@ function setupBackground() {
 
 
 /* ==================================================
-   背景メニュー
-   JPEGそのものをサムネイルにする
+   背景一覧
 ================================================== */
 
 function setupBackgroundMenu() {
@@ -2193,10 +1976,6 @@ function setupBackgroundMenu() {
             card.className =
                 "card";
 
-
-            /*
-               元JPEGをそのまま使用
-            */
 
             const img =
                 document.createElement(
@@ -2222,10 +2001,6 @@ function setupBackgroundMenu() {
             );
 
 
-            /*
-               背景名
-            */
-
             const name =
                 document.createElement(
                     "div"
@@ -2244,10 +2019,6 @@ function setupBackgroundMenu() {
                 name
             );
 
-
-            /*
-               背景選択
-            */
 
             card.onclick =
                 () => {
@@ -2331,26 +2102,6 @@ function createCharacterCard(char) {
         char.name;
 
 
-    /*
-       キャラクター一覧の顔切り取り用設定。
-
-       JSONに
-
-       "menu": {
-           "face": {
-               "x": 100,
-               "y": 50,
-               "width": 200,
-               "height": 200
-           }
-       }
-
-       があれば将来的にここで利用可能。
-
-       現在は通常画像を使用。
-    */
-
-
     card.appendChild(
         img
     );
@@ -2391,7 +2142,7 @@ function createCharacterCard(char) {
 
 
 /* ==================================================
-   誕生日メニュー
+   誕生日一覧
 ================================================== */
 
 function setupBirthdayMenu() {
@@ -2403,10 +2154,6 @@ function setupBirthdayMenu() {
     birthdayList.innerHTML =
         "";
 
-
-    /*
-       誕生日なし
-    */
 
     if (
         birthdayCharacters.length === 0
@@ -2426,10 +2173,6 @@ function setupBirthdayMenu() {
 
     }
 
-
-    /*
-       誕生日あり
-    */
 
     birthdayIcon.style.display =
         "block";
@@ -2451,7 +2194,7 @@ function setupBirthdayMenu() {
 
 
 /* ==================================================
-   複数誕生日の選択画面
+   複数誕生日
 ================================================== */
 
 function showBirthdayChoice(
@@ -2496,7 +2239,7 @@ function showBirthdayChoice(
 
 
 /* ==================================================
-   メニューを開く
+   メニュー
 ================================================== */
 
 function openMenu() {
@@ -2504,16 +2247,8 @@ function openMenu() {
     menu.style.display =
         "block";
 
-
-    birthdayArea.style.display =
-        "block";
-
 }
 
-
-/* ==================================================
-   メニューを閉じる
-================================================== */
 
 function closeMenu() {
 
@@ -2524,7 +2259,7 @@ function closeMenu() {
 
 
 /* ==================================================
-   メニュー操作
+   メニューボタン
 ================================================== */
 
 document
@@ -2551,10 +2286,6 @@ document
     };
 
 
-/*
-   キャラクター選択
-*/
-
 document
     .getElementById(
         "characterMenuButton"
@@ -2566,24 +2297,17 @@ document
             "hidden"
         );
 
-
         backgroundSection.classList.add(
             "hidden"
         );
 
-
         birthdayArea.style.display =
             "none";
-
 
         setupCharacterMenu();
 
     };
 
-
-/*
-   背景選択
-*/
 
 document
     .getElementById(
@@ -2596,40 +2320,30 @@ document
             "hidden"
         );
 
-
         backgroundSection.classList.remove(
             "hidden"
         );
 
-
         birthdayArea.style.display =
             "none";
-
 
         setupBackgroundMenu();
 
     };
 
 
-/*
-   誕生日アイコン
-*/
-
 birthdayIcon.onclick =
     () => {
 
         openMenu();
 
-
         characterSection.classList.add(
             "hidden"
         );
 
-
         backgroundSection.classList.add(
             "hidden"
         );
-
 
         birthdayArea.style.display =
             "block";

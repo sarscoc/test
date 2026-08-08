@@ -531,23 +531,28 @@ body {
 
 
 
-/* タップ：短くキレのあるホワッ */
+55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+
+/* タップ：高速サークルのホワッ */
 .tap-flash {
     position: absolute;
     z-index: 180;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.96);
-    background: rgba(255,255,255,0.10);
-    transform: translate(-50%, -50%) scale(0.55);
+    border: 2px solid rgba(255,255,255,0.98);
+    background: rgba(255,255,255,0.08);
+    transform: translate(-50%, -50%) scale(0.50);
     pointer-events: none;
-    animation: tapFlash 170ms ease-out forwards;
+    animation: tapFlash 145ms ease-out forwards;
 }
 @keyframes tapFlash {
-    0%   { opacity: 0.95; transform: translate(-50%, -50%) scale(0.55); }
-    55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+    0%   { opacity: 0.95; transform: translate(-50%, -50%) scale(0.50); }
+    55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.90); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12); }
 }
 
 </style>
@@ -841,17 +846,20 @@ async function loadBackgrounds() {
 function getToday() {
     const now = new Date();
     return {
-        month: now.getMonth() + 1,
-        day: now.getDate()
+        month: Number(now.getMonth() + 1),
+        day: Number(now.getDate())
     };
 }
 
 function getBirthdayCharacters() {
     const today = getToday();
     return characters.filter(char => {
-        if (!char.birthday) return false;
-        return Number(char.birthday.month) === today.month && Number(char.birthday.day) === today.day;
+        const birthday = char && char.birthday;
+        if (!birthday) return false;
+        return Number(birthday.month) === today.month &&
+               Number(birthday.day) === today.day;
     });
+});
 }
 
 async function chooseInitialCharacter() {
@@ -935,6 +943,44 @@ function loadCharacterImage() {
     character.style.height = "auto";
 }
 
+
+
+function applyMobileCharacterTransform() {
+    if (!data) return;
+
+    const position = data.position || {};
+    const baseX = Number(position.x || 0);
+    const baseY = Number(position.y || 0);
+    const baseWidth = Number(position.scale || 1920);
+
+    if (window.innerWidth <= 768) {
+        const mobileScale = 0.94; // 少しだけ縮小
+        const newWidth = baseWidth * mobileScale;
+
+        // 基準：画像の真ん中下（bottom-center）を固定
+        const baseCenterX = baseX + baseWidth / 2;
+        const assumedHeight = 1080 * (baseWidth / 1920);
+        const baseBottomY = baseY + assumedHeight;
+
+        const newHeight = assumedHeight * mobileScale;
+        const newX = baseCenterX - newWidth / 2;
+        const newY = baseBottomY - newHeight;
+
+        character.style.left = newX + "px";
+        character.style.top = newY + "px";
+        character.style.width = newWidth + "px";
+        character.dataset.mobileScale = String(mobileScale);
+        character.dataset.mobileOffsetX = String(newX - baseX);
+        character.dataset.mobileOffsetY = String(newY - baseY);
+    } else {
+        character.style.left = baseX + "px";
+        character.style.top = baseY + "px";
+        character.style.width = baseWidth + "px";
+        character.dataset.mobileScale = "1";
+        character.dataset.mobileOffsetX = "0";
+        character.dataset.mobileOffsetY = "0";
+    }
+}
 
 function loadFrame() {
     if (data.frame) {
@@ -1020,11 +1066,12 @@ message.style.left = messageX + "px";
 
 function showGreeting() {
     if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
-    
-    const centerX = game.clientWidth / 2;
-    const centerY = game.clientHeight * 0.45;
 
-    speak(data.talk.greeting[0], centerX, centerY, { x: centerX, y: centerY });
+    const centerX = 1920 / 2;
+    const centerY = 1080 * 0.45;
+
+    // スマホでも通常台詞と同じ固定位置ロジックを使う
+    speak(data.talk.greeting[0], centerX, centerY, null);
 }
 
 function dateToNumber(value) {
@@ -1153,7 +1200,7 @@ function showTapFlash(x, y) {
     effect.style.left = x + "px";
     effect.style.top = y + "px";
     game.appendChild(effect);
-    setTimeout(() => effect.remove(), 220);
+    setTimeout(() => effect.remove(), 180);
 }
 
 /* クリックイベント処理（1920x1080基準の座標変換） */
@@ -1379,7 +1426,7 @@ document.getElementById("openMenu").onclick = (event) => {
 };
 
 /* 起動 */
-window.addEventListener("resize", resizeGame);
+window.addEventListener("resize", () => { resizeGame(); applyMobileCharacterTransform(); });
 resizeGame();
 init();
 </script>

@@ -1135,16 +1135,19 @@ function speak(talk, x, y) {
     }
 
 
-    messageTimer =
-        setTimeout(
-            () => {
+messageTimer =
+    setTimeout(
+        () => {
 
-                message.style.display =
-                    "none";
+            message.style.display =
+                "none";
 
-            },
-            2500
-        );
+            // 台詞が終わったら通常表情に戻す
+            setExpression("通常");
+
+        },
+        2500
+    );
 
 }
 

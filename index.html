@@ -1947,53 +1947,52 @@ function getSpecialTalks() {
 
 
 function getNormalTalk() {
+    const specialTalks = getSpecialTalks();
 
-    const pool = [];
+    // 季節・特別期間の台詞がある場合は、
+    // 通常台詞と混ぜず、特別台詞だけを出す
+    if (specialTalks.length > 0) {
+        const key = "special";
 
+        if (count[key] === undefined)
+            count[key] = 0;
 
-    if (
-        data.talk &&
-        Array.isArray(
-            data.talk.normal
-        )
-    ) {
+        const talk =
+            specialTalks[
+                count[key] %
+                specialTalks.length
+            ];
 
-        pool.push(
-            ...data.talk.normal
-        );
+        count[key]++;
+
+        return talk;
     }
 
-
-    pool.push(
-        ...getSpecialTalks()
-    );
-
-
+    // 特別台詞がない場合だけ通常台詞
     if (
-        pool.length === 0
+        !data.talk ||
+        !Array.isArray(
+            data.talk.normal
+        ) ||
+        data.talk.normal.length === 0
     )
         return null;
 
-
     const key =
         "normal";
-
 
     if (
         count[key] === undefined
     )
         count[key] = 0;
 
-
     const talk =
-        pool[
+        data.talk.normal[
             count[key] %
-            pool.length
+            data.talk.normal.length
         ];
 
-
     count[key]++;
-
 
     return talk;
 }
@@ -2243,25 +2242,6 @@ game.addEventListener(
 
                 speak(
                     areaTalk,
-                    x,
-                    y
-                );
-
-                return;
-            }
-        }
-
-
-        if (rapid) {
-
-            const rapidTalk =
-                getRapidTalk();
-
-
-            if (rapidTalk) {
-
-                speak(
-                    rapidTalk,
                     x,
                     y
                 );

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
 <link rel="shortcut icon" href="#">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;600&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Quicksand:wght@300;400;500;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 html, body { 
@@ -686,6 +686,27 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 
 
+
+/* 続きの台詞がある間だけ、吹き出し右下に表示 */
+#message.has-next::after {
+    content: "⇢";
+    position: absolute;
+    right: 18px;
+    bottom: 8px;
+    font-family: "Quicksand", sans-serif;
+    font-size: 27px;
+    font-weight: 500;
+    line-height: 1;
+    color: rgba(255,255,255,0.95);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.65);
+    animation: nextArrowPulse 850ms ease-in-out infinite alternate;
+}
+
+@keyframes nextArrowPulse {
+    from { opacity: 0.55; transform: translateX(0); }
+    to   { opacity: 1; transform: translateX(3px); }
+}
+
 </style>
 </head>
 <body>
@@ -798,6 +819,7 @@ function resizeGame() {
     }
 if (data) {
         loadCharacterImage();
+        applyNameStyle();
     }
 }
 
@@ -842,6 +864,8 @@ let currentBackground = null;
 let count = {};
 let lastClick = 0;
 let messageTimer = null;
+let typingTimer = null;
+let activeContinuation = null;
 const RAPID_TIME = 400;
 
 /* 台詞の巡回状態
@@ -852,6 +876,8 @@ const RAPID_TIME = 400;
 let dialogueState = null;
 
 function resetDialogueState() {
+    activeContinuation = null;
+    message.classList.remove("has-next");
     dialogueState = {
         normalCycle: 0,
         normalRounds: 0,
@@ -1142,6 +1168,7 @@ function setupPersonalPage() {
         nameText.textContent = data.name;
         characterName.appendChild(nameText);
         characterName.style.display = "flex";
+        applyNameStyle();
     } else {
         characterName.style.display = "none";
     }
@@ -1249,50 +1276,357 @@ function loadFrame() {
     }
 }
 
-/* 吹き出し位置の自動調整 */
-function speak(talk, clickX, clickY, forcePosition = null) {
-    if (!talk) return;
-    message.innerText = talk.text;
 
-    const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
+/* =========================
+   JSON文字スタイル
+   dialogueStyle: 台詞全体のデフォルト
+   talk.style: その台詞だけ上書き
+   nameStyle: 左上キャラ名
+   ========================= */
+
+function resolveFontFamily(value, fallback) {
+    if (!value) return fallback;
+
+    const key = String(value).trim().toLowerCase();
+    const presets = {
+        "gothic": '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif',
+        "sans": '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif',
+        "rounded": '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif',
+        "round": '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif',
+        "mplus": '"M PLUS 1p", "Yu Gothic UI", "Yu Gothic", sans-serif',
+        "serif": '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif',
+        "mincho": '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif',
+        "hand": '"Zen Kurenaido", "Yu Gothic", sans-serif',
+        "handwriting": '"Zen Kurenaido", "Yu Gothic", sans-serif',
+        "clock": '"Quicksand", "M PLUS 1p", sans-serif',
+        "quicksand": '"Quicksand", "M PLUS 1p", sans-serif'
+    };
+
+    if (presets[key]) return presets[key];
+
+    // CSSのfont-family文字列を直接書くことも可能
+    if (String(value).includes(",") || String(value).includes('"') || String(value).includes("'")) {
+        return String(value);
+    }
+
+    return `"${String(value).replace(/"/g, "")}", ${fallback}`;
+}
+
+function numberOrDefault(value, fallback) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function mergedDialogueStyle(talk) {
+    return {
+        ...(data && data.dialogueStyle ? data.dialogueStyle : {}),
+        ...(talk && talk.style ? talk.style : {})
+    };
+}
+
+function applyDialogueStyle(talk, isMobile) {
+    const style = mergedDialogueStyle(talk);
+
+    const defaultFont = '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif';
+    const defaultSize = isMobile ? 34 : 28;
+
+    message.style.color = style.color || "#f0f2f5";
+    message.style.fontSize = numberOrDefault(
+        isMobile && style.mobileSize !== undefined ? style.mobileSize : style.size,
+        defaultSize
+    ) + "px";
+
+    if (style.bold === true) {
+        message.style.fontWeight = "700";
+    } else if (style.bold === false) {
+        message.style.fontWeight = String(numberOrDefault(style.weight, 400));
+    } else {
+        message.style.fontWeight = String(numberOrDefault(style.weight, 400));
+    }
+
+    message.style.fontFamily = resolveFontFamily(style.font, defaultFont);
+
+    if (style.letterSpacing !== undefined) {
+        const spacing = typeof style.letterSpacing === "number"
+            ? style.letterSpacing + "em"
+            : String(style.letterSpacing);
+        message.style.letterSpacing = spacing;
+    } else {
+        message.style.letterSpacing = "0.05em";
+    }
+
+    if (style.lineHeight !== undefined) {
+        message.style.lineHeight = String(style.lineHeight);
+    } else {
+        message.style.lineHeight = isMobile ? "1.5" : "1.6";
+    }
+
+    return style;
+}
+
+function applyNameStyle() {
+    if (!data) return;
+
+    const style = data.nameStyle || {};
+    const isMobile = Boolean(window.mobileLayout && window.mobileLayout.active);
+    const defaultFont = '"M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif';
+
+    characterName.style.color = style.color || "#ffffff";
+    characterName.style.fontSize = numberOrDefault(
+        isMobile && style.mobileSize !== undefined ? style.mobileSize : style.size,
+        isMobile ? 26 : 23
+    ) + "px";
+    characterName.style.fontFamily = resolveFontFamily(style.font, defaultFont);
+
+    if (style.bold === true) {
+        characterName.style.fontWeight = "700";
+    } else {
+        characterName.style.fontWeight = String(numberOrDefault(style.weight, 500));
+    }
+
+    if (style.letterSpacing !== undefined) {
+        characterName.style.letterSpacing =
+            typeof style.letterSpacing === "number"
+                ? style.letterSpacing + "em"
+                : String(style.letterSpacing);
+    } else {
+        characterName.style.letterSpacing = "0.02em";
+    }
+}
+
+function playDialogueAnimation(style, fullText, measuredHeight) {
+    if (typingTimer) {
+        clearInterval(typingTimer);
+        typingTimer = null;
+    }
+
+    if (message.getAnimations) {
+        message.getAnimations().forEach(animation => animation.cancel());
+    }
+
+    const animation = String(style.animation || "none").toLowerCase();
+    const duration = Math.max(80, numberOrDefault(style.animationDuration, 180));
+
+    if (animation === "fade") {
+        message.animate(
+            [
+                { opacity: 0 },
+                { opacity: 1 }
+            ],
+            { duration, easing: "ease-out" }
+        );
+        return;
+    }
+
+    if (animation === "pop") {
+        message.animate(
+            [
+                { opacity: 0, transform: "scale(0.92)" },
+                { opacity: 1, transform: "scale(1)" }
+            ],
+            { duration, easing: "cubic-bezier(.2,.85,.25,1)" }
+        );
+        return;
+    }
+
+    if (animation === "slide" || animation === "slideup") {
+        message.animate(
+            [
+                { opacity: 0, transform: "translateY(14px)" },
+                { opacity: 1, transform: "translateY(0)" }
+            ],
+            { duration, easing: "ease-out" }
+        );
+        return;
+    }
+
+    if (animation === "slideleft") {
+        message.animate(
+            [
+                { opacity: 0, transform: "translateX(18px)" },
+                { opacity: 1, transform: "translateX(0)" }
+            ],
+            { duration, easing: "ease-out" }
+        );
+        return;
+    }
+
+    if (animation === "typewriter" || animation === "typing") {
+        const chars = Array.from(fullText || "");
+        const speed = Math.max(10, numberOrDefault(style.typingSpeed, 35));
+        let index = 0;
+
+        message.style.minHeight = measuredHeight + "px";
+        message.innerText = "";
+
+        typingTimer = setInterval(() => {
+            index++;
+            message.innerText = chars.slice(0, index).join("");
+
+            if (index >= chars.length) {
+                clearInterval(typingTimer);
+                typingTimer = null;
+                message.style.minHeight = "";
+            }
+        }, speed);
+    }
+}
+
+/* 吹き出し位置の自動調整 */
+
+function buildDialogueSequence(talk) {
+    if (!talk) return [];
+
+    const sequence = [];
+
+    function append(item, inheritedStyle = null) {
+        if (item === null || item === undefined || item === "") return;
+
+        if (Array.isArray(item)) {
+            item.forEach(part => append(part, inheritedStyle));
+            return;
+        }
+
+        if (typeof item === "string") {
+            sequence.push({
+                text: item,
+                ...(inheritedStyle ? { style: { ...inheritedStyle } } : {})
+            });
+            return;
+        }
+
+        if (typeof item === "object") {
+            const ownStyle = item.style
+                ? { ...(inheritedStyle || {}), ...item.style }
+                : inheritedStyle
+                    ? { ...inheritedStyle }
+                    : null;
+
+            if (item.text !== undefined && item.text !== null) {
+                sequence.push({
+                    ...item,
+                    next: undefined,
+                    ...(ownStyle ? { style: ownStyle } : {})
+                });
+            }
+
+            if (item.next !== undefined && item.next !== null && item.next !== "") {
+                append(item.next, ownStyle);
+            }
+        }
+    }
+
+    append(talk, talk && talk.style ? talk.style : null);
+    return sequence;
+}
+
+function advanceContinuation() {
+    if (!activeContinuation) return false;
+
+    activeContinuation.index++;
+
+    if (activeContinuation.index >= activeContinuation.sequence.length) {
+        activeContinuation = null;
+        message.classList.remove("has-next");
+        return false;
+    }
+
+    const context = activeContinuation;
+    const segment = context.sequence[context.index];
+
+    speak(
+        segment,
+        context.clickX,
+        context.clickY,
+        context.forcePosition,
+        true
+    );
+
+    return true;
+}
+
+function speak(talk, clickX, clickY, forcePosition = null, isContinuationAdvance = false) {
+    if (!talk) return;
+
+    if (!isContinuationAdvance) {
+        const sequence = buildDialogueSequence(talk);
+
+        if (sequence.length > 1) {
+            activeContinuation = {
+                sequence,
+                index: 0,
+                clickX,
+                clickY,
+                forcePosition
+            };
+            talk = sequence[0];
+        } else {
+            activeContinuation = null;
+            talk = sequence[0] || talk;
+        }
+    }
+
+    const hasMoreContinuation = Boolean(
+        activeContinuation &&
+        activeContinuation.index < activeContinuation.sequence.length - 1
+    );
+
+    message.classList.toggle("has-next", hasMoreContinuation);
+
+    if (typingTimer) {
+        clearInterval(typingTimer);
+        typingTimer = null;
+    }
+
+    const fullText = talk.text || "";
+    message.innerText = fullText;
+    message.style.minHeight = "";
+
+    const layout = window.mobileLayout || {
+        active: false,
+        leftBound: 0,
+        rightBound: 1920,
+        topBound: 0,
+        bottomBound: 1080
+    };
+
     const leftBound = layout.leftBound ?? 0;
     const rightBound = layout.rightBound ?? 1920;
     const topBound = layout.topBound ?? 0;
     const bottomBound = layout.bottomBound ?? 1080;
     const visibleWidth = rightBound - leftBound;
 
+    const style = applyDialogueStyle(talk, layout.active);
+
     if (layout.active) {
-        // 実画面で読みやすい大きさになるよう、基準座標上では少し大きめにする。
         message.style.width = Math.min(760, visibleWidth - 52) + "px";
         message.style.maxWidth = (visibleWidth - 52) + "px";
-        message.style.fontSize = "34px";
         message.style.whiteSpace = "normal";
         message.style.overflowWrap = "anywhere";
         message.style.wordBreak = "normal";
-        message.style.lineHeight = "1.5";
         message.style.padding = "22px 26px";
     } else {
         message.style.width = "600px";
         message.style.maxWidth = "600px";
-        message.style.fontSize = "28px";
         message.style.whiteSpace = "normal";
         message.style.overflowWrap = "anywhere";
         message.style.wordBreak = "normal";
-        message.style.lineHeight = "1.6";
         message.style.padding = "24px 32px";
     }
 
     message.style.display = "block";
+
+    // フルテキスト状態でサイズを測る。
+    // typewriterでもこのサイズを基準に位置がずれないようにする。
     const msgWidth = message.offsetWidth || 600;
     const msgHeight = message.offsetHeight || 160;
 
     let messageX, messageY;
+
     if (layout.active && forcePosition) {
-        // あいさつ等の明示位置は、スマホでもその位置を優先する
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else if (layout.active) {
-        // 通常台詞は時計の少し上あたりに固定
         const rect = game.getBoundingClientRect();
         const targetClientY = window.innerHeight * 0.60;
         const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
@@ -1312,15 +1646,36 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const margin = layout.active ? 26 : 20;
     messageX = Math.max(leftBound + margin, Math.min(messageX, rightBound - msgWidth - margin));
     messageY = Math.max(topBound + margin, Math.min(messageY, bottomBound - msgHeight - margin));
-message.style.left = messageX + "px";
+
+    message.style.left = messageX + "px";
     message.style.top = messageY + "px";
 
-    if (messageTimer) clearTimeout(messageTimer);
-    messageTimer = setTimeout(() => {
-        message.style.display = "none";
-    }, 3000);
-}
+    playDialogueAnimation(style, fullText, msgHeight);
 
+    if (messageTimer) clearTimeout(messageTimer);
+
+    const displayDuration = Math.max(
+        1000,
+        numberOrDefault(style.displayDuration, 3000)
+    );
+
+    if (hasMoreContinuation) {
+        // 続きがある間は勝手に消さない。次のタップを待つ。
+        messageTimer = null;
+    } else {
+        // 最終文章だけ通常どおり時間経過で消える
+        activeContinuation = null;
+        messageTimer = setTimeout(() => {
+            if (typingTimer) {
+                clearInterval(typingTimer);
+                typingTimer = null;
+            }
+            message.classList.remove("has-next");
+            message.style.minHeight = "";
+            message.style.display = "none";
+        }, displayDuration);
+    }
+}
 
 function getGreetingDateTalk() {
     if (!data || !Array.isArray(data.greetingDates)) return null;
@@ -1573,6 +1928,12 @@ game.addEventListener("pointerdown", function(event) {
 game.addEventListener("click", function(event) {
     if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
     if (!data) return;
+
+    // 台詞に続きがある間は、新しい台詞抽選をせず続きを優先
+    if (activeContinuation) {
+        advanceContinuation();
+        return;
+    }
 
     const rect = game.getBoundingClientRect();
     const scaleX = 1920 / rect.width;

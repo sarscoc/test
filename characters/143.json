@@ -1,11 +1,8 @@
 {
   "id": 143,
   "name": "御多福来迎",
-
   "image": "143.png",
-
   "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
-
   "menu": {
     "face": {
       "x": 350,
@@ -14,17 +11,14 @@
       "height": 100
     }
   },
-
   "position": {
     "x": 350,
     "y": 0,
     "scale": 250
   },
-
   "birthday": {
     "month": 8,
     "day": 8,
-
     "talk": [
       {
         "text": "今日は私の誕生日か。",
@@ -36,13 +30,11 @@
       }
     ]
   },
-
   "special": {
     "dates": [
       {
         "month": 8,
         "day": 8,
-
         "talk": [
           {
             "text": "俺は御多福来迎。今日は覚えておいてくれたまえ。",
@@ -51,7 +43,6 @@
         ]
       }
     ],
-
     "months": {
       "8": [
         {
@@ -64,12 +55,10 @@
         }
       ]
     },
-
     "periods": [
       {
         "start": "07-01",
         "end": "08-31",
-
         "talk": [
           {
             "text": "この時期は暑いな。",
@@ -81,11 +70,9 @@
           }
         ]
       },
-
       {
         "start": "12-20",
         "end": "01-10",
-
         "talk": [
           {
             "text": "年末年始か。",
@@ -99,20 +86,16 @@
       }
     ]
   },
-
   "costumes": [
     {
       "id": "default",
       "name": "通常",
-
       "image": "143.png",
-
       "position": {
         "x": 350,
         "y": 0,
         "scale": 250
       },
-
       "expressions": {
         "通常": "143.png",
         "笑顔": "143_smile.png",
@@ -121,19 +104,15 @@
         "困惑": "143_confused.png"
       }
     },
-
     {
       "id": "test",
       "name": "テスト衣装",
-
       "image": "143_test.png",
-
       "position": {
         "x": 350,
         "y": 0,
         "scale": 250
       },
-
       "expressions": {
         "通常": "143_test.png",
         "笑顔": "143_test_smile.png",
@@ -141,16 +120,13 @@
       }
     }
   ],
-
   "areas": [
     {
       "name": "エリア1",
-
       "x": 350,
       "y": 50,
       "width": 100,
       "height": 100,
-
       "talk": [
         {
           "text": "顔を触るのかね？",
@@ -161,7 +137,6 @@
           "expression": "笑顔"
         }
       ],
-
       "rapid": [
         {
           "text": "待たないか！",
@@ -173,15 +148,12 @@
         }
       ]
     },
-
     {
       "name": "エリア2",
-
       "x": 350,
       "y": 250,
       "width": 150,
       "height": 150,
-
       "talk": [
         {
           "text": "俺は頭が悪いから助かるよ。",
@@ -192,7 +164,6 @@
           "expression": "笑顔"
         }
       ],
-
       "rapid": [
         {
           "text": "肩を組もうじゃないか。",
@@ -204,15 +175,12 @@
         }
       ]
     },
-
     {
       "name": "エリア3",
-
       "x": 180,
       "y": 300,
       "width": 80,
       "height": 80,
-
       "talk": [
         {
           "text": "そこにも反応するのか。",
@@ -223,7 +191,6 @@
           "expression": "笑顔"
         }
       ],
-
       "rapid": [
         {
           "text": "落ち着きたまえ。",
@@ -232,7 +199,6 @@
       ]
     }
   ],
-
   "talk": {
     "greeting": [
       {
@@ -240,7 +206,6 @@
         "expression": "通常"
       }
     ],
-
     "normal": [
       {
         "text": "俺は頭が悪いから助かるよ。",
@@ -259,7 +224,6 @@
         "expression": "笑顔"
       }
     ],
-
     "rapid": [
       {
         "text": "待たないか！",
@@ -272,4 +236,3 @@
     ]
   }
 }
-```

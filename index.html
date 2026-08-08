@@ -271,11 +271,18 @@ function setupCharacter() {
     else {
 
         currentCostume = {
+
             id: "default",
+
             name: "通常",
+
             image: data.image,
-            position: data.position || {},
+
+            position:
+                data.position || {},
+
             expressions: {}
+
         };
 
     }
@@ -328,24 +335,29 @@ function loadCostume() {
 
 function setExpression(expression) {
 
-    /*
-       表情指定がなければ変更しない
-    */
-
-    if (!expression) {
-
-        return;
-
-    }
-
-
     const expressions =
         currentCostume.expressions ||
         {};
 
 
     /*
-       指定された表情がある場合
+       表情指定なし
+       → 通常画像に戻す
+    */
+
+    if (!expression) {
+
+        character.src =
+            "images/" +
+            currentCostume.image;
+
+        return;
+
+    }
+
+
+    /*
+       指定された表情が存在する
     */
 
     if (
@@ -362,7 +374,8 @@ function setExpression(expression) {
 
 
     /*
-       表情画像がない場合は通常衣装画像
+       指定された表情が存在しない
+       → 通常画像
     */
 
     character.src =
@@ -398,6 +411,10 @@ function showTalk(text, x, y) {
         y - 20;
 
 
+    /*
+       右端からはみ出さない
+    */
+
     if (
         messageX + 420 >
         game.clientWidth
@@ -409,6 +426,10 @@ function showTalk(text, x, y) {
     }
 
 
+    /*
+       左端からはみ出さない
+    */
+
     if (
         messageX < 10
     ) {
@@ -417,6 +438,10 @@ function showTalk(text, x, y) {
 
     }
 
+
+    /*
+       上端からはみ出さない
+    */
 
     if (
         messageY < 20
@@ -439,6 +464,10 @@ function showTalk(text, x, y) {
         "block";
 
 
+    /*
+       アニメーションをリセット
+    */
+
     message.style.animation =
         "none";
 
@@ -450,12 +479,20 @@ function showTalk(text, x, y) {
         "pop 0.2s ease-out";
 
 
+    /*
+       前のタイマーを解除
+    */
+
     if (messageTimer) {
 
         clearTimeout(messageTimer);
 
     }
 
+
+    /*
+       一定時間で消す
+    */
 
     messageTimer =
         setTimeout(() => {
@@ -483,16 +520,13 @@ function speak(talk, x, y) {
 
 
     /*
-       台詞に表情指定があれば変更
+       台詞に表情指定があれば変更。
+       指定がなければ通常顔へ戻す。
     */
 
-    if (talk.expression) {
-
-        setExpression(
-            talk.expression
-        );
-
-    }
+    setExpression(
+        talk.expression
+    );
 
 
     showTalk(
@@ -513,9 +547,11 @@ function showGreeting() {
 
     if (
         !data.talk ||
+
         !Array.isArray(
             data.talk.greeting
         ) ||
+
         data.talk.greeting.length === 0
     ) {
 
@@ -525,9 +561,13 @@ function showGreeting() {
 
 
     speak(
+
         data.talk.greeting[0],
+
         game.clientWidth / 2,
+
         100
+
     );
 
 }
@@ -569,8 +609,11 @@ function dateNumber(value) {
 
 
     return (
+
         Number(parts[0]) * 100 +
+
         Number(parts[1])
+
     );
 
 }
@@ -602,7 +645,7 @@ function isInPeriod(start, end) {
 
 
     /*
-       通常期間
+       普通の期間
     */
 
     if (
@@ -610,8 +653,11 @@ function isInPeriod(start, end) {
     ) {
 
         return (
+
             current >= startNumber &&
+
             current <= endNumber
+
         );
 
     }
@@ -622,8 +668,11 @@ function isInPeriod(start, end) {
     */
 
     return (
+
         current >= startNumber ||
+
         current <= endNumber
+
     );
 
 }
@@ -638,6 +687,7 @@ function getSpecialTalks() {
 
     const talks = [];
 
+
     const today =
         getToday();
 
@@ -648,6 +698,7 @@ function getSpecialTalks() {
     ========================================== */
 
     if (
+
         data.birthday &&
 
         data.birthday.month ===
@@ -659,6 +710,7 @@ function getSpecialTalks() {
         Array.isArray(
             data.birthday.talk
         )
+
     ) {
 
         talks.push(
@@ -674,17 +726,20 @@ function getSpecialTalks() {
     ========================================== */
 
     if (
+
         data.special &&
 
         Array.isArray(
             data.special.dates
         )
+
     ) {
 
         data.special.dates.forEach(
             item => {
 
                 if (
+
                     item.month ===
                         today.month &&
 
@@ -694,6 +749,7 @@ function getSpecialTalks() {
                     Array.isArray(
                         item.talk
                     )
+
                 ) {
 
                     talks.push(
@@ -714,27 +770,33 @@ function getSpecialTalks() {
     ========================================== */
 
     if (
+
         data.special &&
 
         Array.isArray(
             data.special.periods
         )
+
     ) {
 
         data.special.periods.forEach(
             period => {
 
                 if (
+
                     isInPeriod(
                         period.start,
                         period.end
                     )
+
                 ) {
 
                     if (
+
                         Array.isArray(
                             period.talk
                         )
+
                     ) {
 
                         talks.push(
@@ -757,21 +819,28 @@ function getSpecialTalks() {
     ========================================== */
 
     if (
+
         data.special &&
 
         data.special.months
+
     ) {
 
         const monthTalk =
+
             data.special.months[
-                String(today.month)
+                String(
+                    today.month
+                )
             ];
 
 
         if (
+
             Array.isArray(
                 monthTalk
             )
+
         ) {
 
             talks.push(
@@ -803,11 +872,13 @@ function getNormalPool() {
     */
 
     if (
+
         data.talk &&
 
         Array.isArray(
             data.talk.normal
         )
+
     ) {
 
         pool.push(
@@ -892,6 +963,7 @@ function getNormalTalk() {
 function getRapidTalk() {
 
     if (
+
         !data.talk ||
 
         !Array.isArray(
@@ -899,6 +971,7 @@ function getRapidTalk() {
         ) ||
 
         data.talk.rapid.length === 0
+
     ) {
 
         return null;
@@ -973,11 +1046,13 @@ function inside(x, y, area) {
 function getArea(x, y) {
 
     if (
+
         !data ||
 
         !Array.isArray(
             data.areas
         )
+
     ) {
 
         return null;
@@ -985,13 +1060,20 @@ function getArea(x, y) {
     }
 
 
+    /*
+       後ろから確認することで、
+       重なったエリアでは後に書いたものを優先
+    */
+
     for (
+
         let i =
             data.areas.length - 1;
 
         i >= 0;
 
         i--
+
     ) {
 
         const area =
@@ -999,11 +1081,13 @@ function getArea(x, y) {
 
 
         if (
+
             inside(
                 x,
                 y,
                 area
             )
+
         ) {
 
             return area;
@@ -1026,6 +1110,7 @@ function getArea(x, y) {
 function getAreaTalk(area) {
 
     if (
+
         !area ||
 
         !Array.isArray(
@@ -1033,6 +1118,7 @@ function getAreaTalk(area) {
         ) ||
 
         area.talk.length === 0
+
     ) {
 
         return null;
@@ -1082,6 +1168,7 @@ function getAreaTalk(area) {
 function getAreaRapidTalk(area) {
 
     if (
+
         !area ||
 
         !Array.isArray(
@@ -1089,6 +1176,7 @@ function getAreaRapidTalk(area) {
         ) ||
 
         area.rapid.length === 0
+
     ) {
 
         return null;
@@ -1136,7 +1224,9 @@ function getAreaRapidTalk(area) {
 ================================================== */
 
 game.addEventListener(
+
     "click",
+
     function(e) {
 
 
@@ -1204,9 +1294,13 @@ game.addEventListener(
                 if (rapidTalk) {
 
                     speak(
+
                         rapidTalk,
+
                         x,
+
                         y
+
                     );
 
                     return;
@@ -1229,9 +1323,13 @@ game.addEventListener(
             if (areaTalk) {
 
                 speak(
+
                     areaTalk,
+
                     x,
+
                     y
+
                 );
 
                 return;
@@ -1255,9 +1353,13 @@ game.addEventListener(
             if (rapidTalk) {
 
                 speak(
+
                     rapidTalk,
+
                     x,
+
                     y
+
                 );
 
                 return;
@@ -1279,14 +1381,19 @@ game.addEventListener(
         if (normalTalk) {
 
             speak(
+
                 normalTalk,
+
                 x,
+
                 y
+
             );
 
         }
 
     }
+
 );
 
 

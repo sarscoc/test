@@ -411,6 +411,7 @@ body {
     display: flex;
 
     justify-content: center;
+
     align-items: center;
 
     text-shadow:
@@ -988,57 +989,26 @@ let messageTimer = null;
 const RAPID_TIME = 400;
 
 
-/* =========================================================
-   スマホカメラ
-   ========================================================= */
-
-function centerCameraOnCharacter() {
-
+function centerCharacterOnMobile() {
     if (window.innerWidth >= 900) {
-
         game.style.left = "0px";
-
         return;
     }
 
+    if (!character.src) return;
 
-    if (!character.src) {
-        return;
-    }
+    const characterLeft = parseFloat(character.style.left) || 0;
+    const characterWidth = character.offsetWidth || parseFloat(character.style.width) || 0;
 
+    if (!characterWidth) return;
 
-    const characterLeft =
-        parseFloat(character.style.left) || 0;
+    const characterCenter = characterLeft + characterWidth / 2;
+    const gameCenter = 900 / 2;
+    const offset = gameCenter - characterCenter;
 
-
-    const characterWidth =
-        character.offsetWidth ||
-        parseFloat(character.style.width) ||
-        250;
-
-
-    const characterCenter =
-        characterLeft +
-        characterWidth / 2;
-
-
-    const gameCenter = 450;
-
-
-    const offset =
-        gameCenter -
-        characterCenter;
-
-
-    game.style.left =
-        offset + "px";
+    game.style.left = offset + "px";
 }
-
-
-window.addEventListener(
-    "resize",
-    centerCameraOnCharacter
-);
+window.addEventListener("resize", centerCharacterOnMobile);
 
 
 /* =========================================================
@@ -1207,54 +1177,17 @@ async function loadCharacters() {
     characters = [];
 
 
-    for (
-        const file of files
-    ) {
-
-        /*
-         * index.json が
-         *
-         * ["143.json", "144.json"]
-         *
-         * の場合、
-         *
-         * characters/143/143.json
-         *
-         * characters/144/144.json
-         *
-         * を読む。
-         */
-
-        const fileName =
-            file
-                .split("/")
-                .pop();
-
-
-        const characterId =
-            fileName
-                .replace(
-                    /\.json$/i,
-                    ""
-                );
-
-
-        const path =
-            "characters/" +
-            characterId +
-            "/" +
-            fileName;
-
-
-        const res =
-            await fetch(path);
+    for (const file of files) {
+        const fileName = file.split("/").pop();
+        const characterId = fileName.replace(/\.json$/i, "");
+        const res = await fetch("characters/" + characterId + "/" + fileName);
 
 
         if (!res.ok) {
 
             console.error(
                 "キャラクター読み込み失敗:",
-                path
+                "characters/" + characterId + "/" + fileName
             );
 
             continue;
@@ -1319,7 +1252,7 @@ async function loadCharacters() {
 
             console.error(
                 "構文エラー:",
-                path
+                "characters/" + characterId + "/" + fileName
             );
 
             throw e;
@@ -1556,11 +1489,6 @@ async function loadCharacter(char) {
     closeMenu();
 
     showGreeting();
-
-
-    requestAnimationFrame(
-        centerCameraOnCharacter
-    );
 }
 
 
@@ -1597,51 +1525,17 @@ function setupPersonalPage() {
    ========================================================= */
 
 function loadCostume() {
-
-    const position =
-        currentCostume.position ||
-        data.position ||
-        {};
-
-
-    character.onerror =
-        () => {
-
-            character.onerror =
-                null;
-
-            character.src =
-                currentCostume.image;
-        };
-
-
-    /*
-     * JSONに書かれた画像パスを
-     * そのまま使う。
-     */
-
-    character.src =
-        currentCostume.image;
-
-
-    character.style.left =
-        (position.x || 0) +
-        "px";
-
-
-    character.style.top =
-        (position.y || 0) +
-        "px";
-
-
-    character.style.width =
-        (position.scale || 250) +
-        "px";
-
-
-    requestAnimationFrame(
-        centerCameraOnCharacter
-    );
+    const position = currentCostume.position || data.position || {};
+    const basePosition = data.position || {};
+    character.onerror = () => {
+        character.onerror = null;
+        character.src = currentCostume.image;
+    };
+    character.src = currentCostume.image;
+    character.style.left = (position.x ?? basePosition.x ?? 0) + "px";
+    character.style.top = (position.y ?? basePosition.y ?? 0) + "px";
+    character.style.width = (basePosition.scale ?? 250) + "px";
+    centerCharacterOnMobile();
 }
 
 

@@ -494,7 +494,7 @@ function showGreeting() {
     const gridY = game.clientHeight / 3;  // 1マス分の高さ
 
     // 左列（0.5マス目）× 中央行（1.5マス目）の中心座標
-    const targetX = gridX * 0.5; // 左マスの横中央 (約150px)
+    const targetX = gridX * 0.8; // 左マスの横中央 (約150px)
     const targetY = gridY * 1.5; // 中央マスの縦中央 (約253px)
 
     speak(data.talk.greeting[0], targetX, targetY);

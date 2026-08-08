@@ -47,7 +47,30 @@ body {
 }
 
 #background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
-#character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
+#character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; transform-origin: 50% 88%; animation: characterBreath 4.2s ease-in-out infinite; will-change: transform; }
+@keyframes characterBreath {
+    0%, 100% { transform: translateY(0) scale(1, 1); }
+    50% { transform: translateY(-3px) scale(1.004, 0.997); }
+}
+.tap-bloom {
+    position: absolute;
+    z-index: 90;
+    width: 34px;
+    height: 34px;
+    margin-left: -17px;
+    margin-top: -17px;
+    border-radius: 50%;
+    pointer-events: none;
+    border: 3px solid rgba(255,255,255,0.92);
+    background: radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 42%, rgba(255,255,255,0) 72%);
+    box-shadow: 0 0 22px rgba(255,255,255,0.75);
+    animation: tapBloom 0.65s ease-out forwards;
+}
+@keyframes tapBloom {
+    0% { opacity: 0.95; transform: scale(0.35); filter: blur(0); }
+    65% { opacity: 0.55; }
+    100% { opacity: 0; transform: scale(2.5); filter: blur(2px); }
+}
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
 /* 台詞吹出し */
@@ -151,6 +174,9 @@ body {
     line-height: 0.95;
     letter-spacing: -1px;
 }
+
+#clockColon { display: inline-block; min-width: 0.32em; text-align: center; transition: opacity 0.12s linear; }
+#clockColon.off { opacity: 0.12; }
 
 #clockDate {
     font-size: 26px;
@@ -410,6 +436,34 @@ body {
         font-size: 25px;
         padding: 12px 24px;
     }
+    #backgroundSection {
+        left: var(--mobile-content-left, 0px);
+        right: auto;
+        width: var(--mobile-content-width, 1920px);
+        height: 100%;
+    }
+    #backgroundList {
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        padding: 0 0 120px 0;
+        scroll-behavior: smooth;
+    }
+    #backgroundList::-webkit-scrollbar {
+        width: 10px;
+        height: 0;
+    }
+    .bg-card {
+        flex: 0 0 300px;
+        width: 100%;
+        height: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+    }
+    .bg-card:hover {
+        flex-basis: 300px;
+    }
 }
 
 .hidden { display: none !important; }
@@ -485,11 +539,14 @@ function resizeGame() {
             rightBound,
             topBound: 0,
             bottomBound: baseHeight,
-            characterScale: 0.84
+            characterScale: 0.76,
+            characterYOffset: 92
         };
 
         document.documentElement.style.setProperty("--mobile-left", `${leftBound + 28}px`);
         document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 28}px`);
+        document.documentElement.style.setProperty("--mobile-content-left", `${leftBound}px`);
+        document.documentElement.style.setProperty("--mobile-content-width", `${visibleBaseWidth}px`);
 
         container.style.transformOrigin = "center center";
         container.style.transform = `scale(${scale})`;
@@ -505,11 +562,14 @@ function resizeGame() {
             rightBound: baseWidth,
             topBound: 0,
             bottomBound: baseHeight,
-            characterScale: 1
+            characterScale: 1,
+            characterYOffset: 0
         };
 
         document.documentElement.style.setProperty("--mobile-left", "30px");
         document.documentElement.style.setProperty("--mobile-right", "30px");
+        document.documentElement.style.setProperty("--mobile-content-left", "0px");
+        document.documentElement.style.setProperty("--mobile-content-width", "1920px");
         container.style.transformOrigin = "center center";
         container.style.transform = `scale(${scale})`;
     }
@@ -580,7 +640,9 @@ function startClock() {
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         
-        clockTime.innerText = `${hours}:${minutes}`;
+        clockTime.innerHTML = `${hours}<span id="clockColon">:</span>${minutes}`;
+        const colon = document.getElementById("clockColon");
+        if (colon) colon.classList.toggle("off", now.getSeconds() % 2 === 1);
         clockDate.innerText = `${year}/${month}/${date}`;
         clockDay.innerText = day;
     }
@@ -757,13 +819,14 @@ function loadCharacterImage() {
     const originalWidth = Number(position.scale || 1000);
     const layout = window.mobileLayout || { active: false, characterScale: 1 };
     const factor = layout.active ? layout.characterScale : 1;
+    const yOffset = layout.active ? Number(layout.characterYOffset || 0) : 0;
 
     // 1920x1080画像を想定し、画面中央(960,540)からの距離を保ったまま縮小。
     const originalHeight = originalWidth * (1080 / 1920);
     const centerX = 960;
     const centerY = 540;
     const x = centerX + (originalX - centerX) * factor;
-    const y = centerY + (originalY - centerY) * factor;
+    const y = centerY + (originalY - centerY) * factor + yOffset;
     const width = originalWidth * factor;
 
     character.onerror = () => {
@@ -939,12 +1002,13 @@ function getDisplayArea(area) {
 
     // スマホでは人物を中央基準で縮小するため、タッチマーカーも同じ比率で中央へ寄せる。
     const factor = layout.characterScale;
+    const yOffset = Number(layout.characterYOffset || 0);
     const centerX = 960;
     const centerY = 540;
     return {
         ...area,
         x: centerX + (area.x - centerX) * factor,
-        y: centerY + (area.y - centerY) * factor,
+        y: centerY + (area.y - centerY) * factor + yOffset,
         width: area.width * factor,
         height: area.height * factor
     };
@@ -979,6 +1043,25 @@ function getAreaRapidTalk(area) {
     count[key]++;
     return talk;
 }
+
+/* タップ／クリック時のふわっとしたエフェクト */
+function showTapBloom(clientX, clientY) {
+    const rect = game.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = (clientX - rect.left) * (1920 / rect.width);
+    const y = (clientY - rect.top) * (1080 / rect.height);
+    const bloom = document.createElement("div");
+    bloom.className = "tap-bloom";
+    bloom.style.left = x + "px";
+    bloom.style.top = y + "px";
+    game.appendChild(bloom);
+    bloom.addEventListener("animationend", () => bloom.remove(), { once: true });
+}
+
+game.addEventListener("pointerdown", function(event) {
+    if (event.target.closest("#menu, #openMenu, #leftControls")) return;
+    showTapBloom(event.clientX, event.clientY);
+});
 
 /* クリックイベント処理（1920x1080基準の座標変換） */
 game.addEventListener("click", function(event) {
@@ -1162,6 +1245,12 @@ function showBackgroundTab() {
     
     backgroundMenuButton.classList.add("hidden");
     characterMenuButton.classList.remove("hidden");
+
+    // 毎回リストの先頭（左端／スマホでは最上部）から見せる。
+    requestAnimationFrame(() => {
+        backgroundList.scrollLeft = 0;
+        backgroundList.scrollTop = 0;
+    });
 }
 
 characterMenuButton.onclick = (e) => {

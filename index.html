@@ -58,8 +58,6 @@ body {
         sans-serif;
 
     font-weight: 300;
-
-    transition: left 0.15s ease;
 }
 
 
@@ -84,11 +82,17 @@ body {
 
 
 /* =========================================================
-   キャラクター
+   キャラクター（1920x1080画像用に全体配置）
    ========================================================= */
 
 #character {
     position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
 
     z-index: 10;
 
@@ -119,7 +123,7 @@ body {
 
 
 /* =========================================================
-   台詞吹き出し（z-indexを300に設定して時計より手前へ）
+   台詞吹き出し（z-index: 300 / 時計より手前・メニューより奥）
    ========================================================= */
 
 #message {
@@ -435,7 +439,7 @@ body {
 
 
 /* =========================================================
-   メニュー
+   メニュー (z-index: 500)
    ========================================================= */
 
 #menu {
@@ -752,9 +756,6 @@ body {
 
 /* =========================================================
    スマホ
-   ---------------------------------------------------------
-   ゲームは縮小しない。
-   キャラクターを画面中央にする。
    ========================================================= */
 
 @media (max-width: 899px) {
@@ -990,28 +991,6 @@ let messageTimer = null;
 const RAPID_TIME = 400;
 
 
-function centerCharacterOnMobile() {
-    if (window.innerWidth >= 900) {
-        game.style.left = "0px";
-        return;
-    }
-
-    if (!character.src) return;
-
-    const characterLeft = parseFloat(character.style.left) || 0;
-    const characterWidth = character.offsetWidth || parseFloat(character.style.width) || 0;
-
-    if (!characterWidth) return;
-
-    const characterCenterInGame = characterLeft + characterWidth / 2;
-    const windowCenter = window.innerWidth / 2;
-    const offset = windowCenter - characterCenterInGame;
-
-    game.style.left = offset + "px";
-}
-window.addEventListener("resize", centerCharacterOnMobile);
-
-
 /* =========================================================
    初期化
    ========================================================= */
@@ -1234,11 +1213,6 @@ async function loadCharacters() {
             const json =
                 JSON.parse(charText);
 
-
-            /*
-             * JSON側にidがなくても
-             * フォルダ名から取得できるようにする。
-             */
 
             if (!json.id) {
 
@@ -1522,27 +1496,17 @@ function setupPersonalPage() {
 
 
 /* =========================================================
-   衣装読み込み
+   衣装読み込み（1920x1080画像用に単純化）
    ========================================================= */
 
 function loadCostume() {
-    const position = currentCostume.position || data.position || {};
-    const basePosition = data.position || {};
+
     character.onerror = () => {
         character.onerror = null;
         character.src = currentCostume.image;
     };
-    character.onload = () => {
-        centerCharacterOnMobile();
-    };
-    character.src = currentCostume.image;
-    character.style.left = (position.x ?? basePosition.x ?? 0) + "px";
-    character.style.top = (position.y ?? basePosition.y ?? 0) + "px";
-    character.style.width = (basePosition.scale ?? 250) + "px";
 
-    if (character.complete) {
-        centerCharacterOnMobile();
-    }
+    character.src = currentCostume.image;
 }
 
 
@@ -1631,7 +1595,7 @@ function setExpression(
 
 
 /* =========================================================
-   以下、会話・メニュー関連
+   会話・メッセージ処理
    ========================================================= */
 
 function speak(
@@ -2693,7 +2657,7 @@ function createCharacterCard(
    誕生日
    ========================================================= */
 
-showBirthdayChoice = function(
+function showBirthdayChoice(
     birthdayCharacters
 ) {
 
@@ -2754,7 +2718,7 @@ showBirthdayChoice = function(
             );
         }
     );
-};
+}
 
 
 /* =========================================================

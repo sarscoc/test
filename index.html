@@ -720,6 +720,74 @@ let lastClick = 0;
 let messageTimer = null;
 const RAPID_TIME = 400;
 
+/* 台詞の巡回状態
+   - specialLastCycle: 誕生日/日付/期間は、通常台詞1周につき各1回だけ
+   - normalCycle: 通常台詞を全部話し終えるたびに +1
+   - poolStates: 各台詞群を重複少なく巡回させる
+*/
+let dialogueState = null;
+
+function resetDialogueState() {
+    dialogueState = {
+        normalCycle: 0,
+        normalRounds: 0,
+        normalOrder: [],
+        normalPos: 0,
+        specialLastCycle: {
+            birthday: -1,
+            date: -1,
+            period: -1
+        },
+        poolStates: {}
+    };
+}
+
+function shuffledIndices(length) {
+    const order = Array.from({ length }, (_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+}
+
+function takeBalancedTalk(pool, key) {
+    if (!Array.isArray(pool) || pool.length === 0) return null;
+    if (!dialogueState) resetDialogueState();
+
+    let state = dialogueState.poolStates[key];
+    if (!state || state.length !== pool.length) {
+        state = {
+            length: pool.length,
+            round: 0,
+            pos: 0,
+            order: Array.from({ length: pool.length }, (_, i) => i)
+        };
+        dialogueState.poolStates[key] = state;
+    }
+
+    if (state.pos >= state.order.length) {
+        state.round++;
+        state.pos = 0;
+        // 1周目以降は順番をシャッフル。ただし同じ台詞ばかりにならない。
+        state.order = shuffledIndices(pool.length);
+    }
+
+    const talk = pool[state.order[state.pos]];
+    state.pos++;
+    return talk;
+}
+
+function canUseSpecial(kind) {
+    if (!dialogueState) resetDialogueState();
+    return dialogueState.specialLastCycle[kind] !== dialogueState.normalCycle;
+}
+
+function markSpecialUsed(kind) {
+    if (!dialogueState) resetDialogueState();
+    dialogueState.specialLastCycle[kind] = dialogueState.normalCycle;
+}
+
 /* 初期化 */
 async function init() {
     startClock();
@@ -910,6 +978,7 @@ async function chooseInitialCharacter() {
 async function loadCharacter(char) {
     data = char;
     count = {};
+    resetDialogueState();
     loadCharacterImage();
     loadFrame();
     setupPersonalPage();
@@ -1187,30 +1256,29 @@ function isInPeriod(start, end) {
     return current >= startNumber || current <= endNumber;
 }
 
-function takeTalkFromPool(pool, key) {
-    if (!Array.isArray(pool) || pool.length === 0) return null;
-    if (count[key] === undefined) count[key] = 0;
-    const talk = pool[count[key] % pool.length];
-    count[key]++;
-    return talk;
-}
-
 function getBirthdayTalk() {
+    if (!canUseSpecial("birthday")) return null;
+
     const today = getToday();
     if (
         data &&
         data.birthday &&
         Number(data.birthday.month) === today.month &&
         Number(data.birthday.day) === today.day &&
-        Array.isArray(data.birthday.talk)
+        Array.isArray(data.birthday.talk) &&
+        data.birthday.talk.length > 0
     ) {
-        return takeTalkFromPool(data.birthday.talk, "birthday");
+        const talk = takeBalancedTalk(data.birthday.talk, "birthday_pool");
+        if (talk) markSpecialUsed("birthday");
+        return talk;
     }
     return null;
 }
 
 function getDateTalk() {
+    if (!canUseSpecial("date")) return null;
     if (!data || !data.special || !Array.isArray(data.special.dates)) return null;
+
     const today = getToday();
     const pool = [];
 
@@ -1224,13 +1292,16 @@ function getDateTalk() {
         }
     });
 
-    return takeTalkFromPool(pool, "special_date");
+    const talk = takeBalancedTalk(pool, "special_date_pool");
+    if (talk) markSpecialUsed("date");
+    return talk;
 }
 
 function getPeriodTalk() {
+    if (!canUseSpecial("period")) return null;
     if (!data || !data.special || !Array.isArray(data.special.periods)) return null;
-    const pool = [];
 
+    const pool = [];
     data.special.periods.forEach(period => {
         if (
             period &&
@@ -1243,25 +1314,43 @@ function getPeriodTalk() {
         }
     });
 
-    return takeTalkFromPool(pool, "special_period");
+    const talk = takeBalancedTalk(pool, "special_period_pool");
+    if (talk) markSpecialUsed("period");
+    return talk;
 }
 
 function getNormalTalk() {
     if (!data.talk || !Array.isArray(data.talk.normal) || data.talk.normal.length === 0) return null;
-    const key = "normal";
-    if (count[key] === undefined) count[key] = 0;
-    const talk = data.talk.normal[count[key] % data.talk.normal.length];
-    count[key]++;
+    if (!dialogueState) resetDialogueState();
+
+    const pool = data.talk.normal;
+
+    if (dialogueState.normalOrder.length !== pool.length || dialogueState.normalPos >= dialogueState.normalOrder.length) {
+        // 最初の1周はJSON順。2周目以降はシャッフルして、全台詞を1回ずつ出す。
+        dialogueState.normalOrder =
+            dialogueState.normalRounds === 0
+                ? Array.from({ length: pool.length }, (_, i) => i)
+                : shuffledIndices(pool.length);
+        dialogueState.normalPos = 0;
+    }
+
+    const index = dialogueState.normalOrder[dialogueState.normalPos];
+    const talk = pool[index];
+    dialogueState.normalPos++;
+
+    // この台詞で通常台詞を全種類1周した。
+    // 次のクリックから誕生日/日付/期間がそれぞれ再び1回だけ解禁される。
+    if (dialogueState.normalPos >= dialogueState.normalOrder.length) {
+        dialogueState.normalRounds++;
+        dialogueState.normalCycle++;
+    }
+
     return talk;
 }
 
 function getRapidTalk() {
     if (!data.talk || !Array.isArray(data.talk.rapid) || data.talk.rapid.length === 0) return null;
-    const key = "rapid";
-    if (count[key] === undefined) count[key] = 0;
-    const talk = data.talk.rapid[count[key] % data.talk.rapid.length];
-    count[key]++;
-    return talk;
+    return takeBalancedTalk(data.talk.rapid, "rapid_pool");
 }
 
 function getDisplayArea(area) {
@@ -1296,20 +1385,12 @@ function getArea(x, y) {
 
 function getAreaTalk(area) {
     if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
-    const key = "area_" + area.name;
-    if (count[key] === undefined) count[key] = 0;
-    const talk = area.talk[count[key] % area.talk.length];
-    count[key]++;
-    return talk;
+    return takeBalancedTalk(area.talk, "area_" + area.name);
 }
 
 function getAreaRapidTalk(area) {
     if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
-    const key = "rapid_area_" + area.name;
-    if (count[key] === undefined) count[key] = 0;
-    const talk = area.rapid[count[key] % area.rapid.length];
-    count[key]++;
-    return talk;
+    return takeBalancedTalk(area.rapid, "rapid_area_" + area.name);
 }
 
 function showTapFlash(x, y) {
@@ -1365,21 +1446,21 @@ game.addEventListener("click", function(event) {
         }
     }
 
-    // 2. 誕生日
+    // 2. 誕生日（通常台詞1周につき1回）
     const birthdayTalk = getBirthdayTalk();
     if (birthdayTalk) {
         speak(birthdayTalk, x, y);
         return;
     }
 
-    // 3. 日付指定
+    // 3. 日付指定（通常台詞1周につき1回）
     const dateTalk = getDateTalk();
     if (dateTalk) {
         speak(dateTalk, x, y);
         return;
     }
 
-    // 4. 期間指定
+    // 4. 期間指定（通常台詞1周につき1回）
     const periodTalk = getPeriodTalk();
     if (periodTalk) {
         speak(periodTalk, x, y);

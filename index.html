@@ -61,7 +61,7 @@ body {
     overflow-y: auto;
 }
 
-/* 左下時計・日付表示エリア（縦長フォント・中央揃え・幅統一） */
+/* 左下時計・日付表示エリア（すっきりフォント・中央揃え・幅統一） */
 #clockArea {
     position: absolute;
     bottom: 16px;
@@ -73,24 +73,25 @@ body {
     align-items: center;
     text-align: center;
     color: #ffffff;
-    font-family: 'Impact', 'Arial Narrow', sans-serif-condensed, sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
-/* 時刻（大きめの縦長表示） */
+/* 時刻（大きめ・標準フォント） */
 #clockTime {
-    font-size: 42px;
-    font-weight: normal;
-    line-height: 0.95;
-    letter-spacing: 1px;
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.0;
+    letter-spacing: -0.5px;
 }
 
-/* 日付（時間に幅を合わせるため字間とサイズを調整） */
+/* 日付（時間に幅を合わせる調整） */
 #clockDate {
-    font-size: 17px;
+    font-size: 14px;
+    font-weight: 500;
     margin-top: 4px;
     margin-bottom: 6px;
-    letter-spacing: 2px;
+    letter-spacing: 0.5px;
     line-height: 1.0;
     white-space: nowrap;
 }
@@ -104,11 +105,13 @@ body {
     padding: 2px 0;
     border: 1.5px solid #ffffff;
     border-radius: 20px;
-    font-size: 14px;
-    letter-spacing: 1.5px;
-    line-height: 1.1;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    line-height: 1.2;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(2px);
+    text-transform: lowercase;
 }
 
 /* 左上コントロール用共通ボタンデザイン */

@@ -500,7 +500,7 @@ function setExpression(expression) {
     character.src = "images/" + currentCostume.image;
 }
 
-/* 吹き出し位置の自動調整 */
+/* 吹き出し位置の自動調整（画面左半分なら左側に表示） */
 function speak(talk, clickX, clickY) {
     if (!talk) return;
     setExpression(talk.expression || "通常");
@@ -511,15 +511,19 @@ function speak(talk, clickX, clickY) {
     const msgWidth = message.offsetWidth || 280;
     const msgHeight = message.offsetHeight || 80;
     
-    const offset = 35;
+    const offset = 20; // クリック位置からの間隔
 
-    let messageX = clickX + offset;
-    if (messageX + msgWidth > gameRect.width - 10) {
-        messageX = clickX - msgWidth - offset;
-    }
+    // 画面の左半分かどうかを判定
+    const isLeftHalf = clickX < (gameRect.width / 2);
+
+    // 左半分の場合は左側に、右半分の場合は右側に吹き出しを配置
+    let messageX = isLeftHalf 
+        ? (clickX - msgWidth - offset) 
+        : (clickX + offset);
 
     let messageY = clickY - (msgHeight / 2);
 
+    // 画面端からはみ出さないための補正処理
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
 

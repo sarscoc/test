@@ -124,6 +124,7 @@ body {
     overflow-y: auto;
     padding: 30px;
     background: rgba(255,255,255,.97);
+    cursor: pointer; /* 全体をクリック可能に */
 }
 #menu h1, #menu h2 { margin-top: 0; }
 
@@ -215,11 +216,11 @@ body {
     <div id="message"></div>
 
     <div id="menu">
-        <section id="birthdayArea">
+        <section id="birthdayArea" class="hidden">
             <div id="birthdayList" class="list"></div>
         </section>
 
-        <section id="characterSection" class="hidden">
+        <section id="characterSection">
             <div id="characterList" class="list"></div>
         </section>
 
@@ -270,7 +271,6 @@ async function init() {
         await loadCharacters();
         await loadBackgrounds();
         setupBackground();
-        setupBirthdayMenu();
         setupBackgroundMenu();
         await chooseInitialCharacter();
     } catch (error) {
@@ -279,7 +279,7 @@ async function init() {
     }
 }
 
-/* キャラクターJSON読み込み（制御文字・ゴミ除去つき） */
+/* キャラクターJSON読み込み */
 async function loadCharacters() {
     const response = await fetch("characters/index.json");
     if (!response.ok) {
@@ -665,7 +665,6 @@ function setupCostumeMenu() {
             e.stopPropagation();
             currentCostume = costume;
             
-            // ボタンのアクティブ化状態切り替え
             const allBtns = costumeList.querySelectorAll(".costume-btn");
             allBtns.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
@@ -728,30 +727,9 @@ function createCharacterCard(char) {
     return card;
 }
 
-function setupBirthdayMenu() {
-    const birthdayCharacters = getBirthdayCharacters();
-    birthdayList.innerHTML = "";
-
-    if (birthdayCharacters.length === 0) {
-        birthdayList.innerHTML = '<div class="birthday-empty">今日は誕生日のキャラクターはいません。</div>';
-        return;
-    }
-
-    birthdayCharacters.forEach(char => {
-        const item = document.createElement("div");
-        item.className = "birthday-item";
-        item.innerText = char.name + " 🎂";
-        item.onclick = async (e) => {
-            e.stopPropagation();
-            await loadCharacter(char);
-        };
-        birthdayList.appendChild(item);
-    });
-}
-
 function showBirthdayChoice(birthdayCharacters) {
     menu.style.display = "block";
-    birthdayArea.style.display = "block";
+    birthdayArea.classList.remove("hidden");
     characterSection.classList.add("hidden");
     backgroundSection.classList.add("hidden");
 
@@ -768,22 +746,19 @@ function showBirthdayChoice(birthdayCharacters) {
     });
 }
 
-/* ★ キャラ選択画面などで何もない場所（メニュー背景）をクリックでトップへ復帰 */
+/* メニューの何もない場所（背景エリア）をクリックした時にふれあい本体画面へ復帰 */
 menu.addEventListener("click", (event) => {
-    // ボタン類やカード自体をクリックした場合は処理しない
-    if (event.target.closest(".card, .birthday-item, .menu-button")) return;
+    // カード、ボタン、アイテムなどをクリックした場合は背景処理をスキップ
+    if (event.target.closest(".card, .birthday-item, .menu-button, .costume-btn")) return;
     
-    // トップ（誕生日初期表示）に戻る
-    birthdayArea.style.display = "block";
-    characterSection.classList.add("hidden");
-    backgroundSection.classList.add("hidden");
-    setupBirthdayMenu();
+    // メニューを閉じて元のふれあい本体画面へ
+    closeMenu();
 });
 
-/* メニュー切り替えボタン */
+/* 下部メニュー切り替えボタン */
 document.getElementById("characterMenuButton").onclick = (e) => {
     e.stopPropagation();
-    birthdayArea.style.display = "none";
+    birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
     characterSection.classList.remove("hidden");
     setupCharacterMenu();
@@ -791,16 +766,17 @@ document.getElementById("characterMenuButton").onclick = (e) => {
 
 document.getElementById("backgroundMenuButton").onclick = (e) => {
     e.stopPropagation();
-    birthdayArea.style.display = "none";
+    birthdayArea.classList.add("hidden");
     characterSection.classList.add("hidden");
     backgroundSection.classList.remove("hidden");
 };
 
 function openMenu() {
-    birthdayArea.style.display = "block";
-    characterSection.classList.add("hidden");
+    // ☰ ボタンを押した際はダイレクトにキャラ一覧を表示
+    birthdayArea.classList.add("hidden");
     backgroundSection.classList.add("hidden");
-    setupBirthdayMenu();
+    characterSection.classList.remove("hidden");
+    setupCharacterMenu();
     menu.style.display = "block";
 }
 

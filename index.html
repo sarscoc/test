@@ -755,7 +755,7 @@ body {
 
 
 /* =========================================================
-   スマホ
+   スマホ向けレスポンシブ縮小対応
    ========================================================= */
 
 @media (max-width: 899px) {
@@ -763,10 +763,15 @@ body {
     body {
         justify-content: center;
         align-items: center;
+        padding: 0;
     }
 
     #game {
-        flex-shrink: 0;
+        width: 100vw;
+        height: 56.25vw; /* 16:9比率を維持 */
+        max-height: 100vh;
+        max-width: 177.78vh; /* 16:9比率を維持 */
+        flex-shrink: 1;
     }
 }
 
@@ -1949,8 +1954,6 @@ function getSpecialTalks() {
 function getNormalTalk() {
     const specialTalks = getSpecialTalks();
 
-    // 季節・特別期間の台詞がある場合は、
-    // 通常台詞と混ぜず、特別台詞だけを出す
     if (specialTalks.length > 0) {
         const key = "special";
 
@@ -1968,7 +1971,6 @@ function getNormalTalk() {
         return talk;
     }
 
-    // 特別台詞がない場合だけ通常台詞
     if (
         !data.talk ||
         !Array.isArray(

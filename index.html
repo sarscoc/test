@@ -26,11 +26,10 @@ body {
     width: 1920px;
     height: 1080px;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform-origin: center center;
+    flex: 0 0 1920px;
 }
+
+/* 1920x1080のゲーム本体を画面中央にフィット */
 
 /* ゲーム本体 */
 #game {
@@ -116,19 +115,6 @@ body {
 }
 .ctrl-btn:hover {
     background: rgba(255, 255, 255, 0.3);
-}
-
-#costumeSection {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-}
-#costumeList {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
 }
 
 /* 左下時計エリア */
@@ -423,7 +409,7 @@ body {
 <script>
 /* 画面全体の自動レスポンシブスケール処理（1920x1080基準） */
 function resizeGame() {
-    const container = document.getElementById("game-container");
+    const game = document.getElementById("game");
     const baseWidth = 1920;
     const baseHeight = 1080;
     
@@ -434,7 +420,8 @@ function resizeGame() {
     const scaleY = windowHeight / baseHeight;
     const scale = Math.min(scaleX, scaleY);
     
-    container.style.transform = `scale(${scale})`;
+    game.style.transformOrigin = "center center";
+    game.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener("resize", resizeGame);
@@ -465,7 +452,6 @@ const clockDay = document.getElementById("clockDay");
 let characters = [];
 let backgrounds = [];
 let data = null;
-let currentCostume = null;
 let currentBackground = null;
 let count = {};
 let lastClick = 0;
@@ -628,11 +614,8 @@ function setupPersonalPage() {
 function getImagePath(imageName) {
     if (!imageName) return "";
     if (imageName.startsWith("http") || imageName.startsWith("/")) return imageName;
-    const baseDir = data && data._baseDir ? data._baseDir : '';
-    // すでに "characters/" から始まっている場合の重複を防ぐ
-    if (baseDir && imageName.startsWith(baseDir)) {
-        return "characters/" + imageName;
-    }
+    if (imageName.startsWith("characters/")) return imageName;
+    const baseDir = data && data._baseDir ? data._baseDir : "";
     return "characters/" + baseDir + imageName;
 }
 
@@ -652,7 +635,7 @@ function loadCharacterImage() {
 function loadFrame() {
     if (data.frame) {
         const baseDir = data._baseDir ? data._baseDir : '';
-        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") ? data.frame : "characters/" + baseDir + data.frame;
+        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") || data.frame.startsWith("characters/") ? data.frame : "characters/" + baseDir + data.frame;
         frame.src = framePath;
         frame.style.display = "block";
     } else {
@@ -667,7 +650,8 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     message.innerText = talk.text;
     message.style.display = "block";
 
-    const gameRect = game.getBoundingClientRect();
+    const gameWidth = 1920;
+    const gameHeight = 1080;
     const msgWidth = message.offsetWidth || 600;
     const msgHeight = message.offsetHeight || 160;
     
@@ -679,7 +663,7 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
-        const isLeftHalf = clickX < (gameRect.width / 2);
+        const isLeftHalf = clickX < (gameWidth / 2);
         messageX = isLeftHalf 
             ? (clickX - msgWidth - offset) 
             : (clickX + offset);
@@ -687,10 +671,10 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     }
 
     if (messageX < 20) messageX = 20;
-    if (messageX + msgWidth > gameRect.width - 20) messageX = gameRect.width - msgWidth - 20;
+    if (messageX + msgWidth > gameWidth - 20) messageX = gameWidth - msgWidth - 20;
 
     if (messageY < 20) messageY = 20;
-    if (messageY + msgHeight > gameRect.height - 20) messageY = gameRect.height - msgHeight - 20;
+    if (messageY + msgHeight > gameHeight - 20) messageY = gameHeight - msgHeight - 20;
 
     message.style.left = messageX + "px";
     message.style.top = messageY + "px";

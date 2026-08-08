@@ -1,7 +1,7 @@
 {
     "id": 143,
     "name": "御多福来迎",
-    "image": "characters/143/143.png",
+    "image": "characters/143/IMG_1753.webp",
     "page": "https://sarsland.notion.site/2f24fddb0aaa80fcac93feb439799cae",
     "menu": {
         "face": {
@@ -12,9 +12,9 @@
         }
     },
     "position": {
-        "x": 2,
-        "y": 4,
-        "scale": 790
+        "x": 223,
+        "y": -46,
+        "scale": 588
     },
     "birthday": {
         "month": 8,
@@ -68,7 +68,7 @@
         {
             "id": "default",
             "name": "通常",
-            "image": "characters/143/143.png",
+            "image": "characters/143/IMG_1753.webp",
             "position": {
                 "x": 350,
                 "y": 0,
@@ -101,8 +101,8 @@
     "areas": [
         {
             "name": "エリア1",
-            "x": 332,
-            "y": 3,
+            "x": 110,
+            "y": 58,
             "width": 100,
             "height": 100,
             "talk": [
@@ -124,8 +124,8 @@
         },
         {
             "name": "エリア2",
-            "x": 301,
-            "y": 144,
+            "x": 89,
+            "y": 188,
             "width": 150,
             "height": 150,
             "talk": [],
@@ -138,8 +138,8 @@
         },
         {
             "name": "エリア3",
-            "x": 239,
-            "y": 339,
+            "x": 40,
+            "y": 408,
             "width": 80,
             "height": 80,
             "talk": [

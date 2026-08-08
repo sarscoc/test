@@ -453,39 +453,23 @@ function speak(talk, clickX, clickY) {
     message.style.display = "block";
 
     const gameRect = game.getBoundingClientRect();
-    const charRect = character.getBoundingClientRect();
-    
-    // ゲーム枠内におけるキャラクターの左右端座標
-    const charLeft = charRect.left - gameRect.left;
-    const charRight = charRect.right - gameRect.left;
-
     const msgWidth = message.offsetWidth || 280;
     const msgHeight = message.offsetHeight || 80;
-    const padding = 15; // 離す距離
+    
+    const offset = 15; // クリック位置からの距離（離しすぎない値）
 
-    let messageX, messageY;
-
-    // キャラクターの右側に吹き出しが収まる場合
-    if (charRight + msgWidth + padding <= gameRect.width - 10) {
-        messageX = charRight + padding;
-    } 
-    // キャラの左側に吹き出しが収まる場合
-    else if (charLeft - msgWidth - padding >= 10) {
-        messageX = charLeft - msgWidth - padding;
-    } 
-    // どちらも厳しい場合はクリック位置の横へ退避
-    else {
-        if (clickX + msgWidth + padding <= gameRect.width - 10) {
-            messageX = clickX + padding;
-        } else {
-            messageX = clickX - msgWidth - padding;
-        }
+    // 1. クリック位置の右側に置くスペースがあるか判定
+    let messageX = clickX + offset;
+    
+    // 右側が画面外にはみ出すなら、クリック位置の左側に配置
+    if (messageX + msgWidth > gameRect.width - 10) {
+        messageX = clickX - msgWidth - offset;
     }
 
-    // 高さの決定（クリック位置の高さを基準に調整）
-    messageY = clickY - (msgHeight / 2);
+    // 2. 高さはクリック位置を中心にする
+    let messageY = clickY - (msgHeight / 2);
 
-    // 画面外（左右上下）へはみ出さないよう限界座標でガード
+    // 3. 画面外（左右上下）へ飛び出さないよう最終ガード
     if (messageX < 10) messageX = 10;
     if (messageX + msgWidth > gameRect.width - 10) messageX = gameRect.width - msgWidth - 10;
 

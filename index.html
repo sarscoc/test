@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
 <link rel="shortcut icon" href="#">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500&family=Quicksand:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;600&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 html, body { 
@@ -67,6 +67,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     letter-spacing: 0.05em;
     pointer-events: none;
     word-break: break-word;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
     font-weight: 400;
     clip-path: polygon(
         12px 0, calc(100% - 12px) 0,
@@ -122,10 +123,11 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     width: 100%;
     min-width: 0;
     color: #ffffff;
-    font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
-    font-size: 24px;
+    font-family: "M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 23px;
     line-height: 1.25;
     font-weight: 500;
+    letter-spacing: 0.02em;
     text-align: center;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
     white-space: nowrap;
@@ -137,6 +139,13 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     box-sizing: border-box;
     padding: 0;
     margin: 0;
+}
+
+
+#personalPage {
+    font-family: "Quicksand", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.08em;
 }
 
 /* 左下時計エリア */
@@ -531,12 +540,11 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
 }
 .character-name-cake {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     object-fit: contain;
     flex: 0 0 auto;
     margin-right: 6px;
-    vertical-align: middle;
 }
 #characterName.birthday-name {
     display: flex !important;
@@ -578,7 +586,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         
         <!-- 左側操作コントロール -->
         <div id="leftControls">
-            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PCPAGES</a>
+            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC PAGE</a>
             <div id="characterName"></div>
         </div>
 
@@ -854,10 +862,22 @@ async function loadBackgrounds() {
 }
 
 function getToday() {
-    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Tokyo",
+        month: "numeric",
+        day: "numeric"
+    }).formatToParts(new Date());
+
+    const values = {};
+    parts.forEach(part => {
+        if (part.type === "month" || part.type === "day") {
+            values[part.type] = Number(part.value);
+        }
+    });
+
     return {
-        month: Number(now.getMonth() + 1),
-        day: Number(now.getDate())
+        month: values.month,
+        day: values.day
     };
 }
 
@@ -897,6 +917,13 @@ async function loadCharacter(char) {
     showGreeting();
 }
 
+function normalizePageUrl(value) {
+    if (!value) return "";
+    const raw = String(value).trim();
+    const markdown = raw.match(/^\[[^\]]*\]\((https?:\/\/[^)]+)\)$/i);
+    return markdown ? markdown[1] : raw;
+}
+
 function setupPersonalPage() {
     characterName.innerHTML = "";
     characterName.classList.remove("birthday-name");
@@ -905,16 +932,15 @@ function setupPersonalPage() {
         const today = getToday();
         const isBirthday = Boolean(
             data.birthday &&
-            Number(data.birthday.month) === Number(today.month) &&
-            Number(data.birthday.day) === Number(today.day)
+            Number(data.birthday.month) === today.month &&
+            Number(data.birthday.day) === today.day
         );
 
         if (isBirthday) {
             const cake = document.createElement("img");
-            cake.src = "./icon/cake.png";
+            cake.src = new URL("icon/cake.png", document.baseURI).href;
             cake.alt = "";
             cake.className = "character-name-cake";
-            cake.onerror = () => console.error("ケーキアイコン読み込み失敗: ./icon/cake.png");
             characterName.appendChild(cake);
             characterName.classList.add("birthday-name");
         }
@@ -927,8 +953,9 @@ function setupPersonalPage() {
         characterName.style.display = "none";
     }
 
-    if (data && data.page) {
-        personalPage.href = data.page;
+    const pageUrl = normalizePageUrl(data && data.page);
+    if (pageUrl) {
+        personalPage.href = pageUrl;
         personalPage.style.display = "flex";
     } else {
         personalPage.href = "#";
@@ -1102,24 +1129,45 @@ message.style.left = messageX + "px";
 }
 
 
+function getGreetingDateTalk() {
+    if (!data || !Array.isArray(data.greetingDates)) return null;
+
+    const today = getToday();
+    for (const item of data.greetingDates) {
+        if (
+            Number(item.month) === today.month &&
+            Number(item.day) === today.day &&
+            Array.isArray(item.talk) &&
+            item.talk.length > 0
+        ) {
+            return item.talk[0];
+        }
+    }
+    return null;
+}
+
 function showGreeting() {
-    if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
+    const dateGreeting = getGreetingDateTalk();
+    const normalGreeting =
+        data &&
+        data.talk &&
+        Array.isArray(data.talk.greeting) &&
+        data.talk.greeting.length > 0
+            ? data.talk.greeting[0]
+            : null;
+
+    const greeting = dateGreeting || normalGreeting;
+    if (!greeting) return;
 
     const charLeft = parseFloat(character.style.left) || 0;
     const charTop = parseFloat(character.style.top) || 0;
     const charWidth = parseFloat(character.style.width) || 1920;
     const charHeight = charWidth * (1080 / 1920);
 
-    // 立ち絵の身体中央に、吹き出しが重なる感じ
     const bodyCenterX = charLeft + charWidth * 0.5;
-    const bodyCenterY = charTop + charHeight * 0.50;
+    const bodyCenterY = charTop + charHeight * 0.5;
 
-    speak(
-        data.talk.greeting[0],
-        bodyCenterX,
-        bodyCenterY,
-        { x: bodyCenterX, y: bodyCenterY }
-    );
+    speak(greeting, bodyCenterX, bodyCenterY, { x: bodyCenterX, y: bodyCenterY });
 }
 
 function dateToNumber(value) {
@@ -1139,41 +1187,63 @@ function isInPeriod(start, end) {
     return current >= startNumber || current <= endNumber;
 }
 
-function getSpecialTalks() {
-    const talks = [];
-    const today = getToday();
-
-    // 誕生日・日付指定・期間指定だけを対象にする。
-    // greetingDates は将来の挨拶日付機能用なので、現時点ではここでは処理しない。
-    if (data.birthday && Number(data.birthday.month) === today.month && Number(data.birthday.day) === today.day && Array.isArray(data.birthday.talk)) {
-        talks.push(...data.birthday.talk);
-    }
-    if (data.special && Array.isArray(data.special.dates)) {
-        data.special.dates.forEach(item => {
-            if (Number(item.month) === today.month && Number(item.day) === today.day && Array.isArray(item.talk)) {
-                talks.push(...item.talk);
-            }
-        });
-    }
-    if (data.special && Array.isArray(data.special.periods)) {
-        data.special.periods.forEach(period => {
-            if (isInPeriod(period.start, period.end) && Array.isArray(period.talk)) {
-                talks.push(...period.talk);
-            }
-        });
-    }
-    return talks;
-}
-
-function getSpecialTalk() {
-    const pool = getSpecialTalks();
-    if (pool.length === 0) return null;
-
-    const key = "special";
+function takeTalkFromPool(pool, key) {
+    if (!Array.isArray(pool) || pool.length === 0) return null;
     if (count[key] === undefined) count[key] = 0;
     const talk = pool[count[key] % pool.length];
     count[key]++;
     return talk;
+}
+
+function getBirthdayTalk() {
+    const today = getToday();
+    if (
+        data &&
+        data.birthday &&
+        Number(data.birthday.month) === today.month &&
+        Number(data.birthday.day) === today.day &&
+        Array.isArray(data.birthday.talk)
+    ) {
+        return takeTalkFromPool(data.birthday.talk, "birthday");
+    }
+    return null;
+}
+
+function getDateTalk() {
+    if (!data || !data.special || !Array.isArray(data.special.dates)) return null;
+    const today = getToday();
+    const pool = [];
+
+    data.special.dates.forEach(item => {
+        if (
+            Number(item.month) === today.month &&
+            Number(item.day) === today.day &&
+            Array.isArray(item.talk)
+        ) {
+            pool.push(...item.talk);
+        }
+    });
+
+    return takeTalkFromPool(pool, "special_date");
+}
+
+function getPeriodTalk() {
+    if (!data || !data.special || !Array.isArray(data.special.periods)) return null;
+    const pool = [];
+
+    data.special.periods.forEach(period => {
+        if (
+            period &&
+            period.start &&
+            period.end &&
+            isInPeriod(period.start, period.end) &&
+            Array.isArray(period.talk)
+        ) {
+            pool.push(...period.talk);
+        }
+    });
+
+    return takeTalkFromPool(pool, "special_period");
 }
 
 function getNormalTalk() {
@@ -1270,23 +1340,24 @@ game.addEventListener("click", function(event) {
     const rect = game.getBoundingClientRect();
     const scaleX = 1920 / rect.width;
     const scaleY = 1080 / rect.height;
-    
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
-    
+
     const now = Date.now();
     const rapid = now - lastClick < RAPID_TIME;
     lastClick = now;
 
+    // 1. タッチ範囲
     const area = getArea(x, y);
     if (area) {
         if (rapid) {
-            const rapidTalk = getAreaRapidTalk(area);
-            if (rapidTalk) {
-                speak(rapidTalk, x, y);
+            const areaRapidTalk = getAreaRapidTalk(area);
+            if (areaRapidTalk) {
+                speak(areaRapidTalk, x, y);
                 return;
             }
         }
+
         const areaTalk = getAreaTalk(area);
         if (areaTalk) {
             speak(areaTalk, x, y);
@@ -1294,6 +1365,28 @@ game.addEventListener("click", function(event) {
         }
     }
 
+    // 2. 誕生日
+    const birthdayTalk = getBirthdayTalk();
+    if (birthdayTalk) {
+        speak(birthdayTalk, x, y);
+        return;
+    }
+
+    // 3. 日付指定
+    const dateTalk = getDateTalk();
+    if (dateTalk) {
+        speak(dateTalk, x, y);
+        return;
+    }
+
+    // 4. 期間指定
+    const periodTalk = getPeriodTalk();
+    if (periodTalk) {
+        speak(periodTalk, x, y);
+        return;
+    }
+
+    // 5. 通常（連打時のみ rapid を通常枠として使用）
     if (rapid) {
         const rapidTalk = getRapidTalk();
         if (rapidTalk) {
@@ -1302,19 +1395,11 @@ game.addEventListener("click", function(event) {
         }
     }
 
-    // タッチ範囲・連打の次に季節/日付台詞を優先し、最後に通常台詞を出す。
-    const specialTalk = getSpecialTalk();
-    if (specialTalk) {
-        speak(specialTalk, x, y);
-        return;
-    }
-
     const normalTalk = getNormalTalk();
     if (normalTalk) {
         speak(normalTalk, x, y);
     }
 });
-
 function setBackground(bg) {
     currentBackground = bg;
     background.src = "backgrounds/" + bg.image;
@@ -1412,7 +1497,7 @@ function showBirthdayChoice(birthdayCharacters) {
         const item = document.createElement("div");
         item.className = "birthday-item";
         const cakeIcon = document.createElement("img");
-        cakeIcon.src = "./icon/cake.png";
+        cakeIcon.src = new URL("icon/cake.png", document.baseURI).href;
         cakeIcon.alt = "";
         cakeIcon.className = "birthday-cake-icon";
         const nameSpan = document.createElement("span");

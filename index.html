@@ -1089,6 +1089,7 @@ async function loadCharacters() {
             const relativePath = targetPath.substring("characters/".length);
             const slash = relativePath.lastIndexOf('/');
             json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : '';
+            json._sourcePath = targetPath;
             characters.push(json);
         } catch (e) {
             console.error(`構文エラーがあるファイル: ${targetPath}`);
@@ -1099,7 +1100,252 @@ async function loadCharacters() {
     if (characters.length === 0) {
         throw new Error("キャラクターJSONを1件も読み込めませんでした。");
     }
+
+    // 衣装JSONの dialogueSource は全キャラクター読込後に解決する。
+    await resolveDialogueSources();
 }
+
+
+/* 衣装JSON用：台詞だけ別キャラクターJSONから引用する */
+function parseCharacterJsonText(text) {
+    let value = String(text || "")
+        .replace(/^\uFEFF/, "")
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "")
+        .trim();
+
+    const first = value.indexOf("{");
+    const last = value.lastIndexOf("}");
+    if (first !== -1 && last !== -1) {
+        value = value.substring(first, last + 1);
+    }
+    return JSON.parse(value);
+}
+
+function sourceRefMatchesCharacter(char, ref) {
+    if (!char || ref == null) return false;
+    const target = String(ref);
+    if (String(char.id) === target) return true;
+
+    const sourcePath = String(char._sourcePath || "");
+    const fileName = sourcePath.split("/").pop() || "";
+    const stem = fileName.replace(/\.json$/i, "");
+    return sourcePath === target ||
+           sourcePath.endsWith("/" + target) ||
+           fileName === target ||
+           stem === target;
+}
+
+async function fetchDialogueSource(ref) {
+    if (ref == null || ref === "") return null;
+
+    const loaded = characters.find(char => sourceRefMatchesCharacter(char, ref));
+    if (loaded) return loaded;
+
+    const raw = String(ref).trim();
+    const candidates = [];
+
+    if (/\.json$/i.test(raw)) {
+        if (raw.startsWith("characters/")) {
+            candidates.push(raw);
+        } else {
+            candidates.push("characters/" + raw);
+        }
+    } else {
+        candidates.push(`characters/${raw}/${raw}.json`);
+        candidates.push(`characters/${raw}.json`);
+    }
+
+    for (const candidate of candidates) {
+        try {
+            const response = await fetch(candidate);
+            if (!response.ok) continue;
+
+            const source = parseCharacterJsonText(await response.text());
+            const relativePath = candidate.substring("characters/".length);
+            const slash = relativePath.lastIndexOf("/");
+            source._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : "";
+            source._sourcePath = candidate;
+            return source;
+        } catch (error) {
+            console.warn("台詞参照JSONの読み込み候補失敗:", candidate, error);
+        }
+    }
+
+    console.error("dialogueSource を読み込めません:", ref);
+    return null;
+}
+
+async function resolveDialogueSources() {
+    for (const char of characters) {
+        delete char._dialogueSourceData;
+        if (char.dialogueSource == null || char.dialogueSource === "") continue;
+
+        const source = await fetchDialogueSource(char.dialogueSource);
+        if (!source) {
+            console.error(`衣装 ${char.id ?? "(IDなし)"} の dialogueSource が見つかりません:`, char.dialogueSource);
+            continue;
+        }
+
+        if (source === char) {
+            console.error("dialogueSource が自分自身を参照しています:", char.dialogueSource);
+            continue;
+        }
+
+        char._dialogueSourceData = source;
+    }
+}
+
+function getDialogueData() {
+    if (!data) return null;
+    return data._dialogueSourceData || data;
+}
+
+function getCostumeData() {
+    return data || null;
+}
+
+function mergeTalkArrays(baseArr, costumeArr) {
+    const a = Array.isArray(baseArr) ? baseArr : [];
+    const b = Array.isArray(costumeArr) ? costumeArr : [];
+    return [...a, ...b];
+}
+
+function getMergedTalkSection(name) {
+    const dialogueData = getDialogueData();
+    const costumeData = getCostumeData();
+    const baseArr = dialogueData && dialogueData.talk ? dialogueData.talk[name] : [];
+    const costumeArr = costumeData && costumeData.costumeTalk ? costumeData.costumeTalk[name] : [];
+    return mergeTalkArrays(baseArr, costumeArr);
+}
+
+function getMergedGreetingDateItems() {
+    const dialogueData = getDialogueData();
+    const costumeData = getCostumeData();
+    return [
+        ...(Array.isArray(costumeData?.costumeGreetingDates) ? costumeData.costumeGreetingDates : []),
+        ...(Array.isArray(dialogueData?.greetingDates) ? dialogueData.greetingDates : [])
+    ];
+}
+
+function getMergedGreetingPeriodItems() {
+    const dialogueData = getDialogueData();
+    const costumeData = getCostumeData();
+    return [
+        ...(Array.isArray(costumeData?.costumeGreetingPeriods) ? costumeData.costumeGreetingPeriods : []),
+        ...(Array.isArray(dialogueData?.greetingPeriods) ? dialogueData.greetingPeriods : [])
+    ];
+}
+
+function getMergedSpecialDateItems() {
+    const dialogueData = getDialogueData();
+    const costumeData = getCostumeData();
+    return [
+        ...(Array.isArray(costumeData?.costumeSpecial?.dates) ? costumeData.costumeSpecial.dates : []),
+        ...(Array.isArray(dialogueData?.special?.dates) ? dialogueData.special.dates : [])
+    ];
+}
+
+function getMergedSpecialPeriodItems() {
+    const dialogueData = getDialogueData();
+    const costumeData = getCostumeData();
+    return [
+        ...(Array.isArray(costumeData?.costumeSpecial?.periods) ? costumeData.costumeSpecial.periods : []),
+        ...(Array.isArray(dialogueData?.special?.periods) ? dialogueData.special.periods : [])
+    ];
+}
+
+function getAreaKey(area) {
+    if (!area) return "";
+    if (area.key != null && String(area.key).trim()) return String(area.key).trim();
+    return String(area.name || "").trim();
+}
+
+/*
+  衣装JSONのエリア座標を使い、
+  dialogueSource 側の同じ key の talk / rapid を合成する。
+  key が無い既存データでは name を予備キーとして使う。
+*/
+function getActiveAreas() {
+    if (!data) return [];
+
+    const visualAreas = Array.isArray(data.areas) ? data.areas : [];
+    const dialogueData = getDialogueData();
+    const sourceAreas =
+        dialogueData && Array.isArray(dialogueData.areas)
+            ? dialogueData.areas
+            : [];
+    const costumeAreas = data && data.costumeAreas && typeof data.costumeAreas === "object"
+        ? data.costumeAreas
+        : {};
+
+    const mergedBase = data._dialogueSourceData
+        ? (visualAreas.length === 0 ? sourceAreas : visualAreas.map(area => {
+            const key = getAreaKey(area);
+            const sourceArea = sourceAreas.find(item => getAreaKey(item) === key);
+            if (!sourceArea) return area;
+            return {
+                ...sourceArea,
+                ...area,
+                key: area.key ?? sourceArea.key ?? key,
+                talk: Array.isArray(sourceArea.talk) ? sourceArea.talk : (Array.isArray(area.talk) ? area.talk : []),
+                rapid: Array.isArray(sourceArea.rapid) ? sourceArea.rapid : (Array.isArray(area.rapid) ? area.rapid : [])
+            };
+        }))
+        : visualAreas;
+
+    return mergedBase.map(area => {
+        const key = getAreaKey(area);
+        const costumeArea = key && costumeAreas[key] ? costumeAreas[key] : null;
+        return {
+            ...area,
+            talk: mergeTalkArrays(area.talk, costumeArea?.talk),
+            rapid: mergeTalkArrays(area.rapid, costumeArea?.rapid)
+        };
+    });
+}
+
+
+/*
+  表情は衣装JSON側で別設定できる。
+  expressionMap は talk.id があれば id、無ければ台詞本文をキーにできる。
+  例:
+  "expressionMap": {
+    "やあ、元気にしてたかい？": "笑顔"
+  }
+
+  dialogueSource 側の talk に expression / variant が入っている場合も予備で対応。
+*/
+function getTalkExpressionName(talk) {
+    if (!talk || !data) return null;
+
+    const map = data.expressionMap;
+    if (map && typeof map === "object") {
+        if (talk.id != null && map[String(talk.id)] != null) {
+            return String(map[String(talk.id)]);
+        }
+        const textKey = String(talk.text ?? "");
+        if (textKey && map[textKey] != null) {
+            return String(map[textKey]);
+        }
+    }
+
+    const direct = talk.expression ?? talk.variant ?? null;
+    return direct == null || direct === "" ? null : String(direct);
+}
+
+function restoreDefaultCharacterVariant() {
+    const name = data && data.defaultVariant ? String(data.defaultVariant) : null;
+    setCharacterVariant(name);
+}
+
+function applyTalkExpression(talk) {
+    const expression = getTalkExpressionName(talk);
+    if (expression && setCharacterVariant(expression)) return;
+    restoreDefaultCharacterVariant();
+}
+
 
 /* 背景JSON読み込み */
 async function loadBackgrounds() {
@@ -1166,6 +1412,13 @@ async function chooseInitialCharacter() {
 
 async function loadCharacter(char) {
     data = char;
+    baseImageMetrics = null;
+    baseImageMetricsPath = "";
+    currentCharacterVariant = char && char.defaultVariant ? String(char.defaultVariant) : null;
+    if (messageTimer) {
+        clearTimeout(messageTimer);
+        messageTimer = null;
+    }
     count = {};
     resetDialogueState();
     loadCharacterImage();
@@ -1229,77 +1482,150 @@ function getImagePath(imageName, charData = data) {
     return "characters/" + baseDir + imageName;
 }
 
-function loadCharacterImage() {
-    // キャラクターPNGは1920x1080基準。スマホでも拡大縮小せず元サイズを維持する。
-    const position = data.position || {};
-    const imgPath = getImagePath(data.image);
-    const originalX = Number(position.x || 0);
-    const originalY = Number(position.y || 0);
-    const originalWidth = Number(position.scale || 1000);
-    const layout = window.mobileLayout || { active: false, characterScale: 1 };
-    const factor = layout.active ? layout.characterScale : 1;
-    const yOffset = layout.active ? Number(layout.characterYOffset || 0) : 0;
+let currentCharacterVariant = null;
 
-    // 1920x1080画像を想定。スマホでも拡大縮小は行わない。
-    const originalHeight = originalWidth * (1080 / 1920);
-    const centerX = 960;
-    const centerY = 540;
-    const x = centerX + (originalX - centerX) * factor;
-    let y = centerY + (originalY - centerY) * factor + yOffset;
-    const width = originalWidth * factor;
-    const height = originalHeight * factor;
-    if (layout.active) {
-        const bottom = y + height;
-        if (bottom > 1080) y -= (bottom - 1080);
-    }
-
-    character.onerror = () => {
-        console.error("画像読み込み失敗:", imgPath);
-    };
-    character.src = imgPath;
-    character.style.left = x + "px";
-    character.style.top = y + "px";
-    character.style.width = width + "px";
-    character.style.height = "auto";
+function getCharacterVariant(name = currentCharacterVariant) {
+    if (!data || !name || !Array.isArray(data.variants)) return null;
+    return data.variants.find(item => item && String(item.name) === String(name)) || null;
 }
 
+function setCharacterVariant(name = null) {
+    if (!data) return false;
+    if (name == null || name === "" || name === "normal") {
+        currentCharacterVariant = null;
+        loadCharacterImage();
+        return true;
+    }
+    const variant = getCharacterVariant(name);
+    if (!variant) return false;
+    currentCharacterVariant = String(variant.name);
+    loadCharacterImage();
+    return true;
+}
+window.setCharacterVariant = setCharacterVariant;
 
+let baseImageMetrics = null;
+let baseImageMetricsPath = "";
 
-function applyMobileCharacterTransform() {
+function loadBaseImageMetrics(callback) {
+    if (!data || !data.image) {
+        callback(null);
+        return;
+    }
+
+    const basePath = getImagePath(data.image);
+    if (baseImageMetrics && baseImageMetricsPath === basePath) {
+        callback(baseImageMetrics);
+        return;
+    }
+
+    const probe = new Image();
+    probe.onload = () => {
+        baseImageMetricsPath = basePath;
+        baseImageMetrics = {
+            width: probe.naturalWidth,
+            height: probe.naturalHeight
+        };
+        callback(baseImageMetrics);
+    };
+    probe.onerror = () => {
+        console.error("通常立ち絵のサイズ取得失敗:", basePath);
+        callback(null);
+    };
+    probe.src = basePath;
+}
+
+function applyAnchoredCharacterGeometry(img, position, variant = null, baseMetrics = null) {
+    const baseWidth = Math.max(1, Number(position.scale || 1000));
+
+    // 通常立ち絵
+    if (!variant) {
+        const ratio = img.naturalWidth > 0 ? (img.naturalHeight / img.naturalWidth) : 1;
+        const height = baseWidth * ratio;
+        const footX = Number(position.x ?? 960);
+        const footY = Number(position.y ?? 1080);
+
+        img.style.left = (footX - baseWidth / 2) + "px";
+        img.style.top = (footY - height) + "px";
+        img.style.width = baseWidth + "px";
+        img.style.height = "auto";
+
+        img.dataset.anchorX = String(footX);
+        img.dataset.anchorY = String(footY);
+        img.dataset.displayWidth = String(baseWidth);
+        img.dataset.displayHeight = String(height);
+        return;
+    }
+
+    // 差分：
+    // 通常立ち絵と「同じピクセル倍率」で表示し、
+    // 通常立ち絵の画像中央を基準に offsetX / offsetY だけ微調整する。
+    const bm = baseMetrics || baseImageMetrics;
+    const baseNaturalWidth = Math.max(1, Number(bm?.width || img.naturalWidth || 1));
+    const baseNaturalHeight = Math.max(1, Number(bm?.height || img.naturalHeight || 1));
+    const pixelScale = baseWidth / baseNaturalWidth;
+
+    const baseDisplayHeight = baseNaturalHeight * pixelScale;
+    const baseCenterX = Number(position.x ?? 960);
+    const baseCenterY = Number(position.y ?? 1080) - baseDisplayHeight / 2;
+
+    const variantScale = Math.max(0.01, Number(variant.scale ?? 1));
+    const width = img.naturalWidth * pixelScale * variantScale;
+    const height = img.naturalHeight * pixelScale * variantScale;
+
+    const centerX = baseCenterX + Number(variant.offsetX || 0);
+    const centerY = baseCenterY + Number(variant.offsetY || 0);
+
+    img.style.left = (centerX - width / 2) + "px";
+    img.style.top = (centerY - height / 2) + "px";
+    img.style.width = width + "px";
+    img.style.height = "auto";
+
+    img.dataset.anchorX = String(centerX);
+    img.dataset.anchorY = String(centerY);
+    img.dataset.displayWidth = String(width);
+    img.dataset.displayHeight = String(height);
+}
+
+function loadCharacterImage() {
     if (!data) return;
 
-    const position = data.position || {};
-    const baseX = Number(position.x || 0);
-    const baseY = Number(position.y || 0);
-    const baseWidth = Number(position.scale || 1920);
+    const position = data.position || { x: 960, y: 1080, scale: 1000 };
+    const variant = getCharacterVariant();
+    const imageName = variant?.image || data.image;
+    const imgPath = getImagePath(imageName);
+    if (!imgPath) return;
 
-    if (window.innerWidth <= 768) {
-        const mobileScale = 0.94; // 少しだけ縮小
-        const newWidth = baseWidth * mobileScale;
+    const apply = () => {
+        if (!character.naturalWidth) return;
 
-        // 基準：画像の真ん中下（bottom-center）を固定
-        const baseCenterX = baseX + baseWidth / 2;
-        const assumedHeight = 1080 * (baseWidth / 1920);
-        const baseBottomY = baseY + assumedHeight;
+        if (variant) {
+            loadBaseImageMetrics(metrics => {
+                applyAnchoredCharacterGeometry(character, position, variant, metrics);
+            });
+        } else {
+            // 通常立ち絵を表示した時点で基準画像サイズもキャッシュ。
+            baseImageMetricsPath = getImagePath(data.image);
+            baseImageMetrics = {
+                width: character.naturalWidth,
+                height: character.naturalHeight
+            };
+            applyAnchoredCharacterGeometry(character, position, null, baseImageMetrics);
+        }
+    };
 
-        const newHeight = assumedHeight * mobileScale;
-        const newX = baseCenterX - newWidth / 2;
-        const newY = baseBottomY - newHeight;
+    character.onerror = () => console.error("画像読み込み失敗:", imgPath);
+    character.onload = apply;
+    character.src = imgPath;
 
-        character.style.left = newX + "px";
-        character.style.top = newY + "px";
-        character.style.width = newWidth + "px";
-        character.dataset.mobileScale = String(mobileScale);
-        character.dataset.mobileOffsetX = String(newX - baseX);
-        character.dataset.mobileOffsetY = String(newY - baseY);
-    } else {
-        character.style.left = baseX + "px";
-        character.style.top = baseY + "px";
-        character.style.width = baseWidth + "px";
-        character.dataset.mobileScale = "1";
-        character.dataset.mobileOffsetX = "0";
-        character.dataset.mobileOffsetY = "0";
+    if (character.complete && character.naturalWidth) {
+        requestAnimationFrame(apply);
     }
+}
+
+function applyMobileCharacterTransform() {
+    // 立ち絵は常に1920x1080のゲーム座標に固定。
+    // スマホはゲーム画面側の中央クロップだけで表示する。
 }
 
 function loadFrame() {
@@ -1350,7 +1676,8 @@ const dialogueFontMap = {
 function applyMessageTextStyle(talk, layout) {
     if (!messageText) return;
 
-    const defaults = data && data.textStyle ? data.textStyle : {};
+    const dialogueData = getDialogueData();
+    const defaults = dialogueData && dialogueData.textStyle ? dialogueData.textStyle : {};
     const local = talk && talk.style ? talk.style : {};
     const style = { ...defaults, ...local };
 
@@ -1378,6 +1705,9 @@ function applyMessageTextStyle(talk, layout) {
 /* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
+
+    // 台詞に対応する表情へ自動切替。手動の差分選択UIは不要。
+    applyTalkExpression(talk);
 
     const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
     const leftBound = layout.leftBound ?? 0;
@@ -1447,6 +1777,7 @@ message.style.left = messageX + "px";
     messageTimer = setTimeout(() => {
         message.style.display = "none";
         if (messageText) messageText.className = "message-text";
+        restoreDefaultCharacterVariant();
     }, 3000);
 }
 
@@ -1467,9 +1798,8 @@ function isTodaySpecified(item) {
 }
 
 function getGreetingDateTalk() {
-    if (!data || !Array.isArray(data.greetingDates)) return null;
-
-    for (const item of data.greetingDates) {
+    const items = getMergedGreetingDateItems();
+    for (const item of items) {
         if (
             isTodaySpecified(item) &&
             Array.isArray(item.talk) &&
@@ -1481,29 +1811,45 @@ function getGreetingDateTalk() {
     return null;
 }
 
+function getGreetingPeriodTalk() {
+    const items = getMergedGreetingPeriodItems();
+    for (const item of items) {
+        if (
+            item && item.start && item.end &&
+            isInPeriod(item.start, item.end) &&
+            Array.isArray(item.talk) &&
+            item.talk.length > 0
+        ) {
+            return item.talk[0];
+        }
+    }
+    return null;
+}
+
+
 function showGreeting() {
     const dateGreeting = getGreetingDateTalk();
-    const normalGreeting =
-        data &&
-        data.talk &&
-        Array.isArray(data.talk.greeting) &&
-        data.talk.greeting.length > 0
-            ? data.talk.greeting[0]
-            : null;
+    const periodGreeting = getGreetingPeriodTalk();
+    const normalGreetingPool = getMergedTalkSection("greeting");
+    const normalGreeting = normalGreetingPool.length > 0 ? normalGreetingPool[0] : null;
 
-    const greeting = dateGreeting || normalGreeting;
+    const greeting = dateGreeting || periodGreeting || normalGreeting;
     if (!greeting) return;
 
     const charLeft = parseFloat(character.style.left) || 0;
     const charTop = parseFloat(character.style.top) || 0;
     const charWidth = parseFloat(character.style.width) || 1920;
-    const charHeight = charWidth * (1080 / 1920);
+    const charHeight =
+        Number(character.dataset.displayHeight) ||
+        character.getBoundingClientRect().height ||
+        charWidth;
 
     const bodyCenterX = charLeft + charWidth * 0.5;
     const bodyCenterY = charTop + charHeight * 0.5;
 
     speak(greeting, bodyCenterX, bodyCenterY, { x: bodyCenterX, y: bodyCenterY });
 }
+
 
 function dateToNumber(value) {
     const [month, day] = value.split("-").map(Number);
@@ -1525,11 +1871,9 @@ function isInPeriod(start, end) {
 
 function getDateTalk() {
     if (!canUseSpecial("date")) return null;
-    if (!data || !data.special || !Array.isArray(data.special.dates)) return null;
-
     const pool = [];
 
-    data.special.dates.forEach(item => {
+    getMergedSpecialDateItems().forEach(item => {
         if (
             isTodaySpecified(item) &&
             Array.isArray(item.talk)
@@ -1543,12 +1887,12 @@ function getDateTalk() {
     return talk;
 }
 
+
 function getPeriodTalk() {
     if (!canUseSpecial("period")) return null;
-    if (!data || !data.special || !Array.isArray(data.special.periods)) return null;
 
     const pool = [];
-    data.special.periods.forEach(period => {
+    getMergedSpecialPeriodItems().forEach(period => {
         if (
             period &&
             period.start &&
@@ -1565,14 +1909,13 @@ function getPeriodTalk() {
     return talk;
 }
 
+
 function getNormalTalk() {
-    if (!data.talk || !Array.isArray(data.talk.normal) || data.talk.normal.length === 0) return null;
+    const pool = getMergedTalkSection("normal");
+    if (pool.length === 0) return null;
     if (!dialogueState) resetDialogueState();
 
-    const pool = data.talk.normal;
-
     if (dialogueState.normalOrder.length !== pool.length || dialogueState.normalPos >= dialogueState.normalOrder.length) {
-        // 最初の1周はJSON順。2周目以降はシャッフルして、全台詞を1回ずつ出す。
         dialogueState.normalOrder =
             dialogueState.normalRounds === 0
                 ? Array.from({ length: pool.length }, (_, i) => i)
@@ -1584,8 +1927,6 @@ function getNormalTalk() {
     const talk = pool[index];
     dialogueState.normalPos++;
 
-    // この台詞で通常台詞を全種類1周した。
-    // 次のクリックから日付/期間がそれぞれ再び1回だけ解禁される。
     if (dialogueState.normalPos >= dialogueState.normalOrder.length) {
         dialogueState.normalRounds++;
         dialogueState.normalCycle++;
@@ -1594,33 +1935,25 @@ function getNormalTalk() {
     return talk;
 }
 
+
 function getRapidTalk() {
-    if (!data.talk || !Array.isArray(data.talk.rapid) || data.talk.rapid.length === 0) return null;
-    return takeBalancedTalk(data.talk.rapid, "rapid_pool");
+    const pool = getMergedTalkSection("rapid");
+    if (pool.length === 0) return null;
+    return takeBalancedTalk(pool, "rapid_pool");
 }
 
-function getDisplayArea(area) {
-    const layout = window.mobileLayout || { active: false, characterScale: 1 };
-    if (!layout.active) return area;
 
-    // スマホでは人物を中央基準で縮小するため、タッチマーカーも同じ比率で中央へ寄せる。
-    const factor = layout.characterScale;
-    const yOffset = Number(layout.characterYOffset || 0);
-    const centerX = 960;
-    const centerY = 540;
-    return {
-        ...area,
-        x: centerX + (area.x - centerX) * factor,
-        y: centerY + (area.y - centerY) * factor + yOffset,
-        width: area.width * factor,
-        height: area.height * factor
-    };
+function getDisplayArea(area) {
+    // タッチエリアも1920x1080のゲーム座標そのまま。
+    // スマホでは画面側が中央クロップされるだけ。
+    return area;
 }
 
 function getArea(x, y) {
-    if (!data || !Array.isArray(data.areas)) return null;
-    for (let i = data.areas.length - 1; i >= 0; i--) {
-        const area = data.areas[i];
+    if (!data) return null;
+    const activeAreas = getActiveAreas();
+    for (let i = activeAreas.length - 1; i >= 0; i--) {
+        const area = activeAreas[i];
         const displayArea = getDisplayArea(area);
         if (x >= displayArea.x && x <= displayArea.x + displayArea.width && y >= displayArea.y && y <= displayArea.y + displayArea.height) {
             return area;
@@ -1631,12 +1964,12 @@ function getArea(x, y) {
 
 function getAreaTalk(area) {
     if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
-    return takeBalancedTalk(area.talk, "area_" + area.name);
+    return takeBalancedTalk(area.talk, "area_" + (getAreaKey(area) || area.name));
 }
 
 function getAreaRapidTalk(area) {
     if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
-    return takeBalancedTalk(area.rapid, "rapid_area_" + area.name);
+    return takeBalancedTalk(area.rapid, "rapid_area_" + (getAreaKey(area) || area.name));
 }
 
 

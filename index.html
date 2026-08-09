@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Hachi+Maru+Pop&family=Hina+Mincho&family=Kaisei+Decol:wght@400;700&family=Klee+One:wght@400;600&family=Kosugi+Maru&family=M+PLUS+1p:wght@400;500;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Mochiy+Pop+One&family=Mochiy+Pop+P+One&family=New+Tegomin&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@400;500;700&family=Potta+One&family=Rampart+One&family=Reggae+One&family=RocknRoll+One&family=Shippori+Mincho:wght@400;600;700&family=Stick&family=Train+One&family=Yomogi&family=Yusei+Magic&family=Yuji+Boku&family=Zen+Kurenaido&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="shortcut icon" href="#">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;600&family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -90,6 +91,70 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     );
     border: 2px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+
+/* 台詞文字専用アニメーション：吹き出し自体は動かさない */
+.message-text{
+    display: inline-block;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    transform-origin: center center;
+    will-change: transform, opacity, filter;
+}
+.message-text.anim-tremble{ animation: messageTextTremble .09s steps(2,end) infinite; }
+.message-text.anim-shake{ animation: messageTextShake .16s steps(2,end) infinite; }
+.message-text.anim-sway{ animation: messageTextSway 1.15s ease-in-out infinite; }
+.message-text.anim-float{ animation: messageTextFloat 1.35s ease-in-out infinite; }
+.message-text.anim-pulse{ animation: messageTextPulse .82s ease-in-out infinite; }
+.message-text.anim-bounce{ animation: messageTextBounce .72s ease-in-out infinite; }
+.message-text.anim-blink{ animation: messageTextBlink .68s steps(2,end) infinite; }
+.message-text.anim-glitch{ animation: messageTextGlitch .22s steps(2,end) infinite; }
+
+@keyframes messageTextTremble {
+    0%{transform:translate(0,0)}
+    25%{transform:translate(-1px,1px)}
+    50%{transform:translate(1px,-1px)}
+    75%{transform:translate(1px,1px)}
+    100%{transform:translate(-1px,-1px)}
+}
+@keyframes messageTextShake {
+    0%{transform:translateX(0) rotate(0)}
+    20%{transform:translateX(-4px) rotate(-.7deg)}
+    40%{transform:translateX(4px) rotate(.7deg)}
+    60%{transform:translateX(-3px) rotate(-.5deg)}
+    80%{transform:translateX(3px) rotate(.5deg)}
+    100%{transform:translateX(0) rotate(0)}
+}
+@keyframes messageTextSway {
+    0%,100%{transform:rotate(-1.4deg)}
+    50%{transform:rotate(1.4deg)}
+}
+@keyframes messageTextFloat {
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-5px)}
+}
+@keyframes messageTextPulse {
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.055)}
+}
+@keyframes messageTextBounce {
+    0%,100%{transform:translateY(0)}
+    45%{transform:translateY(-7px)}
+    65%{transform:translateY(1px)}
+}
+@keyframes messageTextBlink {
+    0%,45%{opacity:1}
+    50%,72%{opacity:.18}
+    77%,100%{opacity:1}
+}
+@keyframes messageTextGlitch {
+    0%{transform:translate(0,0);text-shadow:none}
+    25%{transform:translate(-2px,1px);text-shadow:2px 0 #ff4d8d,-2px 0 #57e7ff}
+    50%{transform:translate(2px,-1px);text-shadow:-2px 0 #ff4d8d,2px 0 #57e7ff}
+    75%{transform:translate(-1px,-1px);text-shadow:1px 0 #ff4d8d,-1px 0 #57e7ff}
+    100%{transform:translate(0,0);text-shadow:none}
 }
 
 /* 左上操作エリア */
@@ -715,7 +780,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
             <img src="icon/dice.png" alt="">
         </button>
         <button id="openMenu" type="button" aria-label="メニュー">☰</button>
-        <div id="message"></div>
+        <div id="message"><span id="messageText" class="message-text"></span></div>
 
         <div id="menu">
             <section id="birthdayArea" class="hidden">
@@ -809,6 +874,7 @@ const backgroundVideo = document.getElementById("backgroundVideo");
 const character = document.getElementById("character");
 const frame = document.getElementById("frame");
 const message = document.getElementById("message");
+const messageText = document.getElementById("messageText");
 const menu = document.getElementById("menu");
 const personalPage = document.getElementById("personalPage");
 const characterName = document.getElementById("characterName");
@@ -1249,10 +1315,70 @@ function loadFrame() {
     }
 }
 
+
+const dialogueFontMap = {
+    gothic: '"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    notoSans: '"Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    notoBlack: '"Noto Sans JP","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    mplus: '"M PLUS 1p","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif',
+    rounded: '"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif',
+    zenMaru: '"Zen Maru Gothic","M PLUS Rounded 1c",sans-serif',
+    serif: '"Yu Mincho","Hiragino Mincho ProN",serif',
+    notoSerif: '"Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif',
+    shippori: '"Shippori Mincho","Yu Mincho",serif',
+    dela: '"Dela Gothic One","Noto Sans JP",sans-serif',
+    reggae: '"Reggae One","Noto Sans JP",sans-serif',
+    rocknroll: '"RocknRoll One","Noto Sans JP",sans-serif',
+    rampart: '"Rampart One","Noto Sans JP",sans-serif',
+    train: '"Train One","Noto Sans JP",sans-serif',
+    yujiBoku: '"Yuji Boku","Yu Mincho",serif',
+    newTegomin: '"New Tegomin","Yu Mincho",serif',
+    hina: '"Hina Mincho","Yu Mincho",serif',
+    stick: '"Stick","Yu Gothic",sans-serif',
+    kaisei: '"Kaisei Decol","Yu Mincho",serif',
+    mochiy: '"Mochiy Pop One","M PLUS Rounded 1c",sans-serif',
+    mochiyP: '"Mochiy Pop P One","M PLUS Rounded 1c",sans-serif',
+    potta: '"Potta One","M PLUS Rounded 1c",sans-serif',
+    hachi: '"Hachi Maru Pop","M PLUS Rounded 1c",sans-serif',
+    yusei: '"Yusei Magic","Yu Gothic",sans-serif',
+    kosugiMaru: '"Kosugi Maru","M PLUS Rounded 1c",sans-serif',
+    klee: '"Klee One","Yu Gothic",sans-serif',
+    zenKurenaido: '"Zen Kurenaido","Yu Gothic",sans-serif',
+    yomogi: '"Yomogi","Yu Gothic",sans-serif',
+    dot: '"DotGothic16","Yu Gothic",monospace'
+};
+
+function applyMessageTextStyle(talk, layout) {
+    if (!messageText) return;
+
+    const defaults = data && data.textStyle ? data.textStyle : {};
+    const local = talk && talk.style ? talk.style : {};
+    const style = { ...defaults, ...local };
+
+    messageText.className = "message-text";
+    messageText.textContent = talk && talk.text != null ? String(talk.text) : "";
+
+    messageText.style.color = style.color || "#f0f2f5";
+    messageText.style.fontFamily = dialogueFontMap[style.font] || dialogueFontMap.gothic;
+    messageText.style.fontWeight = style.font === "notoBlack" ? "900" : (style.weight || "400");
+
+    // JSONにサイズ指定があればそれを優先。なければ従来のPC/スマホサイズ。
+    const fallbackSize = layout && layout.active ? 34 : 28;
+    const fontSize = Number(style.size || fallbackSize);
+    messageText.style.fontSize = fontSize + "px";
+
+    const animation = String(style.animation || "");
+    const allowed = ["tremble","shake","sway","float","pulse","bounce","blink","glitch"];
+    if (allowed.includes(animation)) {
+        void messageText.offsetWidth;
+        messageText.classList.add("anim-" + animation);
+    }
+}
+
+
 /* 吹き出し位置の自動調整 */
 function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
-    message.innerText = talk.text;
 
     const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
     const leftBound = layout.leftBound ?? 0;
@@ -1281,6 +1407,9 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         message.style.lineHeight = "1.6";
         message.style.padding = "24px 32px";
     }
+
+    // 吹き出しは固定し、文字だけに色・サイズ・フォント・アニメーションを適用。
+    applyMessageTextStyle(talk, layout);
 
     message.style.display = "block";
     const msgWidth = message.offsetWidth || 600;
@@ -1318,6 +1447,7 @@ message.style.left = messageX + "px";
     if (messageTimer) clearTimeout(messageTimer);
     messageTimer = setTimeout(() => {
         message.style.display = "none";
+        if (messageText) messageText.className = "message-text";
     }, 3000);
 }
 

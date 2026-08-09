@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Character Game</title>
 <link rel="shortcut icon" href="#">
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Serif+JP:wght@400;500;700&family=Quicksand:wght@300;400;500;600&family=Zen+Kurenaido&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 html, body { 
@@ -13,13 +12,13 @@ html, body {
     width: 100%; 
     height: 100%; 
     overflow: hidden;
-    background: #fff;
+    background: #000;
 }
 body {
     display: flex;
     justify-content: center;
     align-items: center;
-font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Arial Round', sans-serif;
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Arial Round', sans-serif;
 }
 
 /* 1920x1080基準の外枠コンテナ（自動縮小用） */
@@ -27,10 +26,11 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     width: 1920px;
     height: 1080px;
     position: relative;
-    flex: 0 0 1920px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-origin: center center;
 }
-
-/* 1920x1080のゲーム本体を画面中央にフィット */
 
 /* ゲーム本体 */
 #game {
@@ -48,26 +48,13 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 }
 
 #background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; }
-
-#backgroundVideo {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-    pointer-events: none;
-    display: none;
-    background: #fff;
-}
-
-#character { position: absolute;  object-fit: contain; pointer-events: none; transform-origin: 50% 88%;  will-change: transform; }
+#character { position: absolute; z-index: 10; object-fit: contain; pointer-events: none; }
 #frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; display: none; }
 
 /* 台詞吹出し */
 #message {
     position: absolute;
-    z-index: 180;
+    z-index: 100;
     display: none;
     width: 600px;
     padding: 24px 32px;
@@ -80,7 +67,6 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     letter-spacing: 0.05em;
     pointer-events: none;
     word-break: break-word;
-    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
     font-weight: 400;
     clip-path: polygon(
         12px 0, calc(100% - 12px) 0,
@@ -97,13 +83,13 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     position: absolute;
     top: 30px;
     left: 30px;
-    z-index: 260;
+    z-index: 200;
     display: flex;
     flex-direction: column;
     gap: 16px;
     width: 180px;
-    max-height: none;
-    overflow: hidden;
+    max-height: calc(100% - 150px);
+    overflow-y: auto;
 }
 
 /* コントロールボタン */
@@ -132,33 +118,17 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     background: rgba(255, 255, 255, 0.3);
 }
 
-#characterName {
-    width: 100%;
-    min-width: 0;
-    color: #ffffff;
-    font-family: "M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
-    font-size: 23px;
-    line-height: 1.25;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-align: center;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+#costumeSection {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
 }
-
-
-#personalPage {
-    font-family: "Quicksand", Arial, sans-serif;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+#costumeList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
 }
 
 /* 左下時計エリア */
@@ -166,56 +136,27 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     position: absolute;
     bottom: 30px;
     left: 30px;
-    z-index: 120;
+    z-index: 200;
     pointer-events: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     color: #ffffff;
-    font-family: "Quicksand", sans-serif;
     font-weight: 300;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 0, 0, 0.4);
-    width: 230px;
+    width: 200px;
 }
 
 #clockTime {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: "Quicksand", sans-serif;
-    font-size: 78px;
+    font-size: 80px;
     font-weight: 300;
-    line-height: 1;
-    letter-spacing: -2px;
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.68), 0 0 10px rgba(0,0,0,0.35);
+    line-height: 0.95;
+    letter-spacing: -1px;
 }
-#clockHour, #clockMinute {
-    display: block;
-    line-height: 1;
-}
-#clockColon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-self: center;
-    width: 0.34em;
-    height: 1em;
-    line-height: 1;
-    margin: 0 0.015em;
-    padding: 0;
-    transform: translateY(-0.035em);
-    opacity: 1;
-    color: inherit;
-    text-shadow: inherit;
-    transition: opacity 0.06s linear;
-}
-#clockColon.off { opacity: 0; }
+
 #clockDate {
-    font-family: "Quicksand", sans-serif;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 300;
     margin-top: 10px;
     margin-bottom: 12px;
@@ -225,7 +166,6 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 }
 
 #clockDay {
-    font-family: "Quicksand", sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -233,7 +173,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     padding: 6px 0;
     border: 2px solid #ffffff;
     border-radius: 30px;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 300;
     letter-spacing: 2px;
     line-height: 1.1;
@@ -246,16 +186,15 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 /* 右上メニューボタン */
 #openMenu {
     position: absolute;
+    top: 30px;
     right: 30px;
-    bottom: 30px;
-    z-index: 260;
+    z-index: 200;
     width: 70px;
     height: 70px;
     border: 2px solid #ffffff;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     color: #ffffff;
     cursor: pointer;
     font-size: 32px;
@@ -269,40 +208,6 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     padding: 0;
 }
 #openMenu:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-
-#diceButton {
-    position: absolute;
-    right: 30px;
-    bottom: 112px;
-    z-index: 260;
-    width: 70px;
-    height: 70px;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    padding: 0;
-}
-
-#diceButton img {
-    display: block;
-    width: 34px;
-    height: 34px;
-    object-fit: contain;
-    pointer-events: none;
-}
-
-
-#diceButton:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -389,19 +294,6 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     max-width: none;
 }
 
-
-.card-birthday-cake {
-    position: absolute;
-    right: 4px;
-    bottom: 4px;
-    width: 38px;
-    height: 38px;
-    object-fit: contain;
-    z-index: 6;
-    pointer-events: none;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.55));
-}
-
 /* 背景選択セクション */
 #backgroundSection {
     position: absolute;
@@ -479,234 +371,8 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 .birthday-item:hover { background: rgba(255, 255, 255, 0.35); }
-.birthday-cake-icon {
-    width: 30px;
-    height: 30px;
-    object-fit: contain;
-    flex: 0 0 auto;
-    margin-right: 9px;
-}
-
-
-@media (max-width: 768px), (max-aspect-ratio: 82/100) {
-    #leftControls {
-        left: var(--mobile-left, 30px);
-        top: 28px;
-        width: 220px;
-        gap: 10px;
-        overflow: hidden;
-    }
-    .ctrl-btn {
-        font-size: 25px;
-        padding: 10px 8px;
-    }
-    #personalPage {
-        background: rgba(255, 255, 255, 0.94);
-        color: #111111;
-        border-color: rgba(255, 255, 255, 0.98);
-        text-shadow: none;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-    #personalPage:hover {
-        background: #ffffff;
-    }
-    #characterName {
-        font-size: 26px;
-    }
-    #openMenu {
-        right: var(--mobile-right, 30px);
-        bottom: 18px;
-        width: 70px;
-        height: 70px;
-        font-size: 32px;
-    }
-    #diceButton {
-        right: var(--mobile-right, 30px);
-        bottom: 100px;
-        width: 70px;
-        height: 70px;
-    }
-    #diceButton img {
-        width: 34px;
-        height: 34px;
-    }
-    #clockArea {
-        left: var(--mobile-left, 30px);
-        bottom: 28px;
-        width: 230px;
-    }
-    #clockTime { font-size: 78px; }
-    #clockDate { font-size: 28px; }
-    #clockDay { font-size: 26px; }
-    .menu-buttons {
-        right: var(--mobile-right, 30px);
-        bottom: 28px;
-    }
-    #menu {
-        padding: 34px var(--mobile-right, 30px) 110px var(--mobile-left, 30px);
-    }
-    .menu-button {
-        font-size: 25px;
-        padding: 12px 24px;
-    }
-    #backgroundSection {
-        left: var(--mobile-content-left, 0px);
-        right: auto;
-        width: var(--mobile-content-width, 1920px);
-        height: 100%;
-    }
-    #backgroundList {
-        flex-direction: column;
-        overflow-x: hidden;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        gap: 10px;
-        padding: 0 0 120px 0;
-        scroll-behavior: smooth;
-    }
-    #backgroundList::-webkit-scrollbar {
-        width: 10px;
-        height: 0;
-    }
-    .bg-card {
-        flex: 0 0 210px;
-        width: 100%;
-        height: 210px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.28);
-    }
-    .bg-card:hover {
-        flex-basis: 210px;
-    }
-}
 
 .hidden { display: none !important; }
-
-/* 時計コロン：実秒に同期して明滅 */
-.clock-colon {
-    display: inline-block;
-    width: 0.32em;
-    height: 0.78em;
-    position: relative;
-    vertical-align: 0.02em;
-    margin: 0 0.04em;
-    opacity: 1;
-}
-.clock-colon::before,.clock-colon::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    width: 0.105em;
-    height: 0.105em;
-    margin-left: -0.0525em;
-    border-radius: 50%;
-    background: currentColor;
-}
-.clock-colon::before { top: 22%; }
-.clock-colon::after { bottom: 22%; }
-.clock-colon.colon-off { opacity: 0; }
-/* タップ：最初のホワッを短くした版 */
-55%  { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
-}
-.character-name-cake {
-    width: 13px;
-    height: 13px;
-    object-fit: contain;
-    flex: 0 0 auto;
-    margin-right: 5px;
-}
-#characterName.birthday-name {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
-
-/* タップ：指を置いた瞬間に出る高速サークル */
-.tap-flash {
-    position: absolute;
-    z-index: 190;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,1);
-    background: rgba(255,255,255,0.16);
-    box-shadow: 0 0 8px rgba(0,0,0,0.28);
-    transform: translate(-50%, -50%) scale(0.48);
-    pointer-events: none;
-    animation: tapFlash 170ms ease-out forwards;
-}
-@keyframes tapFlash {
-    0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.48); }
-    60%  { opacity: 0.72; transform: translate(-50%, -50%) scale(0.92); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.14); }
-}
-
-
-
-
-
-
-
-
-/* 連打ボイス専用：大きく広がる衝撃リング */
-.rapid-impact {
-    position: absolute;
-    z-index: 195;
-    width: 54px;
-    height: 54px;
-    border: 3px solid rgba(255,255,255,0.98);
-    border-radius: 50%;
-    background: rgba(255,255,255,0.10);
-    box-shadow:
-        0 0 0 3px rgba(255,255,255,0.18),
-        0 0 18px rgba(255,255,255,0.55);
-    transform: translate(-50%, -50%) scale(0.50);
-    pointer-events: none;
-    animation: rapidImpact 240ms cubic-bezier(.10,.70,.20,1) forwards;
-}
-
-@keyframes rapidImpact {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.50);
-    }
-    45% {
-        opacity: 0.88;
-        transform: translate(-50%, -50%) scale(1.35);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(2.75);
-    }
-}
-
-
-
-
-/* 続きの台詞がある間だけ、吹き出し右下に表示 */
-#message.has-next::after {
-    content: "⇢";
-    position: absolute;
-    right: 18px;
-    bottom: 8px;
-    font-family: "Quicksand", sans-serif;
-    font-size: 27px;
-    font-weight: 500;
-    line-height: 1;
-    color: rgba(255,255,255,0.95);
-    text-shadow: 0 1px 4px rgba(0,0,0,0.65);
-    animation: nextArrowPulse 850ms ease-in-out infinite alternate;
-}
-
-@keyframes nextArrowPulse {
-    from { opacity: 0.55; transform: translateX(0); }
-    to   { opacity: 1; transform: translateX(3px); }
-}
-
 </style>
 </head>
 <body>
@@ -714,27 +380,25 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 <div id="game-container">
     <div id="game">
         <img id="background" alt="">
-        <video id="backgroundVideo" autoplay muted loop playsinline preload="auto"></video>
         <img id="character" alt="">
         <img id="frame" alt="">
         
         <!-- 左側操作コントロール -->
         <div id="leftControls">
-            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC PAGE</a>
-            <div id="characterName"></div>
+            <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC Page</a>
+            <div id="costumeSection" class="hidden">
+                <div id="costumeList"></div>
+            </div>
         </div>
 
         <!-- 左下時計エリア -->
         <div id="clockArea">
-            <div id="clockTime"><span id="clockHour">--</span><span id="clockColon">:</span><span id="clockMinute">--</span></div>
+            <div id="clockTime">--:--</div>
             <div id="clockDate">----/-/--</div>
             <div id="clockDay">---</div>
         </div>
 
         <!-- 右上メニューボタン -->
-        <button id="diceButton" type="button" aria-label="サイコロ" title="サイコロ">
-            <img src="icon/dice.png" alt="">
-        </button>
         <button id="openMenu" type="button" aria-label="メニュー">☰</button>
         <div id="message"></div>
 
@@ -765,77 +429,33 @@ function resizeGame() {
     const container = document.getElementById("game-container");
     const baseWidth = 1920;
     const baseHeight = 1080;
-    const mobile = window.innerWidth <= 768 || window.innerWidth / window.innerHeight < 0.82;
-
-    if (mobile) {
-        // スマホは16:9全体表示ではなく、中央を縦長寄りに切り取る。
-        // 高さは横幅の約1.35倍までにし、完全な9:16にはしない。
-        const sceneHeight = Math.min(window.innerHeight, window.innerWidth * 1.35);
-        const scale = sceneHeight / baseHeight;
-        const visibleBaseWidth = Math.min(baseWidth, window.innerWidth / scale);
-        const leftBound = (baseWidth - visibleBaseWidth) / 2;
-        const rightBound = leftBound + visibleBaseWidth;
-
-        window.mobileLayout = {
-            active: true,
-            scale,
-            leftBound,
-            rightBound,
-            topBound: 0,
-            bottomBound: baseHeight,
-            characterScale: 1,
-            characterYOffset: 0
-        };
-
-        document.documentElement.style.setProperty("--mobile-left", `${leftBound + 28}px`);
-        document.documentElement.style.setProperty("--mobile-right", `${baseWidth - rightBound + 36}px`);
-        document.documentElement.style.setProperty("--mobile-content-left", `${leftBound}px`);
-        document.documentElement.style.setProperty("--mobile-content-width", `${visibleBaseWidth}px`);
-
-        container.style.transformOrigin = "center center";
-        container.style.transform = `scale(${scale})`;
-    } else {
-        const scaleX = window.innerWidth / baseWidth;
-        const scaleY = window.innerHeight / baseHeight;
-        const scale = Math.min(scaleX, scaleY);
-
-        window.mobileLayout = {
-            active: false,
-            scale,
-            leftBound: 0,
-            rightBound: baseWidth,
-            topBound: 0,
-            bottomBound: baseHeight,
-            characterScale: 1,
-            characterYOffset: 0
-        };
-
-        document.documentElement.style.setProperty("--mobile-left", "30px");
-        document.documentElement.style.setProperty("--mobile-right", "30px");
-        document.documentElement.style.setProperty("--mobile-content-left", "0px");
-        document.documentElement.style.setProperty("--mobile-content-width", "1920px");
-        container.style.transformOrigin = "center center";
-        container.style.transform = `scale(${scale})`;
-    }
-if (data) {
-        loadCharacterImage();
-        applyNameStyle();
-    }
+    
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    const scaleX = windowWidth / baseWidth;
+    const scaleY = windowHeight / baseHeight;
+    const scale = Math.min(scaleX, scaleY);
+    
+    container.style.transform = `scale(${scale})`;
 }
+
+window.addEventListener("resize", resizeGame);
+resizeGame();
 
 
 /* DOM要素 */
 const game = document.getElementById("game");
 const background = document.getElementById("background");
-const backgroundVideo = document.getElementById("backgroundVideo");
 const character = document.getElementById("character");
 const frame = document.getElementById("frame");
 const message = document.getElementById("message");
 const menu = document.getElementById("menu");
 const personalPage = document.getElementById("personalPage");
-const characterName = document.getElementById("characterName");
 const birthdayArea = document.getElementById("birthdayArea");
 const birthdayList = document.getElementById("birthdayList");
+const costumeSection = document.getElementById("costumeSection");
+const costumeList = document.getElementById("costumeList");
 const characterList = document.getElementById("characterList");
 const backgroundList = document.getElementById("backgroundList");
 const characterSection = document.getElementById("characterSection");
@@ -844,99 +464,18 @@ const characterMenuButton = document.getElementById("characterMenuButton");
 const backgroundMenuButton = document.getElementById("backgroundMenuButton");
 const clockDate = document.getElementById("clockDate");
 const clockTime = document.getElementById("clockTime");
-const clockHour = document.getElementById("clockHour");
-const clockMinute = document.getElementById("clockMinute");
-const clockColon = document.getElementById("clockColon");
 const clockDay = document.getElementById("clockDay");
-
-
-const diceButton = document.getElementById("diceButton");
-const diceImage = diceButton ? diceButton.querySelector("img") : null;
-if (diceImage) {
-    diceImage.onerror = () => console.error("サイコロアイコン読み込み失敗: icon/dice.png");
-}
 
 /* 状態管理 */
 let characters = [];
 let backgrounds = [];
 let data = null;
+let currentCostume = null;
 let currentBackground = null;
 let count = {};
 let lastClick = 0;
 let messageTimer = null;
-let typingTimer = null;
-let activeContinuation = null;
 const RAPID_TIME = 400;
-
-/* 台詞の巡回状態
-   - specialLastCycle: 誕生日/日付/期間は、通常台詞1周につき各1回だけ
-   - normalCycle: 通常台詞を全部話し終えるたびに +1
-   - poolStates: 各台詞群を重複少なく巡回させる
-*/
-let dialogueState = null;
-
-function resetDialogueState() {
-    activeContinuation = null;
-    message.classList.remove("has-next");
-    dialogueState = {
-        normalCycle: 0,
-        normalRounds: 0,
-        normalOrder: [],
-        normalPos: 0,
-        specialLastCycle: {
-            birthday: -1,
-            date: -1,
-            period: -1
-        },
-        poolStates: {}
-    };
-}
-
-function shuffledIndices(length) {
-    const order = Array.from({ length }, (_, i) => i);
-    for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-    }
-    return order;
-}
-
-function takeBalancedTalk(pool, key) {
-    if (!Array.isArray(pool) || pool.length === 0) return null;
-    if (!dialogueState) resetDialogueState();
-
-    let state = dialogueState.poolStates[key];
-    if (!state || state.length !== pool.length) {
-        state = {
-            length: pool.length,
-            round: 0,
-            pos: 0,
-            order: Array.from({ length: pool.length }, (_, i) => i)
-        };
-        dialogueState.poolStates[key] = state;
-    }
-
-    if (state.pos >= state.order.length) {
-        state.round++;
-        state.pos = 0;
-        // 1周目以降は順番をシャッフル。ただし同じ台詞ばかりにならない。
-        state.order = shuffledIndices(pool.length);
-    }
-
-    const talk = pool[state.order[state.pos]];
-    state.pos++;
-    return talk;
-}
-
-function canUseSpecial(kind) {
-    if (!dialogueState) resetDialogueState();
-    return dialogueState.specialLastCycle[kind] !== dialogueState.normalCycle;
-}
-
-function markSpecialUsed(kind) {
-    if (!dialogueState) resetDialogueState();
-    dialogueState.specialLastCycle[kind] = dialogueState.normalCycle;
-}
 
 /* 初期化 */
 async function init() {
@@ -967,20 +506,13 @@ function startClock() {
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         
-        clockHour.textContent = hours;
-        clockMinute.textContent = minutes;
-        clockColon.classList.toggle("off", now.getSeconds() % 2 === 1);
+        clockTime.innerText = `${hours}:${minutes}`;
         clockDate.innerText = `${year}/${month}/${date}`;
         clockDay.innerText = day;
     }
-
-    function tickOnSecond() {
-        updateClock();
-        const delay = 1000 - (Date.now() % 1000) + 8;
-        setTimeout(tickOnSecond, delay);
-    }
-
-    tickOnSecond();
+    
+    updateClock();
+    setInterval(updateClock, 1000);
 }
 
 /* キャラクターJSON読み込み（サブフォルダ構造対応） */
@@ -992,52 +524,25 @@ async function loadCharacters() {
 
     let text = await response.text();
     text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
-
+    
     const firstBracket = text.indexOf('[');
     const lastBracket = text.lastIndexOf(']');
     if (firstBracket !== -1 && lastBracket !== -1) {
         text = text.substring(firstBracket, lastBracket + 1);
     }
-
     const files = JSON.parse(text);
+
     characters = [];
-
     for (const file of files) {
-        // index.json が「143.json」でも「143/143.json」でも読めるようにする
-        const candidates = [];
-        if (file.startsWith("characters/")) {
-            candidates.push(file);
-        } else {
-            candidates.push("characters/" + file);
-            const slash = file.lastIndexOf("/");
-            const name = slash >= 0 ? file.substring(slash + 1) : file;
-            const folder = name.replace(/\.json$/i, "");
-            candidates.push("characters/" + folder + "/" + name);
-        }
-
-        let res = null;
-        let targetPath = "";
-        for (const candidate of candidates) {
-            try {
-                const r = await fetch(candidate);
-                if (r.ok) {
-                    res = r;
-                    targetPath = candidate;
-                    break;
-                }
-            } catch (e) {
-                // 次の候補を試す
-            }
-        }
-
-        if (!res) {
-            console.error("キャラクター読み込み失敗:", candidates);
+        const targetPath = file.startsWith("characters/") ? file : "characters/" + file;
+        const res = await fetch(targetPath);
+        if (!res.ok) {
+            console.error("キャラクター読み込み失敗:", targetPath);
             continue;
         }
-
         let charText = await res.text();
+        
         charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
-
         const fBracket = charText.indexOf('{');
         const lBracket = charText.lastIndexOf('}');
         if (fBracket !== -1 && lBracket !== -1) {
@@ -1046,19 +551,13 @@ async function loadCharacters() {
 
         try {
             const json = JSON.parse(charText);
-            // 実際に読み込んだJSONの場所を基準に画像を解決する
-            const relativePath = targetPath.substring("characters/".length);
-            const slash = relativePath.lastIndexOf('/');
-            json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : '';
+            // フォルダパスを保持（例: "143/"）
+            json._baseDir = file.includes('/') ? file.substring(0, file.lastIndexOf('/') + 1) : '';
             characters.push(json);
         } catch (e) {
             console.error(`構文エラーがあるファイル: ${targetPath}`);
             throw e;
         }
-    }
-
-    if (characters.length === 0) {
-        throw new Error("キャラクターJSONを1件も読み込めませんでした。");
     }
 }
 
@@ -1080,32 +579,18 @@ async function loadBackgrounds() {
 }
 
 function getToday() {
-    const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone: "Asia/Tokyo",
-        month: "numeric",
-        day: "numeric"
-    }).formatToParts(new Date());
-
-    const values = {};
-    parts.forEach(part => {
-        if (part.type === "month" || part.type === "day") {
-            values[part.type] = Number(part.value);
-        }
-    });
-
+    const now = new Date();
     return {
-        month: values.month,
-        day: values.day
+        month: now.getMonth() + 1,
+        day: now.getDate()
     };
 }
 
 function getBirthdayCharacters() {
     const today = getToday();
     return characters.filter(char => {
-        const birthday = char && char.birthday;
-        if (!birthday) return false;
-        return Number(birthday.month) === today.month &&
-               Number(birthday.day) === today.day;
+        if (!char.birthday) return false;
+        return Number(char.birthday.month) === today.month && Number(char.birthday.day) === today.day;
     });
 }
 
@@ -1128,54 +613,31 @@ async function chooseInitialCharacter() {
 async function loadCharacter(char) {
     data = char;
     count = {};
-    resetDialogueState();
-    loadCharacterImage();
+    currentCostume = null;
+
+    if (Array.isArray(data.costumes) && data.costumes.length > 0) {
+        currentCostume = data.costumes[0];
+    } else {
+        currentCostume = {
+            id: "default",
+            name: "通常",
+            image: data.image,
+            position: data.position || {},
+            expressions: {}
+        };
+    }
+
+    loadCostume();
     loadFrame();
     setupPersonalPage();
+    setupCostumeMenu();
     closeMenu();
     showGreeting();
 }
 
-function normalizePageUrl(value) {
-    if (!value) return "";
-    const raw = String(value).trim();
-    const markdown = raw.match(/^\[[^\]]*\]\((https?:\/\/[^)]+)\)$/i);
-    return markdown ? markdown[1] : raw;
-}
-
 function setupPersonalPage() {
-    characterName.innerHTML = "";
-    characterName.classList.remove("birthday-name");
-
-    if (data && data.name) {
-        const today = getToday();
-        const isBirthday = Boolean(
-            data.birthday &&
-            Number(data.birthday.month) === today.month &&
-            Number(data.birthday.day) === today.day
-        );
-
-        if (isBirthday) {
-            const cake = document.createElement("img");
-            cake.src = new URL("icon/cake.png", document.baseURI).href;
-            cake.alt = "";
-            cake.className = "character-name-cake";
-            characterName.appendChild(cake);
-            characterName.classList.add("birthday-name");
-        }
-
-        const nameText = document.createElement("span");
-        nameText.textContent = data.name;
-        characterName.appendChild(nameText);
-        characterName.style.display = "flex";
-        applyNameStyle();
-    } else {
-        characterName.style.display = "none";
-    }
-
-    const pageUrl = normalizePageUrl(data && data.page);
-    if (pageUrl) {
-        personalPage.href = pageUrl;
+    if (data && data.page) {
+        personalPage.href = data.page;
         personalPage.style.display = "flex";
     } else {
         personalPage.href = "#";
@@ -1183,91 +645,34 @@ function setupPersonalPage() {
     }
 }
 
-function getImagePath(imageName, charData = data) {
+function getImagePath(imageName) {
     if (!imageName) return "";
-    if (imageName.startsWith("http://") || imageName.startsWith("https://") || imageName.startsWith("/")) return imageName;
-    if (imageName.startsWith("characters/")) return imageName;
-    const baseDir = charData && charData._baseDir ? charData._baseDir : "";
+    if (imageName.startsWith("http") || imageName.startsWith("/")) return imageName;
+    const baseDir = data && data._baseDir ? data._baseDir : '';
+    // すでに "characters/" から始まっている場合の重複を防ぐ
+    if (baseDir && imageName.startsWith(baseDir)) {
+        return "characters/" + imageName;
+    }
     return "characters/" + baseDir + imageName;
 }
 
-function loadCharacterImage() {
-    // キャラクターPNGは1920x1080基準。スマホでも拡大縮小せず元サイズを維持する。
-    const position = data.position || {};
-    const imgPath = getImagePath(data.image);
-    const originalX = Number(position.x || 0);
-    const originalY = Number(position.y || 0);
-    const originalWidth = Number(position.scale || 1000);
-    const layout = window.mobileLayout || { active: false, characterScale: 1 };
-    const factor = layout.active ? layout.characterScale : 1;
-    const yOffset = layout.active ? Number(layout.characterYOffset || 0) : 0;
-
-    // 1920x1080画像を想定。スマホでも拡大縮小は行わない。
-    const originalHeight = originalWidth * (1080 / 1920);
-    const centerX = 960;
-    const centerY = 540;
-    const x = centerX + (originalX - centerX) * factor;
-    let y = centerY + (originalY - centerY) * factor + yOffset;
-    const width = originalWidth * factor;
-    const height = originalHeight * factor;
-    if (layout.active) {
-        const bottom = y + height;
-        if (bottom > 1080) y -= (bottom - 1080);
-    }
-
+function loadCostume() {
+    const position = currentCostume.position || data.position || {};
+    const imgPath = getImagePath(currentCostume.image);
+    
     character.onerror = () => {
         console.error("画像読み込み失敗:", imgPath);
     };
     character.src = imgPath;
-    character.style.left = x + "px";
-    character.style.top = y + "px";
-    character.style.width = width + "px";
-    character.style.height = "auto";
-}
-
-
-
-function applyMobileCharacterTransform() {
-    if (!data) return;
-
-    const position = data.position || {};
-    const baseX = Number(position.x || 0);
-    const baseY = Number(position.y || 0);
-    const baseWidth = Number(position.scale || 1920);
-
-    if (window.innerWidth <= 768) {
-        const mobileScale = 0.94; // 少しだけ縮小
-        const newWidth = baseWidth * mobileScale;
-
-        // 基準：画像の真ん中下（bottom-center）を固定
-        const baseCenterX = baseX + baseWidth / 2;
-        const assumedHeight = 1080 * (baseWidth / 1920);
-        const baseBottomY = baseY + assumedHeight;
-
-        const newHeight = assumedHeight * mobileScale;
-        const newX = baseCenterX - newWidth / 2;
-        const newY = baseBottomY - newHeight;
-
-        character.style.left = newX + "px";
-        character.style.top = newY + "px";
-        character.style.width = newWidth + "px";
-        character.dataset.mobileScale = String(mobileScale);
-        character.dataset.mobileOffsetX = String(newX - baseX);
-        character.dataset.mobileOffsetY = String(newY - baseY);
-    } else {
-        character.style.left = baseX + "px";
-        character.style.top = baseY + "px";
-        character.style.width = baseWidth + "px";
-        character.dataset.mobileScale = "1";
-        character.dataset.mobileOffsetX = "0";
-        character.dataset.mobileOffsetY = "0";
-    }
+    character.style.left = (position.x || 0) + "px";
+    character.style.top = (position.y || 0) + "px";
+    character.style.width = (position.scale || 1000) + "px";
 }
 
 function loadFrame() {
     if (data.frame) {
         const baseDir = data._baseDir ? data._baseDir : '';
-        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") || data.frame.startsWith("characters/") ? data.frame : "characters/" + baseDir + data.frame;
+        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") ? data.frame : "characters/" + baseDir + data.frame;
         frame.src = framePath;
         frame.style.display = "block";
     } else {
@@ -1276,450 +681,132 @@ function loadFrame() {
     }
 }
 
-
-/* =========================
-   JSON文字スタイル
-   dialogueStyle: 台詞全体のデフォルト
-   talk.style: その台詞だけ上書き
-   nameStyle: 左上キャラ名
-   ========================= */
-
-function resolveFontFamily(value, fallback) {
-    if (!value) return fallback;
-
-    const key = String(value).trim().toLowerCase();
-    const presets = {
-        "gothic": '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif',
-        "sans": '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif',
-        "rounded": '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif',
-        "round": '"M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", sans-serif',
-        "mplus": '"M PLUS 1p", "Yu Gothic UI", "Yu Gothic", sans-serif',
-        "serif": '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif',
-        "mincho": '"Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif',
-        "hand": '"Zen Kurenaido", "Yu Gothic", sans-serif',
-        "handwriting": '"Zen Kurenaido", "Yu Gothic", sans-serif',
-        "clock": '"Quicksand", "M PLUS 1p", sans-serif',
-        "quicksand": '"Quicksand", "M PLUS 1p", sans-serif'
-    };
-
-    if (presets[key]) return presets[key];
-
-    // CSSのfont-family文字列を直接書くことも可能
-    if (String(value).includes(",") || String(value).includes('"') || String(value).includes("'")) {
-        return String(value);
-    }
-
-    return `"${String(value).replace(/"/g, "")}", ${fallback}`;
-}
-
-function numberOrDefault(value, fallback) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-function mergedDialogueStyle(talk) {
-    return {
-        ...(data && data.dialogueStyle ? data.dialogueStyle : {}),
-        ...(talk && talk.style ? talk.style : {})
-    };
-}
-
-function applyDialogueStyle(talk, isMobile) {
-    const style = mergedDialogueStyle(talk);
-
-    const defaultFont = '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif';
-    const defaultSize = isMobile ? 34 : 28;
-
-    message.style.color = style.color || "#f0f2f5";
-    message.style.fontSize = numberOrDefault(
-        isMobile && style.mobileSize !== undefined ? style.mobileSize : style.size,
-        defaultSize
-    ) + "px";
-
-    if (style.bold === true) {
-        message.style.fontWeight = "700";
-    } else if (style.bold === false) {
-        message.style.fontWeight = String(numberOrDefault(style.weight, 400));
-    } else {
-        message.style.fontWeight = String(numberOrDefault(style.weight, 400));
-    }
-
-    message.style.fontFamily = resolveFontFamily(style.font, defaultFont);
-
-    if (style.letterSpacing !== undefined) {
-        const spacing = typeof style.letterSpacing === "number"
-            ? style.letterSpacing + "em"
-            : String(style.letterSpacing);
-        message.style.letterSpacing = spacing;
-    } else {
-        message.style.letterSpacing = "0.05em";
-    }
-
-    if (style.lineHeight !== undefined) {
-        message.style.lineHeight = String(style.lineHeight);
-    } else {
-        message.style.lineHeight = isMobile ? "1.5" : "1.6";
-    }
-
-    return style;
-}
-
-function applyNameStyle() {
-    if (!data) return;
-
-    const style = data.nameStyle || {};
-    const isMobile = Boolean(window.mobileLayout && window.mobileLayout.active);
-    const defaultFont = '"M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif';
-
-    characterName.style.color = style.color || "#ffffff";
-    characterName.style.fontSize = numberOrDefault(
-        isMobile && style.mobileSize !== undefined ? style.mobileSize : style.size,
-        isMobile ? 26 : 23
-    ) + "px";
-    characterName.style.fontFamily = resolveFontFamily(style.font, defaultFont);
-
-    if (style.bold === true) {
-        characterName.style.fontWeight = "700";
-    } else {
-        characterName.style.fontWeight = String(numberOrDefault(style.weight, 500));
-    }
-
-    if (style.letterSpacing !== undefined) {
-        characterName.style.letterSpacing =
-            typeof style.letterSpacing === "number"
-                ? style.letterSpacing + "em"
-                : String(style.letterSpacing);
-    } else {
-        characterName.style.letterSpacing = "0.02em";
-    }
-}
-
-function playDialogueAnimation(style, fullText, measuredHeight) {
-    if (typingTimer) {
-        clearInterval(typingTimer);
-        typingTimer = null;
-    }
-
-    if (message.getAnimations) {
-        message.getAnimations().forEach(animation => animation.cancel());
-    }
-
-    const animation = String(style.animation || "none").toLowerCase();
-    const duration = Math.max(80, numberOrDefault(style.animationDuration, 180));
-
-    if (animation === "fade") {
-        message.animate(
-            [
-                { opacity: 0 },
-                { opacity: 1 }
-            ],
-            { duration, easing: "ease-out" }
-        );
+/* 表情切り替え */
+function setExpression(expression) {
+    const expressions = currentCostume.expressions || {};
+    
+    if (!expression || expression === "通常") {
+        character.src = getImagePath(currentCostume.image);
         return;
     }
 
-    if (animation === "pop") {
-        message.animate(
-            [
-                { opacity: 0, transform: "scale(0.92)" },
-                { opacity: 1, transform: "scale(1)" }
-            ],
-            { duration, easing: "cubic-bezier(.2,.85,.25,1)" }
-        );
+    if (expressions[expression]) {
+        character.src = getImagePath(expressions[expression]);
         return;
     }
 
-    if (animation === "slide" || animation === "slideup") {
-        message.animate(
-            [
-                { opacity: 0, transform: "translateY(14px)" },
-                { opacity: 1, transform: "translateY(0)" }
-            ],
-            { duration, easing: "ease-out" }
-        );
-        return;
-    }
-
-    if (animation === "slideleft") {
-        message.animate(
-            [
-                { opacity: 0, transform: "translateX(18px)" },
-                { opacity: 1, transform: "translateX(0)" }
-            ],
-            { duration, easing: "ease-out" }
-        );
-        return;
-    }
-
-    if (animation === "typewriter" || animation === "typing") {
-        const chars = Array.from(fullText || "");
-        const speed = Math.max(10, numberOrDefault(style.typingSpeed, 35));
-        let index = 0;
-
-        message.style.minHeight = measuredHeight + "px";
-        message.innerText = "";
-
-        typingTimer = setInterval(() => {
-            index++;
-            message.innerText = chars.slice(0, index).join("");
-
-            if (index >= chars.length) {
-                clearInterval(typingTimer);
-                typingTimer = null;
-                message.style.minHeight = "";
-            }
-        }, speed);
-    }
+    character.src = getImagePath(currentCostume.image);
 }
 
 /* 吹き出し位置の自動調整 */
-
-function buildDialogueSequence(talk) {
-    if (!talk) return [];
-
-    const sequence = [];
-
-    function append(item, inheritedStyle = null) {
-        if (item === null || item === undefined || item === "") return;
-
-        if (Array.isArray(item)) {
-            item.forEach(part => append(part, inheritedStyle));
-            return;
-        }
-
-        if (typeof item === "string") {
-            sequence.push({
-                text: item,
-                ...(inheritedStyle ? { style: { ...inheritedStyle } } : {})
-            });
-            return;
-        }
-
-        if (typeof item === "object") {
-            const ownStyle = item.style
-                ? { ...(inheritedStyle || {}), ...item.style }
-                : inheritedStyle
-                    ? { ...inheritedStyle }
-                    : null;
-
-            if (item.text !== undefined && item.text !== null) {
-                sequence.push({
-                    ...item,
-                    next: undefined,
-                    ...(ownStyle ? { style: ownStyle } : {})
-                });
-            }
-
-            if (item.next !== undefined && item.next !== null && item.next !== "") {
-                append(item.next, ownStyle);
-            }
-        }
-    }
-
-    append(talk, talk && talk.style ? talk.style : null);
-    return sequence;
-}
-
-function advanceContinuation() {
-    if (!activeContinuation) return false;
-
-    activeContinuation.index++;
-
-    if (activeContinuation.index >= activeContinuation.sequence.length) {
-        activeContinuation = null;
-        message.classList.remove("has-next");
-        return false;
-    }
-
-    const context = activeContinuation;
-    const segment = context.sequence[context.index];
-
-    speak(
-        segment,
-        context.clickX,
-        context.clickY,
-        context.forcePosition,
-        true
-    );
-
-    return true;
-}
-
-function speak(talk, clickX, clickY, forcePosition = null, isContinuationAdvance = false) {
+function speak(talk, clickX, clickY, forcePosition = null) {
     if (!talk) return;
-
-    if (!isContinuationAdvance) {
-        const sequence = buildDialogueSequence(talk);
-
-        if (sequence.length > 1) {
-            activeContinuation = {
-                sequence,
-                index: 0,
-                clickX,
-                clickY,
-                forcePosition
-            };
-            talk = sequence[0];
-        } else {
-            activeContinuation = null;
-            talk = sequence[0] || talk;
-        }
-    }
-
-    const hasMoreContinuation = Boolean(
-        activeContinuation &&
-        activeContinuation.index < activeContinuation.sequence.length - 1
-    );
-
-    message.classList.toggle("has-next", hasMoreContinuation);
-
-    if (typingTimer) {
-        clearInterval(typingTimer);
-        typingTimer = null;
-    }
-
-    const fullText = talk.text || "";
-    message.innerText = fullText;
-    message.style.minHeight = "";
-
-    const layout = window.mobileLayout || {
-        active: false,
-        leftBound: 0,
-        rightBound: 1920,
-        topBound: 0,
-        bottomBound: 1080
-    };
-
-    const leftBound = layout.leftBound ?? 0;
-    const rightBound = layout.rightBound ?? 1920;
-    const topBound = layout.topBound ?? 0;
-    const bottomBound = layout.bottomBound ?? 1080;
-    const visibleWidth = rightBound - leftBound;
-
-    const style = applyDialogueStyle(talk, layout.active);
-
-    if (layout.active) {
-        message.style.width = Math.min(760, visibleWidth - 52) + "px";
-        message.style.maxWidth = (visibleWidth - 52) + "px";
-        message.style.whiteSpace = "normal";
-        message.style.overflowWrap = "anywhere";
-        message.style.wordBreak = "normal";
-        message.style.padding = "22px 26px";
-    } else {
-        message.style.width = "600px";
-        message.style.maxWidth = "600px";
-        message.style.whiteSpace = "normal";
-        message.style.overflowWrap = "anywhere";
-        message.style.wordBreak = "normal";
-        message.style.padding = "24px 32px";
-    }
-
+    setExpression(talk.expression || "通常");
+    message.innerText = talk.text;
     message.style.display = "block";
 
-    // フルテキスト状態でサイズを測る。
-    // typewriterでもこのサイズを基準に位置がずれないようにする。
+    const gameRect = game.getBoundingClientRect();
     const msgWidth = message.offsetWidth || 600;
     const msgHeight = message.offsetHeight || 160;
+    
+    const offset = 40;
 
     let messageX, messageY;
 
-    if (layout.active && forcePosition) {
-        messageX = forcePosition.x - (msgWidth / 2);
-        messageY = forcePosition.y - (msgHeight / 2);
-    } else if (layout.active) {
-        const rect = game.getBoundingClientRect();
-        const targetClientY = window.innerHeight * 0.60;
-        const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
-
-        messageX = (leftBound + rightBound - msgWidth) / 2;
-        messageY = targetGameY - (msgHeight / 2);
-    } else if (forcePosition) {
+    if (forcePosition) {
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else {
-        const offset = 40;
-        const isLeftHalf = clickX < 960;
-        messageX = isLeftHalf ? (clickX - msgWidth - offset) : (clickX + offset);
+        const isLeftHalf = clickX < (gameRect.width / 2);
+        messageX = isLeftHalf 
+            ? (clickX - msgWidth - offset) 
+            : (clickX + offset);
         messageY = clickY - (msgHeight / 2);
     }
 
-    const margin = layout.active ? 26 : 20;
-    messageX = Math.max(leftBound + margin, Math.min(messageX, rightBound - msgWidth - margin));
-    messageY = Math.max(topBound + margin, Math.min(messageY, bottomBound - msgHeight - margin));
+    if (messageX < 20) messageX = 20;
+    if (messageX + msgWidth > gameRect.width - 20) messageX = gameRect.width - msgWidth - 20;
+
+    if (messageY < 20) messageY = 20;
+    if (messageY + msgHeight > gameRect.height - 20) messageY = gameRect.height - msgHeight - 20;
 
     message.style.left = messageX + "px";
     message.style.top = messageY + "px";
 
-    playDialogueAnimation(style, fullText, msgHeight);
-
     if (messageTimer) clearTimeout(messageTimer);
+    messageTimer = setTimeout(() => {
+        message.style.display = "none";
+        setExpression("通常");
+    }, 3000);
+}
 
-    const displayDuration = Math.max(
-        1000,
-        numberOrDefault(style.displayDuration, 3000)
-    );
-
-    if (hasMoreContinuation) {
-        // 続きがある間は勝手に消さない。次のタップを待つ。
-        messageTimer = null;
-    } else {
-        // 最終文章だけ通常どおり時間経過で消える
-        activeContinuation = null;
-        messageTimer = setTimeout(() => {
-            if (typingTimer) {
-                clearInterval(typingTimer);
-                typingTimer = null;
-            }
-            message.classList.remove("has-next");
-            message.style.minHeight = "";
-            message.style.display = "none";
-        }, displayDuration);
+function getDateKey(item) {
+    if (!item) return "";
+    if (typeof item.date === "string" && item.date.includes("-")) return item.date;
+    if (item.month != null && item.day != null) {
+        return String(Number(item.month)).padStart(2, "0") + "-" + String(Number(item.day)).padStart(2, "0");
     }
+    return "";
+}
+
+function isTodayItem(item) {
+    const today = getToday();
+    return getDateKey(item) === String(today.month).padStart(2, "0") + "-" + String(today.day).padStart(2, "0");
+}
+
+function pickTalk(list, key) {
+    if (!Array.isArray(list) || list.length === 0) return null;
+    if (count[key] === undefined) count[key] = 0;
+    const talk = list[count[key] % list.length];
+    count[key]++;
+    return talk;
 }
 
 function getGreetingDateTalk() {
-    if (!data || !Array.isArray(data.greetingDates)) return null;
+    if (!Array.isArray(data.greetingDates)) return null;
+    const pool = [];
+    data.greetingDates.forEach(item => {
+        if (isTodayItem(item) && Array.isArray(item.talk)) pool.push(...item.talk);
+    });
+    return pickTalk(pool, "greeting_date");
+}
 
-    const today = getToday();
-    for (const item of data.greetingDates) {
-        if (
-            Number(item.month) === today.month &&
-            Number(item.day) === today.day &&
-            Array.isArray(item.talk) &&
-            item.talk.length > 0
-        ) {
-            return item.talk[0];
+function getGreetingPeriodTalk() {
+    if (!Array.isArray(data.greetingPeriods)) return null;
+    const pool = [];
+    data.greetingPeriods.forEach(item => {
+        if (item.start && item.end && isInPeriod(item.start, item.end) && Array.isArray(item.talk)) {
+            pool.push(...item.talk);
         }
-    }
-    return null;
+    });
+    return pickTalk(pool, "greeting_period");
 }
 
 function showGreeting() {
+    const centerX = game.clientWidth / 2;
+    const centerY = game.clientHeight * 0.45;
+
+    // 初回あいさつ:
+    // 日付指定 > 期間指定 > 通常あいさつ
     const dateGreeting = getGreetingDateTalk();
-    const normalGreeting =
-        data &&
-        data.talk &&
-        Array.isArray(data.talk.greeting) &&
-        data.talk.greeting.length > 0
-            ? data.talk.greeting[0]
-            : null;
+    if (dateGreeting) {
+        speak(dateGreeting, centerX, centerY, { x: centerX, y: centerY });
+        return;
+    }
 
-    const greeting = dateGreeting || normalGreeting;
-    if (!greeting) return;
+    const periodGreeting = getGreetingPeriodTalk();
+    if (periodGreeting) {
+        speak(periodGreeting, centerX, centerY, { x: centerX, y: centerY });
+        return;
+    }
 
-    const charLeft = parseFloat(character.style.left) || 0;
-    const charTop = parseFloat(character.style.top) || 0;
-    const charWidth = parseFloat(character.style.width) || 1920;
-    const charHeight = charWidth * (1080 / 1920);
-
-    const bodyCenterX = charLeft + charWidth * 0.5;
-    const bodyCenterY = charTop + charHeight * 0.5;
-
-    speak(greeting, bodyCenterX, bodyCenterY, { x: bodyCenterX, y: bodyCenterY });
+    if (!data.talk || !Array.isArray(data.talk.greeting) || data.talk.greeting.length === 0) return;
+    const normalGreeting = pickTalk(data.talk.greeting, "greeting_normal");
+    if (normalGreeting) speak(normalGreeting, centerX, centerY, { x: centerX, y: centerY });
 }
 
 function dateToNumber(value) {
-    const [month, day] = value.split("-").map(Number);
+    const [month, day] = String(value || "").split("-").map(Number);
     return month * 100 + day;
 }
 
@@ -1729,6 +816,7 @@ function isInPeriod(start, end) {
     const startNumber = dateToNumber(start);
     const endNumber = dateToNumber(end);
 
+    if (!startNumber || !endNumber) return false;
     if (startNumber <= endNumber) {
         return current >= startNumber && current <= endNumber;
     }
@@ -1736,54 +824,32 @@ function isInPeriod(start, end) {
 }
 
 function getBirthdayTalk() {
-    if (!canUseSpecial("birthday")) return null;
-
     const today = getToday();
     if (
-        data &&
         data.birthday &&
         Number(data.birthday.month) === today.month &&
         Number(data.birthday.day) === today.day &&
-        Array.isArray(data.birthday.talk) &&
-        data.birthday.talk.length > 0
+        Array.isArray(data.birthday.talk)
     ) {
-        const talk = takeBalancedTalk(data.birthday.talk, "birthday_pool");
-        if (talk) markSpecialUsed("birthday");
-        return talk;
+        return pickTalk(data.birthday.talk, "birthday");
     }
     return null;
 }
 
 function getDateTalk() {
-    if (!canUseSpecial("date")) return null;
-    if (!data || !data.special || !Array.isArray(data.special.dates)) return null;
-
-    const today = getToday();
+    if (!data.special || !Array.isArray(data.special.dates)) return null;
     const pool = [];
-
     data.special.dates.forEach(item => {
-        if (
-            Number(item.month) === today.month &&
-            Number(item.day) === today.day &&
-            Array.isArray(item.talk)
-        ) {
-            pool.push(...item.talk);
-        }
+        if (isTodayItem(item) && Array.isArray(item.talk)) pool.push(...item.talk);
     });
-
-    const talk = takeBalancedTalk(pool, "special_date_pool");
-    if (talk) markSpecialUsed("date");
-    return talk;
+    return pickTalk(pool, "special_date");
 }
 
 function getPeriodTalk() {
-    if (!canUseSpecial("period")) return null;
-    if (!data || !data.special || !Array.isArray(data.special.periods)) return null;
-
+    if (!data.special || !Array.isArray(data.special.periods)) return null;
     const pool = [];
     data.special.periods.forEach(period => {
         if (
-            period &&
             period.start &&
             period.end &&
             isInPeriod(period.start, period.end) &&
@@ -1792,70 +858,28 @@ function getPeriodTalk() {
             pool.push(...period.talk);
         }
     });
-
-    const talk = takeBalancedTalk(pool, "special_period_pool");
-    if (talk) markSpecialUsed("period");
-    return talk;
+    return pickTalk(pool, "special_period");
 }
 
 function getNormalTalk() {
-    if (!data.talk || !Array.isArray(data.talk.normal) || data.talk.normal.length === 0) return null;
-    if (!dialogueState) resetDialogueState();
-
-    const pool = data.talk.normal;
-
-    if (dialogueState.normalOrder.length !== pool.length || dialogueState.normalPos >= dialogueState.normalOrder.length) {
-        // 最初の1周はJSON順。2周目以降はシャッフルして、全台詞を1回ずつ出す。
-        dialogueState.normalOrder =
-            dialogueState.normalRounds === 0
-                ? Array.from({ length: pool.length }, (_, i) => i)
-                : shuffledIndices(pool.length);
-        dialogueState.normalPos = 0;
-    }
-
-    const index = dialogueState.normalOrder[dialogueState.normalPos];
-    const talk = pool[index];
-    dialogueState.normalPos++;
-
-    // この台詞で通常台詞を全種類1周した。
-    // 次のクリックから誕生日/日付/期間がそれぞれ再び1回だけ解禁される。
-    if (dialogueState.normalPos >= dialogueState.normalOrder.length) {
-        dialogueState.normalRounds++;
-        dialogueState.normalCycle++;
-    }
-
-    return talk;
+    if (!data.talk || !Array.isArray(data.talk.normal)) return null;
+    return pickTalk(data.talk.normal, "normal");
 }
 
 function getRapidTalk() {
     if (!data.talk || !Array.isArray(data.talk.rapid) || data.talk.rapid.length === 0) return null;
-    return takeBalancedTalk(data.talk.rapid, "rapid_pool");
-}
-
-function getDisplayArea(area) {
-    const layout = window.mobileLayout || { active: false, characterScale: 1 };
-    if (!layout.active) return area;
-
-    // スマホでは人物を中央基準で縮小するため、タッチマーカーも同じ比率で中央へ寄せる。
-    const factor = layout.characterScale;
-    const yOffset = Number(layout.characterYOffset || 0);
-    const centerX = 960;
-    const centerY = 540;
-    return {
-        ...area,
-        x: centerX + (area.x - centerX) * factor,
-        y: centerY + (area.y - centerY) * factor + yOffset,
-        width: area.width * factor,
-        height: area.height * factor
-    };
+    const key = "rapid";
+    if (count[key] === undefined) count[key] = 0;
+    const talk = data.talk.rapid[count[key] % data.talk.rapid.length];
+    count[key]++;
+    return talk;
 }
 
 function getArea(x, y) {
     if (!data || !Array.isArray(data.areas)) return null;
     for (let i = data.areas.length - 1; i >= 0; i--) {
         const area = data.areas[i];
-        const displayArea = getDisplayArea(area);
-        if (x >= displayArea.x && x <= displayArea.x + displayArea.width && y >= displayArea.y && y <= displayArea.y + displayArea.height) {
+        if (x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height) {
             return area;
         }
     }
@@ -1864,80 +888,31 @@ function getArea(x, y) {
 
 function getAreaTalk(area) {
     if (!area || !Array.isArray(area.talk) || area.talk.length === 0) return null;
-    return takeBalancedTalk(area.talk, "area_" + area.name);
+    const key = "area_" + area.name;
+    if (count[key] === undefined) count[key] = 0;
+    const talk = area.talk[count[key] % area.talk.length];
+    count[key]++;
+    return talk;
 }
 
 function getAreaRapidTalk(area) {
     if (!area || !Array.isArray(area.rapid) || area.rapid.length === 0) return null;
-    return takeBalancedTalk(area.rapid, "rapid_area_" + area.name);
+    const key = "rapid_area_" + area.name;
+    if (count[key] === undefined) count[key] = 0;
+    const talk = area.rapid[count[key] % area.rapid.length];
+    count[key]++;
+    return talk;
 }
-
-
-function showRapidImpact(x, y) {
-    const impact = document.createElement("div");
-    impact.className = "rapid-impact";
-    impact.style.left = x + "px";
-    impact.style.top = y + "px";
-    game.appendChild(impact);
-    setTimeout(() => impact.remove(), 280);
-}
-
-function shakeCharacter() {
-    if (!character || typeof character.animate !== "function") return;
-
-    // 連打時は「ガタッ」と左右へ1回だけ。上下には動かさない。
-    character.animate(
-        [
-            { transform: "translateX(0px)" },
-            { transform: "translateX(-5px)" },
-            { transform: "translateX(0px)" }
-        ],
-        {
-            duration: 105,
-            easing: "ease-out"
-        }
-    );
-}
-
-function playRapidImpact(x, y) {
-    showRapidImpact(x, y);
-    shakeCharacter();
-}
-
-function showTapFlash(x, y) {
-    const effect = document.createElement("div");
-    effect.className = "tap-flash";
-    effect.style.left = x + "px";
-    effect.style.top = y + "px";
-    game.appendChild(effect);
-    setTimeout(() => effect.remove(), 210);
-}
-
-
-game.addEventListener("pointerdown", function(event) {
-    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
-    if (!data) return;
-
-    const rect = game.getBoundingClientRect();
-    const x = (event.clientX - rect.left) * (1920 / rect.width);
-    const y = (event.clientY - rect.top) * (1080 / rect.height);
-    showTapFlash(x, y);
-});
 
 /* クリックイベント処理（1920x1080基準の座標変換） */
 game.addEventListener("click", function(event) {
-    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
+    if (event.target.closest("#menu, #openMenu, #leftControls")) return;
     if (!data) return;
-
-    // 台詞に続きがある間は、新しい台詞抽選をせず続きを優先
-    if (activeContinuation) {
-        advanceContinuation();
-        return;
-    }
 
     const rect = game.getBoundingClientRect();
     const scaleX = 1920 / rect.width;
     const scaleY = 1080 / rect.height;
+
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
 
@@ -1949,14 +924,12 @@ game.addEventListener("click", function(event) {
     const area = getArea(x, y);
     if (area) {
         if (rapid) {
-            const areaRapidTalk = getAreaRapidTalk(area);
-            if (areaRapidTalk) {
-                playRapidImpact(x, y);
-                speak(areaRapidTalk, x, y);
+            const rapidTalk = getAreaRapidTalk(area);
+            if (rapidTalk) {
+                speak(rapidTalk, x, y);
                 return;
             }
         }
-
         const areaTalk = getAreaTalk(area);
         if (areaTalk) {
             speak(areaTalk, x, y);
@@ -1964,114 +937,46 @@ game.addEventListener("click", function(event) {
         }
     }
 
-    // 2. 誕生日（通常台詞1周につき1回）
+    // 2. 誕生日
     const birthdayTalk = getBirthdayTalk();
     if (birthdayTalk) {
         speak(birthdayTalk, x, y);
         return;
     }
 
-    // 3. 日付指定（通常台詞1周につき1回）
+    // 3. 日付指定
     const dateTalk = getDateTalk();
     if (dateTalk) {
         speak(dateTalk, x, y);
         return;
     }
 
-    // 4. 期間指定（通常台詞1周につき1回）
+    // 4. 期間指定
     const periodTalk = getPeriodTalk();
     if (periodTalk) {
         speak(periodTalk, x, y);
         return;
     }
 
-    // 5. 通常（連打時のみ rapid を通常枠として使用）
+    // 連打ボイスは通常台詞側の派生として扱う
     if (rapid) {
         const rapidTalk = getRapidTalk();
         if (rapidTalk) {
-            playRapidImpact(x, y);
             speak(rapidTalk, x, y);
             return;
         }
     }
 
+    // 5. 通常
     const normalTalk = getNormalTalk();
     if (normalTalk) {
         speak(normalTalk, x, y);
     }
 });
 
-backgroundVideo.addEventListener("playing", () => {
-    if (currentBackground && currentBackground.video) {
-        background.style.display = "none";
-    }
-});
-
-backgroundVideo.addEventListener("error", () => {
-    // MP4が失敗したら付属PNGへ戻す
-    if (currentBackground && currentBackground.image) {
-        background.style.display = "block";
-        backgroundVideo.style.display = "none";
-    }
-});
-
 function setBackground(bg) {
     currentBackground = bg;
-
-    const imagePath = bg && bg.image ? "backgrounds/" + bg.image : "";
-    const videoPath = bg && bg.video ? "backgrounds/" + bg.video : "";
-
-    // MP4動画背景
-    if (videoPath) {
-        // 読み込み中・再生不可時の静止画フォールバック
-        if (imagePath) {
-            background.src = imagePath;
-            background.style.display = "block";
-            backgroundVideo.poster = imagePath;
-        } else {
-            background.removeAttribute("src");
-            background.style.display = "none";
-            backgroundVideo.removeAttribute("poster");
-        }
-
-        // 同じ動画を選び直した時は無駄にリロードしない
-        const absoluteVideoPath = new URL(videoPath, document.baseURI).href;
-        if (backgroundVideo.src !== absoluteVideoPath) {
-            backgroundVideo.src = videoPath;
-            backgroundVideo.load();
-        }
-
-        backgroundVideo.muted = true;
-        backgroundVideo.loop = true;
-        backgroundVideo.playsInline = true;
-        backgroundVideo.autoplay = true;
-        backgroundVideo.style.display = "block";
-
-        const playPromise = backgroundVideo.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-            playPromise.catch(() => {
-                // autoplayが止められた場合はposter/静止画を見せる
-                backgroundVideo.style.display = imagePath ? "none" : "block";
-                background.style.display = imagePath ? "block" : "none";
-            });
-        }
-        return;
-    }
-
-    // 従来の静止画背景
-    backgroundVideo.pause();
-    backgroundVideo.removeAttribute("src");
-    backgroundVideo.removeAttribute("poster");
-    backgroundVideo.load();
-    backgroundVideo.style.display = "none";
-
-    if (imagePath) {
-        background.src = imagePath;
-        background.style.display = "block";
-    } else {
-        background.removeAttribute("src");
-        background.style.display = "none";
-    }
+    background.src = "backgrounds/" + bg.image;
 }
 
 function setupBackground() {
@@ -2086,23 +991,11 @@ function setupBackgroundMenu() {
         const card = document.createElement("div");
         card.className = "bg-card";
         
-        if (bg.image) {
-            const img = document.createElement("img");
-            img.className = "bg-card-image";
-            img.src = "backgrounds/" + bg.image;
-            img.alt = bg.name || "";
-            card.appendChild(img);
-        } else if (bg.video) {
-            const preview = document.createElement("video");
-            preview.className = "bg-card-image";
-            preview.src = "backgrounds/" + bg.video;
-            preview.muted = true;
-            preview.loop = true;
-            preview.autoplay = true;
-            preview.playsInline = true;
-            preview.preload = "metadata";
-            card.appendChild(preview);
-        }
+        const img = document.createElement("img");
+        img.className = "bg-card-image";
+        img.src = "backgrounds/" + bg.image;
+        img.alt = bg.name;
+        card.appendChild(img);
 
         card.onclick = (e) => {
             e.stopPropagation();
@@ -2113,56 +1006,43 @@ function setupBackgroundMenu() {
     });
 }
 
-
-async function chooseRandomCharacter() {
-    if (!Array.isArray(characters) || characters.length === 0) return;
-
-    let pool = characters;
-
-    // 2人以上いる場合は、なるべく現在表示中のキャラ以外から選ぶ
-    if (characters.length > 1 && data && data.id !== undefined) {
-        const otherCharacters = characters.filter(char => Number(char.id) !== Number(data.id));
-        if (otherCharacters.length > 0) {
-            pool = otherCharacters;
-        }
+function setupCostumeMenu() {
+    costumeList.innerHTML = "";
+    
+    if (!data || !Array.isArray(data.costumes) || data.costumes.length <= 1) {
+        costumeSection.classList.add("hidden");
+        return;
     }
 
-    const index = Math.floor(Math.random() * pool.length);
-    const selected = pool[index];
+    const otherCostumes = data.costumes.filter(costume => costume !== currentCostume);
 
-    await loadCharacter(selected);
+    if (otherCostumes.length === 0) {
+        costumeSection.classList.add("hidden");
+        return;
+    }
+
+    costumeSection.classList.remove("hidden");
+
+    otherCostumes.forEach(costume => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ctrl-btn";
+        btn.innerText = costume.name;
+
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            currentCostume = costume;
+            
+            loadCostume();
+            setupCostumeMenu();
+        };
+        costumeList.appendChild(btn);
+    });
 }
 
 function setupCharacterMenu() {
     characterList.innerHTML = "";
-
-    const today = getToday();
-
-    const sortedCharacters = [...characters].sort((a, b) => {
-        const aBirthday = Boolean(
-            a &&
-            a.birthday &&
-            Number(a.birthday.month) === today.month &&
-            Number(a.birthday.day) === today.day
-        );
-
-        const bBirthday = Boolean(
-            b &&
-            b.birthday &&
-            Number(b.birthday.month) === today.month &&
-            Number(b.birthday.day) === today.day
-        );
-
-        // 今日が誕生日のキャラを最優先
-        if (aBirthday !== bBirthday) {
-            return aBirthday ? -1 : 1;
-        }
-
-        // 基本はIDの数字降順
-        return Number(b.id || 0) - Number(a.id || 0);
-    });
-
-    sortedCharacters.forEach(char => {
+    characters.forEach(char => {
         characterList.appendChild(createCharacterCard(char));
     });
 }
@@ -2200,26 +1080,12 @@ function createCharacterCard(char) {
     const img = document.createElement("img");
     img.className = "card-character-image";
     
-    img.src = getImagePath(char.image, char);
-
+    const baseDir = char._baseDir ? char._baseDir : '';
+    img.src = "characters/" + baseDir + char.image;
+    
     applyFaceCrop(img, char, char.menu ? char.menu.face : null);
 
     thumb.appendChild(img);
-
-    const today = getToday();
-    const isBirthday =
-        char.birthday &&
-        Number(char.birthday.month) === today.month &&
-        Number(char.birthday.day) === today.day;
-
-    if (isBirthday) {
-        const cake = document.createElement("img");
-        cake.src = new URL("icon/cake.png", document.baseURI).href;
-        cake.alt = "";
-        cake.className = "card-birthday-cake";
-        thumb.appendChild(cake);
-    }
-
     card.appendChild(thumb);
 
     card.onclick = async (e) => {
@@ -2239,14 +1105,7 @@ function showBirthdayChoice(birthdayCharacters) {
     birthdayCharacters.forEach(char => {
         const item = document.createElement("div");
         item.className = "birthday-item";
-        const cakeIcon = document.createElement("img");
-        cakeIcon.src = new URL("icon/cake.png", document.baseURI).href;
-        cakeIcon.alt = "";
-        cakeIcon.className = "birthday-cake-icon";
-        const nameSpan = document.createElement("span");
-        nameSpan.textContent = char.name;
-        item.appendChild(cakeIcon);
-        item.appendChild(nameSpan);
+        item.innerText = char.name + " 🎂";
         item.onclick = async (e) => {
             e.stopPropagation();
             await loadCharacter(char);
@@ -2279,12 +1138,6 @@ function showBackgroundTab() {
     
     backgroundMenuButton.classList.add("hidden");
     characterMenuButton.classList.remove("hidden");
-
-    // 毎回リストの先頭（左端／スマホでは最上部）から見せる。
-    requestAnimationFrame(() => {
-        backgroundList.scrollLeft = 0;
-        backgroundList.scrollTop = 0;
-    });
 }
 
 characterMenuButton.onclick = (e) => {
@@ -2311,17 +1164,7 @@ document.getElementById("openMenu").onclick = (event) => {
     openMenu();
 };
 
-
-if (diceButton) {
-    diceButton.onclick = async (event) => {
-        event.stopPropagation();
-        await chooseRandomCharacter();
-    };
-}
-
 /* 起動 */
-window.addEventListener("resize", () => { resizeGame(); applyMobileCharacterTransform(); });
-resizeGame();
 init();
 </script>
 </body>

@@ -645,15 +645,38 @@ function setupPersonalPage() {
     }
 }
 
-function getImagePath(imageName) {
+function resolveCharacterAssetPath(charData, imageName) {
     if (!imageName) return "";
-    if (imageName.startsWith("http") || imageName.startsWith("/")) return imageName;
-    const baseDir = data && data._baseDir ? data._baseDir : '';
-    // すでに "characters/" から始まっている場合の重複を防ぐ
+
+    // 完全URL / ルート絶対 / data / blob はそのまま
+    if (
+        imageName.startsWith("http://") ||
+        imageName.startsWith("https://") ||
+        imageName.startsWith("/") ||
+        imageName.startsWith("data:") ||
+        imageName.startsWith("blob:")
+    ) {
+        return imageName;
+    }
+
+    // JSON側ですでに characters/... と書いてある場合もそのまま
+    if (imageName.startsWith("characters/")) {
+        return imageName;
+    }
+
+    const baseDir = charData && charData._baseDir ? charData._baseDir : "";
+
+    // 例: _baseDir="143/" で image="143/143.png"
     if (baseDir && imageName.startsWith(baseDir)) {
         return "characters/" + imageName;
     }
+
+    // 例: _baseDir="143/" で image="143.png"
     return "characters/" + baseDir + imageName;
+}
+
+function getImagePath(imageName) {
+    return resolveCharacterAssetPath(data, imageName);
 }
 
 function loadCostume() {
@@ -671,8 +694,7 @@ function loadCostume() {
 
 function loadFrame() {
     if (data.frame) {
-        const baseDir = data._baseDir ? data._baseDir : '';
-        const framePath = data.frame.startsWith("http") || data.frame.startsWith("/") ? data.frame : "characters/" + baseDir + data.frame;
+        const framePath = resolveCharacterAssetPath(data, data.frame);
         frame.src = framePath;
         frame.style.display = "block";
     } else {
@@ -1080,8 +1102,7 @@ function createCharacterCard(char) {
     const img = document.createElement("img");
     img.className = "card-character-image";
     
-    const baseDir = char._baseDir ? char._baseDir : '';
-    img.src = "characters/" + baseDir + char.image;
+    img.src = resolveCharacterAssetPath(char, char.image);
     
     applyFaceCrop(img, char, char.menu ? char.menu.face : null);
 

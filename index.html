@@ -911,7 +911,7 @@ let messageTimer = null;
 const RAPID_TIME = 400;
 
 /* 台詞の巡回状態
-   - specialLastCycle: 誕生日/日付/期間は、通常台詞1周につき各1回だけ
+   - specialLastCycle: 日付/期間は、通常台詞1周につき各1回だけ
    - normalCycle: 通常台詞を全部話し終えるたびに +1
    - poolStates: 各台詞群を重複少なく巡回させる
 */
@@ -924,7 +924,6 @@ function resetDialogueState() {
         normalOrder: [],
         normalPos: 0,
         specialLastCycle: {
-            birthday: -1,
             date: -1,
             period: -1
         },
@@ -1523,24 +1522,6 @@ function isInPeriod(start, end) {
     return current >= startNumber || current <= endNumber;
 }
 
-function getBirthdayTalk() {
-    if (!canUseSpecial("birthday")) return null;
-
-    const today = getToday();
-    if (
-        data &&
-        data.birthday &&
-        Number(data.birthday.month) === today.month &&
-        Number(data.birthday.day) === today.day &&
-        Array.isArray(data.birthday.talk) &&
-        data.birthday.talk.length > 0
-    ) {
-        const talk = takeBalancedTalk(data.birthday.talk, "birthday_pool");
-        if (talk) markSpecialUsed("birthday");
-        return talk;
-    }
-    return null;
-}
 
 function getDateTalk() {
     if (!canUseSpecial("date")) return null;
@@ -1604,7 +1585,7 @@ function getNormalTalk() {
     dialogueState.normalPos++;
 
     // この台詞で通常台詞を全種類1周した。
-    // 次のクリックから誕生日/日付/期間がそれぞれ再び1回だけ解禁される。
+    // 次のクリックから日付/期間がそれぞれ再び1回だけ解禁される。
     if (dialogueState.normalPos >= dialogueState.normalOrder.length) {
         dialogueState.normalRounds++;
         dialogueState.normalCycle++;
@@ -1744,28 +1725,21 @@ game.addEventListener("click", function(event) {
         }
     }
 
-    // 2. 誕生日（通常台詞1周につき1回）
-    const birthdayTalk = getBirthdayTalk();
-    if (birthdayTalk) {
-        speak(birthdayTalk, x, y);
-        return;
-    }
-
-    // 3. 日付指定（通常台詞1周につき1回）
+    // 2. 日付指定（通常台詞1周につき1回）
     const dateTalk = getDateTalk();
     if (dateTalk) {
         speak(dateTalk, x, y);
         return;
     }
 
-    // 4. 期間指定（通常台詞1周につき1回）
+    // 3. 期間指定（通常台詞1周につき1回）
     const periodTalk = getPeriodTalk();
     if (periodTalk) {
         speak(periodTalk, x, y);
         return;
     }
 
-    // 5. 通常（連打時のみ rapid を通常枠として使用）
+    // 4. 通常（連打時のみ rapid を通常枠として使用）
     if (rapid) {
         const rapidTalk = getRapidTalk();
         if (rapidTalk) {

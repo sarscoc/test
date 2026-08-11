@@ -1,0 +1,75 @@
+{
+  "id": 145,
+  "name": "テスト",
+  "image": "145.webp",
+  "position": {
+    "x": 980,
+    "y": 1971,
+    "scale": 853.1679057404373
+  },
+  "areas": [
+    {
+      "key": "area1",
+      "name": "エリア1",
+      "x": 848,
+      "y": 45,
+      "width": 225,
+      "height": 240,
+      "talk": [
+        {
+          "text": "わわをあ",
+          "style": {
+            "color": "#ff0000",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ],
+      "rapid": []
+    },
+    {
+      "key": "area2",
+      "name": "エリア2",
+      "x": 810,
+      "y": 360,
+      "width": 300,
+      "height": 240,
+      "talk": [
+        {
+          "text": "",
+          "style": {
+            "color": "#ffffff",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ],
+      "rapid": []
+    }
+  ],
+  "talk": {
+    "greeting": [],
+    "normal": [],
+    "rapid": []
+  },
+  "special": {
+    "dates": [],
+    "periods": []
+  },
+  "greetingDates": [],
+  "greetingPeriods": [],
+  "textStyle": {
+    "color": "#ffffff",
+    "size": 16,
+    "font": "gothic"
+  },
+  "page": "https://sarsland.notion.site/c99ec6ffd47d4d07b09aa8ecfbd0050f",
+  "_editorNormalOpen": false,
+  "_editorNormalLocked": true,
+  "birthday": {
+    "month": 8,
+    "day": 11
+  }
+}

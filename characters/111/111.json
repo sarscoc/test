@@ -1,0 +1,105 @@
+{
+  "id": 111,
+  "name": "ああ",
+  "image": "111.webp",
+  "position": {
+    "x": 975,
+    "y": 1870,
+    "scale": 789.9702830929974
+  },
+  "areas": [
+    {
+      "key": "area1",
+      "name": "エリア1",
+      "x": 860,
+      "y": 105,
+      "width": 300,
+      "height": 240,
+      "talk": [
+        {
+          "text": "あああああああ",
+          "style": {
+            "color": "#ffffff",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ],
+      "rapid": []
+    },
+    {
+      "key": "area2",
+      "name": "エリア2",
+      "x": 791,
+      "y": 364,
+      "width": 300,
+      "height": 484,
+      "talk": [
+        {
+          "text": "うほほほ",
+          "style": {
+            "color": "#ff8080",
+            "size": 16,
+            "font": "",
+            "animation": "tremble"
+          }
+        }
+      ],
+      "rapid": []
+    }
+  ],
+  "talk": {
+    "greeting": [],
+    "normal": [
+      {
+        "text": "さだｓだだああああ"
+      }
+    ],
+    "rapid": []
+  },
+  "special": {
+    "dates": [],
+    "periods": []
+  },
+  "greetingDates": [
+    {
+      "month": 8,
+      "day": 12,
+      "talk": [
+        {
+          "text": "ああわわわっわ",
+          "style": {
+            "color": "#ffffff",
+            "size": 16,
+            "font": "",
+            "animation": ""
+          }
+        }
+      ]
+    }
+  ],
+  "greetingPeriods": [],
+  "textStyle": {
+    "color": "#ffffff",
+    "size": 16,
+    "font": "gothic"
+  },
+  "variants": [
+    {
+      "name": "表情1",
+      "image": "111_表情1.webp",
+      "offsetX": -13.190839080072465,
+      "offsetY": -49.89121271667426,
+      "scale": 0.7938322410201695
+    }
+  ],
+  "page": "https://sarsland.notion.site/2ec4fddb0aaa803ea96be27d4519509a",
+  "birthday": {
+    "month": 8,
+    "day": 12
+  },
+  "expressionMap": {
+    "うほほほ": "表情1"
+  }
+}

@@ -980,15 +980,83 @@ function markSpecialUsed(kind) {
 /* 初期化 */
 async function init() {
     startClock();
+
+    let characterError = null;
+    let backgroundError = null;
+
     try {
         await loadCharacters();
+    } catch (error) {
+        characterError = error;
+        console.error("キャラクター初期化エラー:", error);
+    }
+
+    try {
         await loadBackgrounds();
         setupBackground();
         setupBackgroundMenu();
-        await chooseInitialCharacter();
     } catch (error) {
-        console.error(error);
-        alert("ゲームデータを読み込めませんでした。");
+        backgroundError = error;
+        backgrounds = [];
+        console.error("背景初期化エラー:", error);
+    }
+
+    if (characters.length > 0) {
+        try {
+            await chooseInitialCharacter();
+        } catch (error) {
+            characterError = characterError || error;
+            console.error("初期キャラクター表示エラー:", error);
+        }
+    }
+
+    if (characters.length === 0) {
+        showGameLoadError(
+            "キャラクターを読み込めませんでした。",
+            characterError ? String(characterError.message || characterError) : ""
+        );
+    } else if (backgroundError) {
+        console.warn("背景だけ読み込めませんでした。キャラクター表示は続行します。");
+    }
+}
+
+function showGameLoadError(title, detail = "") {
+    let box = document.getElementById("gameLoadError");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "gameLoadError";
+        Object.assign(box.style, {
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: "9999",
+            maxWidth: "760px",
+            padding: "28px 34px",
+            borderRadius: "18px",
+            background: "rgba(20,24,30,.92)",
+            color: "#fff",
+            fontSize: "24px",
+            lineHeight: "1.6",
+            textAlign: "center",
+            boxShadow: "0 18px 60px rgba(0,0,0,.35)",
+            pointerEvents: "none"
+        });
+        game.appendChild(box);
+    }
+    box.innerHTML = "";
+    const strong = document.createElement("div");
+    strong.style.fontWeight = "700";
+    strong.textContent = title;
+    box.appendChild(strong);
+
+    if (detail) {
+        const small = document.createElement("div");
+        small.style.marginTop = "8px";
+        small.style.fontSize = "16px";
+        small.style.opacity = ".78";
+        small.textContent = detail;
+        box.appendChild(small);
     }
 }
 
@@ -1024,87 +1092,148 @@ function startClock() {
 
 /* キャラクターJSON読み込み（サブフォルダ構造対応） */
 async function loadCharacters() {
-    const response = await fetch("characters/index.json");
+    const response = await fetch("characters/index.json", { cache: "no-store" });
     if (!response.ok) {
-        throw new Error("characters/index.json が読み込めません。");
+        throw new Error(`characters/index.json が読み込めません (${response.status})`);
     }
 
     let text = await response.text();
-    text = text.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+    text = text
+        .replace(/^\uFEFF/, "")
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "")
+        .trim();
 
-    const firstBracket = text.indexOf('[');
-    const lastBracket = text.lastIndexOf(']');
+    const firstBracket = text.indexOf("[");
+    const lastBracket = text.lastIndexOf("]");
     if (firstBracket !== -1 && lastBracket !== -1) {
         text = text.substring(firstBracket, lastBracket + 1);
     }
 
-    const files = JSON.parse(text);
-    characters = [];
+    // 末尾カンマ程度なら事故らないようにする。
+    text = text.replace(/,\s*]/g, "]");
 
-    for (const file of files) {
-        // index.json が「143.json」でも「143/143.json」でも読めるようにする
-        const candidates = [];
+    let files;
+    try {
+        files = JSON.parse(text);
+    } catch (error) {
+        throw new Error("characters/index.json のJSON形式が壊れています: " + error.message);
+    }
+
+    if (!Array.isArray(files)) {
+        throw new Error("characters/index.json は配列 [...] にしてください。");
+    }
+
+    characters = [];
+    const failed = [];
+
+    function characterPathCandidates(entry) {
+        let file = String(entry ?? "").trim().replace(/\\/g, "/");
+        file = file.replace(/^\.?\//, "");
+        if (!file) return [];
+
+        const out = [];
+
+        // characters/145/145.json のような完全表記
         if (file.startsWith("characters/")) {
-            candidates.push(file);
+            out.push(file);
         } else {
-            candidates.push("characters/" + file);
-            const slash = file.lastIndexOf("/");
-            const name = slash >= 0 ? file.substring(slash + 1) : file;
-            const folder = name.replace(/\.json$/i, "");
-            candidates.push("characters/" + folder + "/" + name);
+            // 145/145.json
+            out.push("characters/" + file);
+
+            // 145.json -> characters/145.json と characters/145/145.json の両方を試す
+            if (!file.includes("/")) {
+                const name = file;
+                const folder = name.replace(/\.json$/i, "");
+                out.push("characters/" + folder + "/" + name);
+            }
         }
+
+        return [...new Set(out)];
+    }
+
+    for (const entry of files) {
+        const candidates = characterPathCandidates(entry);
+        if (candidates.length === 0) continue;
 
         let res = null;
         let targetPath = "";
+
         for (const candidate of candidates) {
             try {
-                const r = await fetch(candidate);
+                const r = await fetch(candidate, { cache: "no-store" });
                 if (r.ok) {
                     res = r;
                     targetPath = candidate;
                     break;
                 }
-            } catch (e) {
-                // 次の候補を試す
+            } catch (error) {
+                console.warn("候補パス取得失敗:", candidate, error);
             }
         }
 
         if (!res) {
-            console.error("キャラクター読み込み失敗:", candidates);
+            console.error("キャラクターJSONが見つかりません:", candidates);
+            failed.push(`${String(entry)}（ファイルなし）`);
             continue;
         }
 
         let charText = await res.text();
-        charText = charText.replace(/^\uFEFF/, "").replace(/^```json\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+        charText = charText
+            .replace(/^\uFEFF/, "")
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/, "")
+            .replace(/\s*```$/, "")
+            .trim();
 
-        const fBracket = charText.indexOf('{');
-        const lBracket = charText.lastIndexOf('}');
+        const fBracket = charText.indexOf("{");
+        const lBracket = charText.lastIndexOf("}");
         if (fBracket !== -1 && lBracket !== -1) {
             charText = charText.substring(fBracket, lBracket + 1);
         }
 
         try {
             const json = JSON.parse(charText);
-            // 実際に読み込んだJSONの場所を基準に画像を解決する
-            const relativePath = targetPath.substring("characters/".length);
-            const slash = relativePath.lastIndexOf('/');
-            json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : '';
+
+            if (!json || typeof json !== "object" || Array.isArray(json)) {
+                throw new Error("JSONの最上位がオブジェクトではありません");
+            }
+
+            // 実際に読み込めたJSONの場所を基準に画像を解決する。
+            const relativePath = targetPath.startsWith("characters/")
+                ? targetPath.substring("characters/".length)
+                : targetPath;
+            const slash = relativePath.lastIndexOf("/");
+            json._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : "";
             json._sourcePath = targetPath;
+
             characters.push(json);
-        } catch (e) {
-            console.error(`構文エラーがあるファイル: ${targetPath}`);
-            throw e;
+        } catch (error) {
+            // ★ここでthrowしない。145が壊れても143を生かす。
+            console.error(`構文エラーがあるキャラクターJSON: ${targetPath}`, error);
+            failed.push(`${targetPath}（JSON構文エラー）`);
+            continue;
         }
     }
 
+    if (failed.length) {
+        console.warn("読み飛ばしたキャラクター:", failed);
+    }
+
     if (characters.length === 0) {
-        throw new Error("キャラクターJSONを1件も読み込めませんでした。");
+        const suffix = failed.length ? ` / ${failed.join(", ")}` : "";
+        throw new Error("有効なキャラクターJSONを1件も読み込めませんでした" + suffix);
     }
 
     // 衣装JSONの dialogueSource は全キャラクター読込後に解決する。
-    await resolveDialogueSources();
+    try {
+        await resolveDialogueSources();
+    } catch (error) {
+        // dialogueSourceの問題でも本体は止めない。
+        console.error("dialogueSource 解決エラー:", error);
+    }
 }
-
 
 /* 衣装JSON用：台詞だけ別キャラクターJSONから引用する */
 function parseCharacterJsonText(text) {
@@ -1349,7 +1478,7 @@ function applyTalkExpression(talk) {
 
 /* 背景JSON読み込み */
 async function loadBackgrounds() {
-    const response = await fetch("backgrounds/backgrounds.json");
+    const response = await fetch("backgrounds/backgrounds.json", { cache: "no-store" });
     if (!response.ok) {
         throw new Error("backgrounds/backgrounds.json が読み込めません。");
     }
@@ -1361,7 +1490,14 @@ async function loadBackgrounds() {
     if (firstBracket !== -1 && lastBracket !== -1) {
         bgText = bgText.substring(firstBracket, lastBracket + 1);
     }
-    backgrounds = JSON.parse(bgText);
+    try {
+        backgrounds = JSON.parse(bgText);
+        if (!Array.isArray(backgrounds)) {
+            throw new Error("背景JSONは配列ではありません");
+        }
+    } catch (error) {
+        throw new Error("backgrounds/backgrounds.json のJSON形式が壊れています: " + error.message);
+    }
 }
 
 function getToday() {
@@ -1614,7 +1750,9 @@ function loadCharacterImage() {
         }
     };
 
-    character.onerror = () => console.error("画像読み込み失敗:", imgPath);
+    character.onerror = () => {
+        console.error("画像読み込み失敗:", imgPath, "source:", data?._sourcePath || "(unknown)");
+    };
     character.onload = apply;
     character.src = imgPath;
 

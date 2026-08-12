@@ -1065,6 +1065,19 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     }
 }
 
+
+/* ===== 名前横の誕生日ケーキ：確実に7px固定 ===== */
+#characterName img.character-name-cake{
+    width:7px!important;
+    height:7px!important;
+    min-width:7px!important;
+    max-width:7px!important;
+    min-height:7px!important;
+    max-height:7px!important;
+    flex:0 0 7px!important;
+    object-fit:contain!important;
+}
+
 </style>
 </head>
 <body>
@@ -2127,6 +2140,14 @@ function setupPersonalPage() {
             cake.src = new URL("icon/cake.png", document.baseURI).href;
             cake.alt = "";
             cake.className = "character-name-cake";
+
+            // 名前横の誕生日ケーキは他の img 共通CSSに影響されないよう直接7px固定
+            cake.style.width = "7px";
+            cake.style.height = "7px";
+            cake.style.minWidth = "7px";
+            cake.style.maxWidth = "7px";
+            cake.style.flex = "0 0 7px";
+
             characterName.appendChild(cake);
             characterName.classList.add("birthday-name");
         }

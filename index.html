@@ -751,6 +751,113 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 
 
+
+
+/* ===== 衣装変更：PC PAGE と同系統 ===== */
+#costumeSelectWrap{
+    position: relative;
+    display: none;
+    width: 100%;
+    min-width: 0;
+}
+#costumeSelectWrap::before{
+    content: "▼";
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+#costumeSelect{
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 34px 8px 38px;
+    border: 2px solid #ffffff;
+    border-radius: 30px;
+    outline: none;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-family: "M PLUS 1p", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-size: 19px;
+    line-height: 1.2;
+    font-weight: 600;
+    text-align: center;
+    text-align-last: center;
+    cursor: pointer;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
+    transition: background .2s;
+}
+#costumeSelect:hover,
+#costumeSelect:focus{
+    background: rgba(255,255,255,.3);
+}
+#costumeSelect option{
+    color: #222;
+    background: #fff;
+    text-shadow: none;
+}
+
+/* ===== 続きの選択肢：台詞吹き出しに近いデザイン ===== */
+#choiceBox{
+    position: absolute;
+    z-index: 190;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: 600px;
+    pointer-events: auto;
+}
+.choice-btn{
+    display: block;
+    width: 100%;
+    min-height: 58px;
+    padding: 13px 22px;
+    border: 2px solid rgba(255,255,255,.22);
+    background: linear-gradient(135deg,rgba(22,24,30,.82),rgba(10,11,15,.88) 70%,rgba(35,40,55,.76));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #f0f2f5;
+    font-family: "Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+    font-size: 24px;
+    line-height: 1.35;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-align: left;
+    cursor: pointer;
+    clip-path: polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);
+    box-shadow: 0 12px 30px rgba(0,0,0,.32), inset 0 2px 0 rgba(255,255,255,.12);
+}
+.choice-btn:hover,
+.choice-btn:focus{
+    background: linear-gradient(135deg,rgba(42,46,56,.90),rgba(18,20,27,.93) 70%,rgba(47,54,72,.86));
+    outline: none;
+}
+
+@media (max-width: 768px), (max-aspect-ratio: 82/100) {
+    #costumeSelect{
+        font-size: 22px;
+        padding: 9px 38px 9px 42px;
+    }
+    #costumeSelectWrap::before{
+        left: 20px;
+        font-size: 17px;
+    }
+    .choice-btn{
+        font-size: 28px;
+        min-height: 64px;
+        padding: 14px 22px;
+    }
+}
 </style>
 </head>
 <body>
@@ -766,6 +873,11 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         <div id="leftControls">
             <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC PAGE</a>
             <div id="characterName"></div>
+            <div id="costumeSelectWrap" title="衣装変更">
+                <select id="costumeSelect" aria-label="衣装変更">
+                    <option value="normal">通常</option>
+                </select>
+            </div>
         </div>
 
         <!-- 左下時計エリア -->
@@ -781,6 +893,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         </button>
         <button id="openMenu" type="button" aria-label="メニュー">☰</button>
         <div id="message"><span id="messageText" class="message-text"></span></div>
+        <div id="choiceBox" aria-label="選択肢"></div>
 
         <div id="menu">
             <section id="birthdayArea" class="hidden">
@@ -878,6 +991,9 @@ const messageText = document.getElementById("messageText");
 const menu = document.getElementById("menu");
 const personalPage = document.getElementById("personalPage");
 const characterName = document.getElementById("characterName");
+const costumeSelectWrap = document.getElementById("costumeSelectWrap");
+const costumeSelect = document.getElementById("costumeSelect");
+const choiceBox = document.getElementById("choiceBox");
 const birthdayArea = document.getElementById("birthdayArea");
 const birthdayList = document.getElementById("birthdayList");
 const characterList = document.getElementById("characterList");
@@ -908,6 +1024,10 @@ let currentBackground = null;
 let count = {};
 let lastClick = 0;
 let messageTimer = null;
+let activeContinuation = null;
+let currentBaseCharacter = null;
+let availableCostumes = [];
+const costumeCache = new Map();
 const RAPID_TIME = 400;
 
 /* 台詞の巡回状態
@@ -1530,6 +1650,165 @@ function getBirthdayCharacters() {
     });
 }
 
+
+function getBaseCharacterData() {
+    return currentBaseCharacter || (data && data._dialogueSourceData) || data || null;
+}
+
+function getCharacterCacheKey(char) {
+    if (!char) return "";
+    return String(char._sourcePath || char.id || "");
+}
+
+function parseCostumeJsonText(textValue) {
+    return parseCharacterJsonText(textValue);
+}
+
+async function fetchCostumeAt(path, baseChar) {
+    try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) return null;
+
+        const costume = parseCostumeJsonText(await response.text());
+        if (!costume || typeof costume !== "object" || Array.isArray(costume)) return null;
+
+        const relativePath = path.startsWith("characters/")
+            ? path.substring("characters/".length)
+            : path;
+        const slash = relativePath.lastIndexOf("/");
+        costume._baseDir = slash >= 0 ? relativePath.substring(0, slash + 1) : "";
+        costume._sourcePath = path;
+        costume._dialogueSourceData = baseChar;
+        return costume;
+    } catch (error) {
+        console.warn("衣装JSON読み込み失敗:", path, error);
+        return null;
+    }
+}
+
+function costumePathFromRef(baseChar, ref) {
+    const baseDir = String(baseChar?._baseDir || "");
+    const raw = String(ref || "").trim().replace(/\\/g, "/");
+    if (!raw) return "";
+    if (raw.startsWith("characters/")) return raw;
+    if (/\.json$/i.test(raw)) return "characters/" + baseDir + raw.replace(/^\.\//, "");
+    return `characters/${baseDir}costumes/${raw}/${raw}.json`;
+}
+
+async function loadCostumesForCharacter(baseChar) {
+    if (!baseChar) return [];
+    const cacheKey = getCharacterCacheKey(baseChar);
+    if (costumeCache.has(cacheKey)) return costumeCache.get(cacheKey);
+
+    const found = [];
+    const seenPaths = new Set();
+
+    const addPath = async (path) => {
+        if (!path || seenPaths.has(path)) return false;
+        seenPaths.add(path);
+        const costume = await fetchCostumeAt(path, baseChar);
+        if (!costume) return false;
+        found.push(costume);
+        return true;
+    };
+
+    // 将来 parent JSON に costumes が入っている場合もそのまま利用可能。
+    if (Array.isArray(baseChar.costumes)) {
+        for (const item of baseChar.costumes) {
+            const ref = typeof item === "string"
+                ? item
+                : (item?.json || item?.path || item?.id || "");
+            await addPath(costumePathFromRef(baseChar, ref));
+        }
+    }
+
+    // 現在の統合エディター標準名：<ID>_costume01, 02, ...
+    // index.json には親JSONだけを載せる仕様なので、親フォルダ内を規則名で探索する。
+    const parentId = String(baseChar.id ?? "").trim();
+    if (parentId) {
+        let consecutiveMisses = 0;
+        for (let n = 1; n <= 40 && consecutiveMisses < 3; n++) {
+            const cid = `${parentId}_costume${String(n).padStart(2, "0")}`;
+            const path = `characters/${baseChar._baseDir || ""}costumes/${cid}/${cid}.json`;
+            const ok = await addPath(path);
+            consecutiveMisses = ok ? 0 : consecutiveMisses + 1;
+        }
+    }
+
+    found.sort((a, b) => String(a.id || a.name || "").localeCompare(String(b.id || b.name || ""), "ja"));
+    costumeCache.set(cacheKey, found);
+    return found;
+}
+
+function setupCostumeSelector() {
+    if (!costumeSelect || !costumeSelectWrap) return;
+
+    costumeSelect.innerHTML = "";
+    const normalOption = document.createElement("option");
+    normalOption.value = "normal";
+    normalOption.textContent = "通常";
+    costumeSelect.appendChild(normalOption);
+
+    availableCostumes.forEach((costume, index) => {
+        const option = document.createElement("option");
+        option.value = `costume:${index}`;
+        option.textContent = String(costume.name || costume.id || `衣装${index + 1}`);
+        costumeSelect.appendChild(option);
+    });
+
+    if (availableCostumes.length === 0) {
+        costumeSelectWrap.style.display = "none";
+        costumeSelect.value = "normal";
+        return;
+    }
+
+    costumeSelectWrap.style.display = "block";
+    const selectedIndex = availableCostumes.indexOf(data);
+    costumeSelect.value = selectedIndex >= 0 ? `costume:${selectedIndex}` : "normal";
+}
+
+async function activateCharacterData(nextData, { greet = false } = {}) {
+    if (!nextData) return;
+
+    data = nextData;
+    baseImageMetrics = null;
+    baseImageMetricsPath = "";
+    currentCharacterVariant = nextData.defaultVariant ? String(nextData.defaultVariant) : null;
+
+    if (messageTimer) {
+        clearTimeout(messageTimer);
+        messageTimer = null;
+    }
+    clearDialogueChoices();
+    activeContinuation = null;
+    message.style.display = "none";
+
+    count = {};
+    resetDialogueState();
+    loadCharacterImage();
+    loadFrame();
+    setupPersonalPage();
+    setupCostumeSelector();
+
+    if (greet) showGreeting();
+}
+
+async function switchCostume(value) {
+    if (!currentBaseCharacter) return;
+
+    if (value === "normal") {
+        await activateCharacterData(currentBaseCharacter, { greet: false });
+        return;
+    }
+
+    const match = /^costume:(\d+)$/.exec(String(value || ""));
+    if (!match) return;
+    const costume = availableCostumes[Number(match[1])];
+    if (!costume) return;
+    costume._dialogueSourceData = currentBaseCharacter;
+    await activateCharacterData(costume, { greet: false });
+}
+
 async function chooseInitialCharacter() {
     const birthdayCharacters = getBirthdayCharacters();
     if (birthdayCharacters.length === 1) {
@@ -1547,21 +1826,10 @@ async function chooseInitialCharacter() {
 }
 
 async function loadCharacter(char) {
-    data = char;
-    baseImageMetrics = null;
-    baseImageMetricsPath = "";
-    currentCharacterVariant = char && char.defaultVariant ? String(char.defaultVariant) : null;
-    if (messageTimer) {
-        clearTimeout(messageTimer);
-        messageTimer = null;
-    }
-    count = {};
-    resetDialogueState();
-    loadCharacterImage();
-    loadFrame();
-    setupPersonalPage();
+    currentBaseCharacter = char;
+    availableCostumes = await loadCostumesForCharacter(char);
+    await activateCharacterData(char, { greet: true });
     closeMenu();
-    showGreeting();
 }
 
 function normalizePageUrl(value) {
@@ -1572,15 +1840,16 @@ function normalizePageUrl(value) {
 }
 
 function setupPersonalPage() {
+    const identityData = getBaseCharacterData();
     characterName.innerHTML = "";
     characterName.classList.remove("birthday-name");
 
-    if (data && data.name) {
+    if (identityData && identityData.name) {
         const today = getToday();
         const isBirthday = Boolean(
-            data.birthday &&
-            Number(data.birthday.month) === today.month &&
-            Number(data.birthday.day) === today.day
+            identityData.birthday &&
+            Number(identityData.birthday.month) === today.month &&
+            Number(identityData.birthday.day) === today.day
         );
 
         if (isBirthday) {
@@ -1593,14 +1862,14 @@ function setupPersonalPage() {
         }
 
         const nameText = document.createElement("span");
-        nameText.textContent = data.name;
+        nameText.textContent = identityData.name;
         characterName.appendChild(nameText);
         characterName.style.display = "flex";
     } else {
         characterName.style.display = "none";
     }
 
-    const pageUrl = normalizePageUrl(data && data.page);
+    const pageUrl = normalizePageUrl(identityData && identityData.page);
     if (pageUrl) {
         personalPage.href = pageUrl;
         personalPage.style.display = "flex";
@@ -1826,9 +2095,20 @@ function applyMessageTextStyle(talk, layout) {
     messageText.style.fontFamily = dialogueFontMap[style.font] || dialogueFontMap.gothic;
     messageText.style.fontWeight = style.font === "notoBlack" ? "900" : (style.weight || "400");
 
-    // JSONにサイズ指定があればそれを優先。なければ従来のPC/スマホサイズ。
+    // 統合エディターの初期値 16 は「標準サイズ」として扱う。
+    // これをそのまま16pxにすると完成版だけ極端に小さくなるため、
+    // 個別台詞で size を指定した時だけ明示サイズとして優先する。
     const fallbackSize = layout && layout.active ? 34 : 28;
-    const fontSize = Number(style.size || fallbackSize);
+    const localHasSize = local.size !== undefined && local.size !== null && String(local.size) !== "";
+    const defaultSize = Number(defaults.size);
+    let fontSize;
+    if (localHasSize) {
+        fontSize = Number(local.size) || fallbackSize;
+    } else if (Number.isFinite(defaultSize) && defaultSize > 0 && defaultSize !== 16) {
+        fontSize = defaultSize;
+    } else {
+        fontSize = fallbackSize;
+    }
     messageText.style.fontSize = fontSize + "px";
 
     const animation = String(style.animation || "");
@@ -1840,11 +2120,125 @@ function applyMessageTextStyle(talk, layout) {
 }
 
 
-/* 吹き出し位置の自動調整 */
-function speak(talk, clickX, clickY, forcePosition = null) {
+/* 続き・選択肢 */
+function clearDialogueChoices() {
+    if (!choiceBox) return;
+    choiceBox.innerHTML = "";
+    choiceBox.style.display = "none";
+}
+
+function normalizeContinuationNodes(next, inheritedStyle = null) {
+    const out = [];
+    const walk = (value, parentStyle = inheritedStyle) => {
+        if (value === null || value === undefined || value === "") return;
+        if (Array.isArray(value)) {
+            value.forEach(item => walk(item, parentStyle));
+            return;
+        }
+        if (typeof value === "string") {
+            out.push({ text: value, ...(parentStyle ? { style: { ...parentStyle } } : {}) });
+            return;
+        }
+        if (typeof value !== "object") return;
+
+        const ownStyle = value.style
+            ? { ...(parentStyle || {}), ...value.style }
+            : parentStyle ? { ...parentStyle } : null;
+
+        if (value.text !== undefined && value.text !== null) {
+            out.push({
+                ...value,
+                next: undefined,
+                ...(ownStyle ? { style: ownStyle } : {})
+            });
+        }
+        if (value.next) walk(value.next, ownStyle);
+    };
+    walk(next, inheritedStyle);
+    return out;
+}
+
+function hasMoreContinuation() {
+    return Boolean(
+        activeContinuation &&
+        activeContinuation.index < activeContinuation.sequence.length - 1
+    );
+}
+
+function positionChoiceBox() {
+    if (!choiceBox || choiceBox.style.display === "none") return;
+    const layout = window.mobileLayout || { active:false, leftBound:0, rightBound:1920, topBound:0, bottomBound:1080 };
+    const leftBound = layout.leftBound ?? 0;
+    const rightBound = layout.rightBound ?? 1920;
+    const topBound = layout.topBound ?? 0;
+    const bottomBound = layout.bottomBound ?? 1080;
+    const gap = 12;
+
+    const msgLeft = parseFloat(message.style.left) || leftBound;
+    const msgTop = parseFloat(message.style.top) || topBound;
+    const msgWidth = message.offsetWidth || 600;
+    const msgHeight = message.offsetHeight || 120;
+
+    choiceBox.style.width = msgWidth + "px";
+    const choiceHeight = choiceBox.offsetHeight || 100;
+    let top = msgTop + msgHeight + gap;
+    if (top + choiceHeight > bottomBound - 20) {
+        top = Math.max(topBound + 20, msgTop - choiceHeight - gap);
+    }
+    let left = Math.max(leftBound + 20, Math.min(msgLeft, rightBound - msgWidth - 20));
+    choiceBox.style.left = left + "px";
+    choiceBox.style.top = top + "px";
+}
+
+function showDialogueChoices(choices, segment) {
+    clearDialogueChoices();
+    const list = Array.isArray(choices)
+        ? choices.filter(c => c && (String(c.label || "").trim() || String(c.text || "").trim()))
+        : [];
+    if (!list.length) return false;
+
+    list.forEach((choice, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice-btn";
+        button.textContent = String(choice.label || `選択肢${index + 1}`);
+        button.addEventListener("click", event => {
+            event.stopPropagation();
+            clearDialogueChoices();
+            if (activeContinuation) activeContinuation.waitingChoice = false;
+
+            const reply = {
+                text: String(choice.text || ""),
+                style: { ...(segment?.style || {}), ...(choice.style || {}) }
+            };
+            if (choice.expression) reply.expression = choice.expression;
+
+            if (reply.text) {
+                showDialogueSegment(
+                    reply,
+                    activeContinuation?.clickX ?? 960,
+                    activeContinuation?.clickY ?? 540,
+                    activeContinuation?.forcePosition ?? null,
+                    { keepForContinuation: hasMoreContinuation() }
+                );
+            } else if (hasMoreContinuation()) {
+                advanceContinuation();
+            } else {
+                activeContinuation = null;
+                message.style.display = "none";
+            }
+        });
+        choiceBox.appendChild(button);
+    });
+
+    choiceBox.style.display = "flex";
+    requestAnimationFrame(positionChoiceBox);
+    return true;
+}
+
+function showDialogueSegment(talk, clickX, clickY, forcePosition = null, { keepForContinuation = false } = {}) {
     if (!talk) return;
 
-    // 台詞に対応する表情へ自動切替。手動の差分選択UIは不要。
     applyTalkExpression(talk);
 
     const layout = window.mobileLayout || { active: false, leftBound: 0, rightBound: 1920, topBound: 0, bottomBound: 1080 };
@@ -1855,7 +2249,6 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const visibleWidth = rightBound - leftBound;
 
     if (layout.active) {
-        // 実画面で読みやすい大きさになるよう、基準座標上では少し大きめにする。
         message.style.width = Math.min(760, visibleWidth - 52) + "px";
         message.style.maxWidth = (visibleWidth - 52) + "px";
         message.style.fontSize = "34px";
@@ -1875,24 +2268,19 @@ function speak(talk, clickX, clickY, forcePosition = null) {
         message.style.padding = "24px 32px";
     }
 
-    // 吹き出しは固定し、文字だけに色・サイズ・フォント・アニメーションを適用。
     applyMessageTextStyle(talk, layout);
-
     message.style.display = "block";
     const msgWidth = message.offsetWidth || 600;
     const msgHeight = message.offsetHeight || 160;
 
     let messageX, messageY;
     if (layout.active && forcePosition) {
-        // あいさつ等の明示位置は、スマホでもその位置を優先する
         messageX = forcePosition.x - (msgWidth / 2);
         messageY = forcePosition.y - (msgHeight / 2);
     } else if (layout.active) {
-        // 通常台詞は時計の少し上あたりに固定
         const rect = game.getBoundingClientRect();
         const targetClientY = window.innerHeight * 0.60;
         const targetGameY = (targetClientY - rect.top) * (1080 / rect.height);
-
         messageX = (leftBound + rightBound - msgWidth) / 2;
         messageY = targetGameY - (msgHeight / 2);
     } else if (forcePosition) {
@@ -1908,18 +2296,67 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     const margin = layout.active ? 26 : 20;
     messageX = Math.max(leftBound + margin, Math.min(messageX, rightBound - msgWidth - margin));
     messageY = Math.max(topBound + margin, Math.min(messageY, bottomBound - msgHeight - margin));
-message.style.left = messageX + "px";
+    message.style.left = messageX + "px";
     message.style.top = messageY + "px";
 
     if (messageTimer) clearTimeout(messageTimer);
-    messageTimer = setTimeout(() => {
-        message.style.display = "none";
-        if (messageText) messageText.className = "message-text";
-        restoreDefaultCharacterVariant();
-    }, 3000);
+    if (keepForContinuation) {
+        messageTimer = null;
+    } else {
+        messageTimer = setTimeout(() => {
+            clearDialogueChoices();
+            message.style.display = "none";
+            if (messageText) messageText.className = "message-text";
+            activeContinuation = null;
+            restoreDefaultCharacterVariant();
+        }, 3000);
+    }
 }
 
+function advanceContinuation() {
+    if (!activeContinuation || activeContinuation.waitingChoice) return false;
+    activeContinuation.index++;
+    if (activeContinuation.index >= activeContinuation.sequence.length) {
+        activeContinuation = null;
+        clearDialogueChoices();
+        return false;
+    }
 
+    const context = activeContinuation;
+    const segment = context.sequence[context.index];
+    const choices = Array.isArray(segment.choices) ? segment.choices : [];
+    const keep = choices.length > 0 || context.index < context.sequence.length - 1;
+
+    showDialogueSegment(segment, context.clickX, context.clickY, context.forcePosition, { keepForContinuation: keep });
+
+    if (choices.length > 0) {
+        context.waitingChoice = showDialogueChoices(choices, segment);
+    }
+    return true;
+}
+
+/* 吹き出し位置の自動調整 */
+function speak(talk, clickX, clickY, forcePosition = null) {
+    if (!talk) return;
+
+    clearDialogueChoices();
+    activeContinuation = null;
+
+    const sequence = normalizeContinuationNodes(talk.next, talk.style || null);
+    if (sequence.length) {
+        activeContinuation = {
+            sequence,
+            index: -1,
+            clickX,
+            clickY,
+            forcePosition,
+            waitingChoice: false
+        };
+    }
+
+    const firstTalk = { ...talk, next: undefined };
+    showDialogueSegment(firstTalk, clickX, clickY, forcePosition, { keepForContinuation: sequence.length > 0 });
+}
 
 function isTodaySpecified(item) {
     if (!item) return false;
@@ -2153,7 +2590,7 @@ function showTapFlash(x, y) {
 
 
 game.addEventListener("pointerdown", function(event) {
-    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls, #choiceBox")) return;
     if (!data) return;
 
     const rect = game.getBoundingClientRect();
@@ -2164,8 +2601,15 @@ game.addEventListener("pointerdown", function(event) {
 
 /* クリックイベント処理（1920x1080基準の座標変換） */
 game.addEventListener("click", function(event) {
-    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls")) return;
+    if (event.target.closest("#menu, #openMenu, #diceButton, #leftControls, #choiceBox")) return;
     if (!data) return;
+
+    // 続きがある間は、新しい台詞抽選より続きを優先。
+    if (activeContinuation && !activeContinuation.waitingChoice) {
+        advanceContinuation();
+        return;
+    }
+    if (activeContinuation?.waitingChoice) return;
 
     const rect = game.getBoundingClientRect();
     const scaleX = 1920 / rect.width;
@@ -2536,6 +2980,13 @@ document.getElementById("openMenu").onclick = (event) => {
     openMenu();
 };
 
+
+if (costumeSelect) {
+    costumeSelect.addEventListener("change", async event => {
+        event.stopPropagation();
+        await switchCostume(event.target.value);
+    });
+}
 
 if (diceButton) {
     diceButton.onclick = async (event) => {

@@ -2603,23 +2603,36 @@ function showGreeting() {
     const greeting = dateGreeting || periodGreeting || normalGreeting;
     if (!greeting) return;
 
-    const charLeft = parseFloat(character.style.left) || 0;
-    const charTop = parseFloat(character.style.top) || 0;
-    const charWidth = parseFloat(character.style.width) || 1920;
-    const charHeight =
-        Number(character.dataset.displayHeight) ||
-        character.getBoundingClientRect().height ||
-        charWidth;
-
     /*
-      あいさつだけ bodyCenter を forcePosition にすると、
-      縦長立ち絵ほど吹き出しが下へ寄る。
-      通常台詞と同じ自動配置に任せる。
+      起動時 / ダイス / キャラアイコン選択のあいさつを全部同じ位置にする。
+      新しい立ち絵の画像読み込み完了前でも位置が変わらないよう、
+      character の寸法には依存しない。
     */
-    const bodyCenterX = charLeft + charWidth * 0.5;
-    const upperBodyY = charTop + charHeight * 0.36;
+    const layout = window.mobileLayout || {
+        active:false,
+        leftBound:0,
+        rightBound:1920,
+        topBound:0,
+        bottomBound:1080
+    };
 
-    speak(greeting, bodyCenterX, upperBodyY);
+    const leftBound = Number(layout.leftBound ?? 0);
+    const rightBound = Number(layout.rightBound ?? 1920);
+    const topBound = Number(layout.topBound ?? 0);
+    const bottomBound = Number(layout.bottomBound ?? 1080);
+
+    const visibleWidth = rightBound - leftBound;
+    const visibleHeight = bottomBound - topBound;
+
+    const greetingX = leftBound + visibleWidth * 0.5;
+    const greetingY = topBound + visibleHeight * 0.31;
+
+    speak(
+        greeting,
+        greetingX,
+        greetingY,
+        { x:greetingX, y:greetingY }
+    );
 }
 
 
@@ -3053,15 +3066,17 @@ function applyFaceCrop(imgElement, char, face) {
     }
 
     /*
-      エディターの menu.face は「ゲーム画面上の座標」。
-      つまり画像ファイルの左上座標ではない。
+      menu.face はエディターの
+      「このエリアでアイコンを作る」☑エリアから作られる。
 
-      立ち絵はゲーム側で
-        position.x = 足元中央X
-        position.y = 足元Y
-        position.scale = 立ち絵の表示幅
-      として配置しているので、実際の立ち絵表示位置を復元してから
-      face の中心が 112x112 アイコンの中心に来るように変換する。
+      ここで欲しいのはエリアの「中心」だけ。
+      エリア自体はアイコン指定用に大きく作ることもあるので、
+      face.width / face.height をズーム率には絶対に使わない。
+
+      1) face の中心をゲーム座標で取得
+      2) 立ち絵がゲーム画面上でどこに描かれているか復元
+      3) その中心が112x112の中央に来るよう画像を移動
+      4) 顔アイコン用のズームは立ち絵幅を基準に固定
     */
     const apply = () => {
         const naturalW = Number(imgElement.naturalWidth || 0);
@@ -3077,20 +3092,26 @@ function applyFaceCrop(imgElement, char, face) {
 
         const footX = Number(pos.x ?? 960);
         const footY = Number(pos.y ?? 1080);
-
         const displayLeft = footX - displayWidth / 2;
         const displayTop = footY - displayHeight;
 
-        const faceW = Math.max(1, Number(face.width) || Number(face.height) || 100);
-        const faceH = Math.max(1, Number(face.height) || Number(face.width) || 100);
+        const faceW = Math.max(1, Number(face.width) || 1);
+        const faceH = Math.max(1, Number(face.height) || 1);
 
-        // エリア選択☑の中心をアイコンの中心にする。
-        const faceCenterX = Number(face.x || 0) + faceW / 2;
-        const faceCenterY = Number(face.y || 0) + faceH / 2;
+        // ☑したエリアの中心。その大きさはクロップ倍率に使わない。
+        const centerX = Number(face.x || 0) + faceW / 2;
+        const centerY = Number(face.y || 0) + faceH / 2;
 
-        // menu.face は正方形保存だが、旧データにも対応して大きい辺を採用。
-        const cropSize = Math.max(faceW, faceH);
-        const zoom = THUMB_SIZE / cropSize;
+        /*
+          顔用の固定クロップ範囲。
+          立ち絵表示幅のおよそ28%を112pxに収める。
+          極端なscaleでも顔が大きすぎ/小さすぎにならないよう制限。
+        */
+        const cropWorldSize = Math.max(
+            220,
+            Math.min(360, displayWidth * 0.28)
+        );
+        const zoom = THUMB_SIZE / cropWorldSize;
 
         const imageWidth = displayWidth * zoom;
         const imageHeight = displayHeight * zoom;
@@ -3101,11 +3122,11 @@ function applyFaceCrop(imgElement, char, face) {
         imgElement.style.width = imageWidth + "px";
         imgElement.style.height = imageHeight + "px";
 
-        // 選択エリアの中心 = サムネイル中央(56,56)
+        // ☑エリア中心 = アイコン中心(56,56)
         imgElement.style.left =
-            (THUMB_SIZE / 2 - (faceCenterX - displayLeft) * zoom) + "px";
+            (THUMB_SIZE / 2 - (centerX - displayLeft) * zoom) + "px";
         imgElement.style.top =
-            (THUMB_SIZE / 2 - (faceCenterY - displayTop) * zoom) + "px";
+            (THUMB_SIZE / 2 - (centerY - displayTop) * zoom) + "px";
     };
 
     if (imgElement.complete && imgElement.naturalWidth > 0) {
@@ -3115,7 +3136,6 @@ function applyFaceCrop(imgElement, char, face) {
         imgElement.addEventListener("error", fallback, { once: true });
     }
 }
-
 function createCharacterCard(char) {
     const card = document.createElement("div");
     card.className = "card";

@@ -2611,10 +2611,15 @@ function showGreeting() {
         character.getBoundingClientRect().height ||
         charWidth;
 
+    /*
+      あいさつだけ bodyCenter を forcePosition にすると、
+      縦長立ち絵ほど吹き出しが下へ寄る。
+      通常台詞と同じ自動配置に任せる。
+    */
     const bodyCenterX = charLeft + charWidth * 0.5;
-    const bodyCenterY = charTop + charHeight * 0.5;
+    const upperBodyY = charTop + charHeight * 0.36;
 
-    speak(greeting, bodyCenterX, bodyCenterY, { x: bodyCenterX, y: bodyCenterY });
+    speak(greeting, bodyCenterX, upperBodyY);
 }
 
 
@@ -3030,25 +3035,85 @@ function setupCharacterMenu() {
 
 /* キャラクターアイコン用切抜き処理（112x112pxサムネイル） */
 function applyFaceCrop(imgElement, char, face) {
-    if (!face) {
+    const THUMB_SIZE = 112;
+
+    const fallback = () => {
         imgElement.style.width = "100%";
         imgElement.style.height = "100%";
         imgElement.style.objectFit = "cover";
         imgElement.style.position = "absolute";
         imgElement.style.left = "0";
         imgElement.style.top = "0";
+        imgElement.style.maxWidth = "none";
+    };
+
+    if (!face) {
+        fallback();
         return;
     }
-    const pos = char.position || {};
-    const scale = pos.scale || 1000;
-    const ratio = 112 / face.width;
 
-    imgElement.style.width = (scale * ratio) + "px";
-    imgElement.style.height = "auto";
-    imgElement.style.maxWidth = "none";
-    imgElement.style.position = "absolute";
-    imgElement.style.left = -((face.x - (pos.x || 0)) * ratio) + "px";
-    imgElement.style.top = -((face.y - (pos.y || 0)) * ratio) + "px";
+    /*
+      エディターの menu.face は「ゲーム画面上の座標」。
+      つまり画像ファイルの左上座標ではない。
+
+      立ち絵はゲーム側で
+        position.x = 足元中央X
+        position.y = 足元Y
+        position.scale = 立ち絵の表示幅
+      として配置しているので、実際の立ち絵表示位置を復元してから
+      face の中心が 112x112 アイコンの中心に来るように変換する。
+    */
+    const apply = () => {
+        const naturalW = Number(imgElement.naturalWidth || 0);
+        const naturalH = Number(imgElement.naturalHeight || 0);
+        if (!(naturalW > 0 && naturalH > 0)) {
+            fallback();
+            return;
+        }
+
+        const pos = char?.position || {};
+        const displayWidth = Math.max(1, Number(pos.scale) || 1000);
+        const displayHeight = displayWidth * (naturalH / naturalW);
+
+        const footX = Number(pos.x ?? 960);
+        const footY = Number(pos.y ?? 1080);
+
+        const displayLeft = footX - displayWidth / 2;
+        const displayTop = footY - displayHeight;
+
+        const faceW = Math.max(1, Number(face.width) || Number(face.height) || 100);
+        const faceH = Math.max(1, Number(face.height) || Number(face.width) || 100);
+
+        // エリア選択☑の中心をアイコンの中心にする。
+        const faceCenterX = Number(face.x || 0) + faceW / 2;
+        const faceCenterY = Number(face.y || 0) + faceH / 2;
+
+        // menu.face は正方形保存だが、旧データにも対応して大きい辺を採用。
+        const cropSize = Math.max(faceW, faceH);
+        const zoom = THUMB_SIZE / cropSize;
+
+        const imageWidth = displayWidth * zoom;
+        const imageHeight = displayHeight * zoom;
+
+        imgElement.style.position = "absolute";
+        imgElement.style.objectFit = "fill";
+        imgElement.style.maxWidth = "none";
+        imgElement.style.width = imageWidth + "px";
+        imgElement.style.height = imageHeight + "px";
+
+        // 選択エリアの中心 = サムネイル中央(56,56)
+        imgElement.style.left =
+            (THUMB_SIZE / 2 - (faceCenterX - displayLeft) * zoom) + "px";
+        imgElement.style.top =
+            (THUMB_SIZE / 2 - (faceCenterY - displayTop) * zoom) + "px";
+    };
+
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+        apply();
+    } else {
+        imgElement.addEventListener("load", apply, { once: true });
+        imgElement.addEventListener("error", fallback, { once: true });
+    }
 }
 
 function createCharacterCard(char) {

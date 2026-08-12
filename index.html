@@ -538,7 +538,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     border: 2px solid rgba(255, 255, 255, 0.4);
     color: #ffffff;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 700;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -753,32 +753,22 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 
 
 
-/* ===== 衣装変更：PC PAGE と同系統 ===== */
+/* ===== 衣装変更：PC PAGE と同系統 / custom dropdown ===== */
 #costumeSelectWrap{
     position: relative;
     display: none;
     width: 100%;
     min-width: 0;
-}
-#costumeSelectWrap::before{
-    content: "▼";
-    position: absolute;
-    left: 17px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    color: #ffffff;
-    font-size: 15px;
-    line-height: 1;
-    pointer-events: none;
-    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+    z-index: 280;
 }
 #costumeSelect{
-    appearance: none;
-    -webkit-appearance: none;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     min-width: 0;
-    padding: 8px 34px 8px 38px;
+    padding: 8px 18px 8px 38px;
     border: 2px solid #ffffff;
     border-radius: 30px;
     outline: none;
@@ -791,30 +781,82 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     line-height: 1.2;
     font-weight: 600;
     text-align: center;
-    text-align-last: center;
     cursor: pointer;
     text-shadow: 0 1px 3px rgba(0,0,0,.6);
     box-shadow: 0 4px 10px rgba(0,0,0,.15);
     transition: background .2s;
 }
+#costumeSelect::before{
+    content: "▼";
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
 #costumeSelect:hover,
-#costumeSelect:focus{
+#costumeSelect:focus,
+#costumeSelect[aria-expanded="true"]{
     background: rgba(255,255,255,.3);
 }
-#costumeSelect option{
-    color: #222;
-    background: #fff;
-    text-shadow: none;
+#costumeSelectLabel{
+    display:block;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+#costumeSelectMenu{
+    position:absolute;
+    left:0;
+    top:calc(100% + 7px);
+    width:100%;
+    display:none;
+    flex-direction:column;
+    gap:5px;
+    padding:6px;
+    border:1px solid rgba(255,255,255,.45);
+    border-radius:18px;
+    background:rgba(20,24,30,.58);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 10px 28px rgba(0,0,0,.28);
+}
+#costumeSelectMenu.open{display:flex}
+.costume-option{
+    width:100%;
+    min-height:36px;
+    padding:7px 12px;
+    border:1px solid rgba(255,255,255,.42);
+    border-radius:18px;
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    font-family:"M PLUS 1p","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+    font-size:17px;
+    font-weight:600;
+    text-align:center;
+    cursor:pointer;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.costume-option:hover,
+.costume-option:focus,
+.costume-option.active{
+    background:rgba(255,255,255,.30);
+    outline:none;
 }
 
 /* ===== 続きの選択肢：台詞吹き出しに近いデザイン ===== */
 #choiceBox{
     position: absolute;
-    z-index: 190;
+    z-index: 300;
     display: none;
     flex-direction: column;
-    gap: 10px;
-    width: 600px;
+    gap: 12px;
+    width: 640px;
     pointer-events: auto;
 }
 .choice-btn{
@@ -846,16 +888,20 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 @media (max-width: 768px), (max-aspect-ratio: 82/100) {
     #costumeSelect{
         font-size: 22px;
-        padding: 9px 38px 9px 42px;
+        padding: 9px 18px 9px 42px;
     }
-    #costumeSelectWrap::before{
+    #costumeSelect::before{
         left: 20px;
         font-size: 17px;
     }
+    .costume-option{
+        font-size:20px;
+        min-height:42px;
+    }
     .choice-btn{
-        font-size: 28px;
-        min-height: 64px;
-        padding: 14px 22px;
+        font-size: 36px;
+        min-height: 72px;
+        padding: 16px 24px;
     }
 }
 </style>
@@ -874,9 +920,10 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
             <a id="personalPage" class="ctrl-btn" href="#" target="_blank" rel="noopener" title="キャラクター個人ページ">PC PAGE</a>
             <div id="characterName"></div>
             <div id="costumeSelectWrap" title="衣装変更">
-                <select id="costumeSelect" aria-label="衣装変更">
-                    <option value="normal">通常</option>
-                </select>
+                <button id="costumeSelect" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span id="costumeSelectLabel">通常</span>
+                </button>
+                <div id="costumeSelectMenu" role="listbox" aria-label="衣装変更"></div>
             </div>
         </div>
 
@@ -993,6 +1040,8 @@ const personalPage = document.getElementById("personalPage");
 const characterName = document.getElementById("characterName");
 const costumeSelectWrap = document.getElementById("costumeSelectWrap");
 const costumeSelect = document.getElementById("costumeSelect");
+const costumeSelectLabel = document.getElementById("costumeSelectLabel");
+const costumeSelectMenu = document.getElementById("costumeSelectMenu");
 const choiceBox = document.getElementById("choiceBox");
 const birthdayArea = document.getElementById("birthdayArea");
 const birthdayList = document.getElementById("birthdayList");
@@ -1740,31 +1789,67 @@ async function loadCostumesForCharacter(baseChar) {
     return found;
 }
 
+function getCurrentCostumeValue() {
+    if (!currentBaseCharacter || data === currentBaseCharacter) return "normal";
+    const selectedIndex = availableCostumes.indexOf(data);
+    return selectedIndex >= 0 ? `costume:${selectedIndex}` : "normal";
+}
+
+function getCostumeLabel(value) {
+    if (value === "normal") return "通常";
+    const match = /^costume:(\d+)$/.exec(String(value || ""));
+    if (!match) return "通常";
+    const costume = availableCostumes[Number(match[1])];
+    return String(costume?.name || costume?.id || `衣装${Number(match[1]) + 1}`);
+}
+
+function closeCostumeMenu() {
+    if (!costumeSelectMenu || !costumeSelect) return;
+    costumeSelectMenu.classList.remove("open");
+    costumeSelect.setAttribute("aria-expanded", "false");
+}
+
 function setupCostumeSelector() {
-    if (!costumeSelect || !costumeSelectWrap) return;
+    if (!costumeSelect || !costumeSelectWrap || !costumeSelectMenu || !costumeSelectLabel) return;
 
-    costumeSelect.innerHTML = "";
-    const normalOption = document.createElement("option");
-    normalOption.value = "normal";
-    normalOption.textContent = "通常";
-    costumeSelect.appendChild(normalOption);
-
-    availableCostumes.forEach((costume, index) => {
-        const option = document.createElement("option");
-        option.value = `costume:${index}`;
-        option.textContent = String(costume.name || costume.id || `衣装${index + 1}`);
-        costumeSelect.appendChild(option);
-    });
+    costumeSelectMenu.innerHTML = "";
 
     if (availableCostumes.length === 0) {
         costumeSelectWrap.style.display = "none";
-        costumeSelect.value = "normal";
+        costumeSelectLabel.textContent = "通常";
+        closeCostumeMenu();
         return;
     }
 
     costumeSelectWrap.style.display = "block";
-    const selectedIndex = availableCostumes.indexOf(data);
-    costumeSelect.value = selectedIndex >= 0 ? `costume:${selectedIndex}` : "normal";
+    const currentValue = getCurrentCostumeValue();
+    costumeSelectLabel.textContent = getCostumeLabel(currentValue);
+
+    const items = [
+        { value: "normal", label: "通常" },
+        ...availableCostumes.map((costume, index) => ({
+            value: `costume:${index}`,
+            label: String(costume.name || costume.id || `衣装${index + 1}`)
+        }))
+    ];
+
+    items.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "costume-option" + (item.value === currentValue ? " active" : "");
+        button.dataset.value = item.value;
+        button.setAttribute("role", "option");
+        button.setAttribute("aria-selected", item.value === currentValue ? "true" : "false");
+        button.textContent = item.label;
+
+        button.addEventListener("click", async event => {
+            event.stopPropagation();
+            closeCostumeMenu();
+            await switchCostume(item.value);
+        });
+
+        costumeSelectMenu.appendChild(button);
+    });
 }
 
 async function activateCharacterData(nextData, { greet = false } = {}) {
@@ -2167,34 +2252,65 @@ function hasMoreContinuation() {
 
 function positionChoiceBox() {
     if (!choiceBox || choiceBox.style.display === "none") return;
-    const layout = window.mobileLayout || { active:false, leftBound:0, rightBound:1920, topBound:0, bottomBound:1080 };
+
+    const layout = window.mobileLayout || {
+        active:false,
+        leftBound:0,
+        rightBound:1920,
+        topBound:0,
+        bottomBound:1080
+    };
+
     const leftBound = layout.leftBound ?? 0;
     const rightBound = layout.rightBound ?? 1920;
     const topBound = layout.topBound ?? 0;
     const bottomBound = layout.bottomBound ?? 1080;
-    const gap = 12;
+    const visibleWidth = rightBound - leftBound;
+    const visibleHeight = bottomBound - topBound;
 
-    const msgLeft = parseFloat(message.style.left) || leftBound;
-    const msgTop = parseFloat(message.style.top) || topBound;
-    const msgWidth = message.offsetWidth || 600;
-    const msgHeight = message.offsetHeight || 120;
+    const targetWidth = Math.min(
+        layout.active ? 760 : 640,
+        Math.max(280, visibleWidth - 80)
+    );
 
-    choiceBox.style.width = msgWidth + "px";
-    const choiceHeight = choiceBox.offsetHeight || 100;
-    let top = msgTop + msgHeight + gap;
-    if (top + choiceHeight > bottomBound - 20) {
-        top = Math.max(topBound + 20, msgTop - choiceHeight - gap);
-    }
-    let left = Math.max(leftBound + 20, Math.min(msgLeft, rightBound - msgWidth - 20));
-    choiceBox.style.left = left + "px";
-    choiceBox.style.top = top + "px";
+    choiceBox.style.width = targetWidth + "px";
+
+    // offsetHeight は display:flex 後に取得する。
+    const choiceHeight = choiceBox.offsetHeight || 90;
+
+    let left = leftBound + (visibleWidth - targetWidth) / 2;
+    let top = topBound + (visibleHeight - choiceHeight) / 2;
+
+    left = Math.max(leftBound + 20, Math.min(left, rightBound - targetWidth - 20));
+    top = Math.max(topBound + 20, Math.min(top, bottomBound - choiceHeight - 20));
+
+    choiceBox.style.left = Math.round(left) + "px";
+    choiceBox.style.top = Math.round(top) + "px";
+}
+
+function normalizeChoiceList(choices) {
+    if (choices == null) return [];
+    const list = Array.isArray(choices) ? choices : [choices];
+    return list.filter(choice => {
+        if (choice == null) return false;
+        if (typeof choice === "string") return String(choice).trim() !== "";
+        return String(choice.label || "").trim() !== "" ||
+               String(choice.text || choice.reply || "").trim() !== "";
+    }).map((choice, index) => {
+        if (typeof choice === "string") {
+            return { label: choice, text: "" };
+        }
+        return {
+            ...choice,
+            label: String(choice.label || `選択肢${index + 1}`),
+            text: String(choice.text ?? choice.reply ?? "")
+        };
+    });
 }
 
 function showDialogueChoices(choices, segment) {
     clearDialogueChoices();
-    const list = Array.isArray(choices)
-        ? choices.filter(c => c && (String(c.label || "").trim() || String(c.text || "").trim()))
-        : [];
+    const list = normalizeChoiceList(choices);
     if (!list.length) return false;
 
     list.forEach((choice, index) => {
@@ -2324,7 +2440,7 @@ function advanceContinuation() {
 
     const context = activeContinuation;
     const segment = context.sequence[context.index];
-    const choices = Array.isArray(segment.choices) ? segment.choices : [];
+    const choices = normalizeChoiceList(segment.choices);
     const keep = choices.length > 0 || context.index < context.sequence.length - 1;
 
     showDialogueSegment(segment, context.clickX, context.clickY, context.forcePosition, { keepForContinuation: keep });
@@ -2982,11 +3098,18 @@ document.getElementById("openMenu").onclick = (event) => {
 
 
 if (costumeSelect) {
-    costumeSelect.addEventListener("change", async event => {
+    costumeSelect.addEventListener("click", event => {
         event.stopPropagation();
-        await switchCostume(event.target.value);
+        if (!costumeSelectMenu) return;
+        const willOpen = !costumeSelectMenu.classList.contains("open");
+        costumeSelectMenu.classList.toggle("open", willOpen);
+        costumeSelect.setAttribute("aria-expanded", willOpen ? "true" : "false");
     });
 }
+
+document.addEventListener("click", event => {
+    if (!event.target.closest("#costumeSelectWrap")) closeCostumeMenu();
+});
 
 if (diceButton) {
     diceButton.onclick = async (event) => {

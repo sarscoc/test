@@ -856,28 +856,27 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     display: none;
     flex-direction: column;
     gap: 12px;
-    width: 640px;
+    width: 820px;
     pointer-events: auto;
 }
 .choice-btn{
-    display: block;
-    width: 100%;
-    min-height: 58px;
-    padding: 13px 22px;
-    border: 2px solid rgba(255,255,255,.22);
-    background: linear-gradient(135deg,rgba(22,24,30,.82),rgba(10,11,15,.88) 70%,rgba(35,40,55,.76));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: #f0f2f5;
-    font-family: "Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
-    font-size: 24px;
-    line-height: 1.35;
-    font-weight: 500;
-    letter-spacing: .04em;
-    text-align: left;
-    cursor: pointer;
-    clip-path: polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);
-    box-shadow: 0 12px 30px rgba(0,0,0,.32), inset 0 2px 0 rgba(255,255,255,.12);
+    width:100%;
+    min-height:100px;
+    padding:24px 34px;
+    border:3px solid rgba(255,255,255,.45);
+    border-radius:22px;
+    background:linear-gradient(135deg,rgba(22,24,30,.88) 0%,rgba(10,11,15,.92) 70%,rgba(35,40,55,.84) 100%);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    color:#f0f2f5;
+    font-size:42px;
+    line-height:1.45;
+    font-weight:500;
+    letter-spacing:.04em;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 18px 42px rgba(0,0,0,.38),inset 0 2px 0 rgba(255,255,255,.12);
+    transition:transform .12s ease,background .12s ease;
 }
 .choice-btn:hover,
 .choice-btn:focus{
@@ -899,9 +898,9 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         min-height:42px;
     }
     .choice-btn{
-        font-size: 36px;
-        min-height: 72px;
-        padding: 16px 24px;
+        font-size: 46px;
+        min-height: 112px;
+        padding: 26px 34px;
     }
 }
 
@@ -914,6 +913,30 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
 }
 .costume-option{
     pointer-events:auto!important;
+}
+
+
+/* ===== 選択肢：大きめ中央ボタン ===== */
+#choiceBox{
+    max-width:calc(100% - 80px);
+    gap:18px!important;
+}
+.choice-btn{
+    min-height:100px!important;
+    padding:24px 34px!important;
+    font-size:42px!important;
+    border-width:3px!important;
+    border-radius:22px!important;
+}
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        gap:20px!important;
+    }
+    .choice-btn{
+        min-height:112px!important;
+        padding:26px 34px!important;
+        font-size:46px!important;
+    }
 }
 
 </style>
@@ -2310,7 +2333,7 @@ function positionChoiceBox() {
     const visibleHeight = bottomBound - topBound;
 
     const targetWidth = Math.min(
-        layout.active ? 760 : 640,
+        layout.active ? 860 : 820,
         Math.max(280, visibleWidth - 80)
     );
 
@@ -2625,7 +2648,7 @@ function showGreeting() {
     const visibleHeight = bottomBound - topBound;
 
     const greetingX = leftBound + visibleWidth * 0.5;
-    const greetingY = topBound + visibleHeight * 0.42;
+    const greetingY = topBound + visibleHeight * 0.55;
 
     speak(
         greeting,

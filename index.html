@@ -939,6 +939,105 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     }
 }
 
+
+/* ===== 選択肢：台詞に近い細さ + 左右フェード ===== */
+#choiceBox{
+    width:720px!important;
+    max-width:calc(100% - 100px)!important;
+    gap:12px!important;
+}
+
+.choice-btn{
+    position:relative!important;
+    overflow:hidden!important;
+    min-height:64px!important;
+    padding:12px 34px!important;
+
+    /* 左右へ行くほど透明になるガラス帯 */
+    background:
+        linear-gradient(
+            90deg,
+            rgba(10,11,15,0) 0%,
+            rgba(14,16,22,.34) 10%,
+            rgba(14,16,22,.78) 26%,
+            rgba(10,11,15,.90) 50%,
+            rgba(14,16,22,.78) 74%,
+            rgba(14,16,22,.34) 90%,
+            rgba(10,11,15,0) 100%
+        )!important;
+
+    border:none!important;
+    border-radius:0!important;
+    box-shadow:
+        0 10px 26px rgba(0,0,0,.20),
+        inset 0 1px 0 rgba(255,255,255,.07)!important;
+
+    color:#f0f2f5!important;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!important;
+    font-size:28px!important;
+    line-height:1.45!important;
+    font-weight:400!important;
+    letter-spacing:.05em!important;
+    text-align:center!important;
+
+    backdrop-filter:blur(10px)!important;
+    -webkit-backdrop-filter:blur(10px)!important;
+}
+
+.choice-btn::before,
+.choice-btn::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:22%;
+    height:1px;
+    transform:translateY(-50%);
+    pointer-events:none;
+    opacity:.42;
+}
+
+.choice-btn::before{
+    left:0;
+    background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55));
+}
+
+.choice-btn::after{
+    right:0;
+    background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,0));
+}
+
+.choice-btn:hover,
+.choice-btn:focus{
+    background:
+        linear-gradient(
+            90deg,
+            rgba(18,22,30,0) 0%,
+            rgba(34,40,54,.42) 10%,
+            rgba(45,52,70,.82) 26%,
+            rgba(35,40,55,.94) 50%,
+            rgba(45,52,70,.82) 74%,
+            rgba(34,40,54,.42) 90%,
+            rgba(18,22,30,0) 100%
+        )!important;
+    transform:scale(1.015)!important;
+    outline:none!important;
+}
+
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        width:760px!important;
+        max-width:calc(100% - 72px)!important;
+        gap:14px!important;
+    }
+
+    .choice-btn{
+        min-height:72px!important;
+        padding:14px 30px!important;
+        font-size:34px!important;
+        font-weight:400!important;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -2333,7 +2432,7 @@ function positionChoiceBox() {
     const visibleHeight = bottomBound - topBound;
 
     const targetWidth = Math.min(
-        layout.active ? 860 : 820,
+        layout.active ? 760 : 720,
         Math.max(280, visibleWidth - 80)
     );
 

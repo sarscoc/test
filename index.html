@@ -168,7 +168,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     gap: 16px;
     width: 180px;
     max-height: none;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* コントロールボタン */
@@ -559,7 +559,7 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         top: 28px;
         width: 220px;
         gap: 10px;
-        overflow: hidden;
+        overflow: visible;
     }
     .ctrl-btn {
         font-size: 25px;
@@ -904,6 +904,18 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
         padding: 16px 24px;
     }
 }
+
+/* 衣装プルダウン：左上UIの外へ開いても切らない */
+#leftControls{overflow:visible!important}
+#costumeSelectWrap{overflow:visible!important}
+#costumeSelectMenu{
+    z-index:999!important;
+    pointer-events:auto!important;
+}
+.costume-option{
+    pointer-events:auto!important;
+}
+
 </style>
 </head>
 <body>
@@ -1843,9 +1855,14 @@ function setupCostumeSelector() {
         button.textContent = item.label;
 
         button.addEventListener("click", async event => {
+            event.preventDefault();
             event.stopPropagation();
+            const value = button.dataset.value || item.value;
             closeCostumeMenu();
-            await switchCostume(item.value);
+            const changed = await switchCostume(value);
+            if (!changed) {
+                console.warn("衣装変更に失敗:", value);
+            }
         });
 
         costumeSelectMenu.appendChild(button);
@@ -1879,19 +1896,38 @@ async function activateCharacterData(nextData, { greet = false } = {}) {
 }
 
 async function switchCostume(value) {
-    if (!currentBaseCharacter) return;
+    if (!currentBaseCharacter) return false;
 
-    if (value === "normal") {
+    const raw = String(value || "");
+
+    if (raw === "normal") {
         await activateCharacterData(currentBaseCharacter, { greet: false });
-        return;
+        setupCostumeSelector();
+        return true;
     }
 
-    const match = /^costume:(\d+)$/.exec(String(value || ""));
-    if (!match) return;
-    const costume = availableCostumes[Number(match[1])];
-    if (!costume) return;
+    const match = /^costume:(\d+)$/.exec(raw);
+    if (!match) {
+        console.warn("衣装指定が不正です:", raw);
+        return false;
+    }
+
+    const index = Number(match[1]);
+    const costume = availableCostumes[index];
+    if (!costume) {
+        console.warn("衣装データが見つかりません:", index, availableCostumes);
+        return false;
+    }
+
     costume._dialogueSourceData = currentBaseCharacter;
+
+    // 衣装JSON自身の画像・位置・エリアを使い、台詞だけ親を参照。
     await activateCharacterData(costume, { greet: false });
+    setupCostumeSelector();
+
+    // 画像の切替を即時に再適用する。
+    loadCharacterImage();
+    return data === costume;
 }
 
 async function chooseInitialCharacter() {
@@ -2185,10 +2221,15 @@ function applyMessageTextStyle(talk, layout) {
     // 個別台詞で size を指定した時だけ明示サイズとして優先する。
     const fallbackSize = layout && layout.active ? 34 : 28;
     const localHasSize = local.size !== undefined && local.size !== null && String(local.size) !== "";
+    const localSize = Number(local.size);
     const defaultSize = Number(defaults.size);
     let fontSize;
-    if (localHasSize) {
-        fontSize = Number(local.size) || fallbackSize;
+
+    // 統合エディターの「16」はゲーム上では標準サイズ。
+    // 本文・続き・タッチエリア由来の続き、どこに16が入っていても
+    // 完成版では PC 28px / mobile 34px として扱う。
+    if (localHasSize && Number.isFinite(localSize) && localSize > 0 && localSize !== 16) {
+        fontSize = localSize;
     } else if (Number.isFinite(defaultSize) && defaultSize > 0 && defaultSize !== 16) {
         fontSize = defaultSize;
     } else {
@@ -2442,12 +2483,39 @@ function advanceContinuation() {
     const segment = context.sequence[context.index];
     const choices = normalizeChoiceList(segment.choices);
     const keep = choices.length > 0 || context.index < context.sequence.length - 1;
+    const segmentText = String(segment?.text ?? "").trim();
 
-    showDialogueSegment(segment, context.clickX, context.clickY, context.forcePosition, { keepForContinuation: keep });
+    if (segmentText) {
+        showDialogueSegment(
+            segment,
+            context.clickX,
+            context.clickY,
+            context.forcePosition,
+            { keepForContinuation: keep }
+        );
+    } else if (choices.length > 0) {
+        // 選択肢だけの枝では、空の台詞ボックスを出さない。
+        if (messageTimer) {
+            clearTimeout(messageTimer);
+            messageTimer = null;
+        }
+        if (messageText) {
+            messageText.textContent = "";
+            messageText.className = "message-text";
+        }
+        message.style.display = "none";
+    }
 
     if (choices.length > 0) {
         context.waitingChoice = showDialogueChoices(choices, segment);
+        return true;
     }
+
+    // 空の続きで選択肢も無い場合は、そのノードを飛ばして次へ。
+    if (!segmentText && context.index < context.sequence.length - 1) {
+        return advanceContinuation();
+    }
+
     return true;
 }
 
@@ -2471,7 +2539,15 @@ function speak(talk, clickX, clickY, forcePosition = null) {
     }
 
     const firstTalk = { ...talk, next: undefined };
-    showDialogueSegment(firstTalk, clickX, clickY, forcePosition, { keepForContinuation: sequence.length > 0 });
+    const firstText = String(firstTalk?.text ?? "").trim();
+
+    if (firstText) {
+        showDialogueSegment(firstTalk, clickX, clickY, forcePosition, { keepForContinuation: sequence.length > 0 });
+    } else if (sequence.length > 0) {
+        // 本文が空で「続き」だけあるデータも空吹き出しを出さず、そのまま続きへ。
+        message.style.display = "none";
+        advanceContinuation();
+    }
 }
 
 function isTodaySpecified(item) {

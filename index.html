@@ -3306,6 +3306,55 @@ function applyFaceCrop(imgElement, char, face) {
         imgElement.addEventListener("error", fallback, { once: true });
     }
 }
+function applyPortraitIconCrop(imgElement, crop) {
+    const THUMB_SIZE = 112;
+
+    const fallback = () => {
+        imgElement.style.width = "100%";
+        imgElement.style.height = "100%";
+        imgElement.style.objectFit = "cover";
+        imgElement.style.position = "absolute";
+        imgElement.style.left = "0";
+        imgElement.style.top = "0";
+        imgElement.style.maxWidth = "none";
+    };
+
+    if (!crop) {
+        fallback();
+        return;
+    }
+
+    const apply = () => {
+        const naturalW = Number(imgElement.naturalWidth || 0);
+        const naturalH = Number(imgElement.naturalHeight || 0);
+        const size = Math.max(1, Number(crop.size) || 0);
+
+        if (!(naturalW > 0 && naturalH > 0 && size > 0)) {
+            fallback();
+            return;
+        }
+
+        const x = Math.max(0, Number(crop.x) || 0);
+        const y = Math.max(0, Number(crop.y) || 0);
+        const zoom = THUMB_SIZE / size;
+
+        imgElement.style.position = "absolute";
+        imgElement.style.objectFit = "fill";
+        imgElement.style.maxWidth = "none";
+        imgElement.style.width = (naturalW * zoom) + "px";
+        imgElement.style.height = (naturalH * zoom) + "px";
+        imgElement.style.left = (-x * zoom) + "px";
+        imgElement.style.top = (-y * zoom) + "px";
+    };
+
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+        apply();
+    } else {
+        imgElement.addEventListener("load", apply, { once: true });
+        imgElement.addEventListener("error", fallback, { once: true });
+    }
+}
+
 function createCharacterCard(char) {
     const card = document.createElement("div");
     card.className = "card";
@@ -3315,10 +3364,18 @@ function createCharacterCard(char) {
 
     const img = document.createElement("img");
     img.className = "card-character-image";
-    
-    img.src = getImagePath(char.image, char);
 
-    applyFaceCrop(img, char, char.menu ? char.menu.face : null);
+    const menuIcon = char?.menu?.icon;
+    const iconImage = menuIcon?.image || char.image;
+    img.src = getImagePath(iconImage, char);
+
+    // 新エディター：画像そのもののピクセル座標で切り取り。
+    // 旧JSONは従来の menu.face にフォールバック。
+    if (menuIcon?.crop) {
+        applyPortraitIconCrop(img, menuIcon.crop);
+    } else {
+        applyFaceCrop(img, char, char.menu ? char.menu.face : null);
+    }
 
     thumb.appendChild(img);
 

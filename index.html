@@ -1038,6 +1038,33 @@ font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Quicksand', 'Ari
     }
 }
 
+
+/* ===== 選択肢：現在デザインの約1.3倍 ===== */
+#choiceBox{
+    width:936px!important;
+    max-width:calc(100% - 100px)!important;
+    gap:16px!important;
+}
+.choice-btn{
+    min-height:83px!important;
+    padding:16px 44px!important;
+    font-size:36px!important;
+    font-weight:400!important;
+}
+@media (max-width:768px), (max-aspect-ratio:82/100){
+    #choiceBox{
+        width:988px!important;
+        max-width:calc(100% - 72px)!important;
+        gap:18px!important;
+    }
+    .choice-btn{
+        min-height:94px!important;
+        padding:18px 39px!important;
+        font-size:44px!important;
+        font-weight:400!important;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -2432,7 +2459,7 @@ function positionChoiceBox() {
     const visibleHeight = bottomBound - topBound;
 
     const targetWidth = Math.min(
-        layout.active ? 760 : 720,
+        layout.active ? 988 : 936,
         Math.max(280, visibleWidth - 80)
     );
 

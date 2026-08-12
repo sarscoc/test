@@ -151,11 +151,14 @@
   },
   "_editorNormalLocked": true,
   "menu": {
-    "face": {
-      "x": 749,
-      "y": 47,
-      "width": 245,
-      "height": 245
+    "icon": {
+      "image": "111.webp",
+      "crop": {
+        "x": 403,
+        "y": 213,
+        "size": 320
+      }
     }
-  }
+  },
+  "_editorNormalOpen": true
 }
